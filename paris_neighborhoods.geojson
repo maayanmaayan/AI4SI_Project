@@ -15,26 +15,11 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.354,
-              48.828
-            ],
-            [
-              2.354,
-              48.838
-            ],
-            [
-              2.364,
-              48.838
-            ],
-            [
-              2.364,
-              48.828
-            ],
-            [
-              2.354,
-              48.828
-            ]
+            [2.354, 48.828],
+            [2.354, 48.838],
+            [2.364, 48.838],
+            [2.364, 48.828],
+            [2.354, 48.828]
           ]
         ]
       }
@@ -53,30 +38,16 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.307,
-              48.88
-            ],
-            [
-              2.307,
-              48.89
-            ],
-            [
-              2.317,
-              48.89
-            ],
-            [
-              2.317,
-              48.88
-            ],
-            [
-              2.307,
-              48.88
-            ]
+            [2.307, 48.88],
+            [2.307, 48.89],
+            [2.317, 48.89],
+            [2.317, 48.88],
+            [2.307, 48.88]
           ]
         ]
       }
     },
+
     {
       "type": "Feature",
       "properties": {
@@ -91,26 +62,11 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.3507,
-              48.8496
-            ],
-            [
-              2.3507,
-              48.8596
-            ],
-            [
-              2.3607,
-              48.8596
-            ],
-            [
-              2.3607,
-              48.8496
-            ],
-            [
-              2.3507,
-              48.8496
-            ]
+            [2.3507, 48.8496],
+            [2.3507, 48.8596],
+            [2.3607, 48.8596],
+            [2.3607, 48.8496],
+            [2.3507, 48.8496]
           ]
         ]
       }
@@ -129,26 +85,11 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.338,
-              48.843
-            ],
-            [
-              2.338,
-              48.853
-            ],
-            [
-              2.348,
-              48.853
-            ],
-            [
-              2.348,
-              48.843
-            ],
-            [
-              2.338,
-              48.843
-            ]
+            [2.338, 48.843],
+            [2.338, 48.853],
+            [2.348, 48.853],
+            [2.348, 48.843],
+            [2.338, 48.843]
           ]
         ]
       }
@@ -167,26 +108,11 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.328,
-              48.849
-            ],
-            [
-              2.328,
-              48.859
-            ],
-            [
-              2.338,
-              48.859
-            ],
-            [
-              2.338,
-              48.849
-            ],
-            [
-              2.328,
-              48.849
-            ]
+            [2.328, 48.849],
+            [2.328, 48.859],
+            [2.338, 48.859],
+            [2.338, 48.849],
+            [2.328, 48.849]
           ]
         ]
       }
@@ -205,30 +131,16 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.343,
-              48.848
-            ],
-            [
-              2.343,
-              48.858
-            ],
-            [
-              2.353,
-              48.858
-            ],
-            [
-              2.353,
-              48.848
-            ],
-            [
-              2.343,
-              48.848
-            ]
+            [2.343, 48.848],
+            [2.343, 48.858],
+            [2.353, 48.858],
+            [2.353, 48.848],
+            [2.343, 48.848]
           ]
         ]
       }
     },
+
     {
       "type": "Feature",
       "properties": {
@@ -243,38 +155,23 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.282,
-              48.835
-            ],
-            [
-              2.282,
-              48.845
-            ],
-            [
-              2.292,
-              48.845
-            ],
-            [
-              2.292,
-              48.835
-            ],
-            [
-              2.282,
-              48.835
-            ]
+            [2.282, 48.835],
+            [2.282, 48.845],
+            [2.292, 48.845],
+            [2.292, 48.835],
+            [2.282, 48.835]
           ]
         ]
       }
     },
-    ,
+
     {
       "type": "Feature",
       "properties": {
         "name": "Saint-Vincent-de-Paul (14e)",
         "label": "Verified",
         "verification_status": "verified",
-        "verification_basis": "Identified as OAP n°8 (Saint-Vincent de Paul, XIVe) in the Paris PLU bioclimatique report; this OAP is presented in the context of the 'quartier du quart d’heure' (15-minute city) approach.",
+        "verification_basis": "Identified as OAP n°8 (Saint-Vincent de Paul, XIVe) in the Paris PLU bioclimatique report; this OAP is presented within the PLU choices for OAPs and supports proximity amenities and active mobility consistent with the 'quartier du quart d’heure' (15-minute city) approach.",
         "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
         "verification_source_url": "https://data.geopf.fr/annexes/gpu/documents/DU_75056/4a02192762e3f46a75fe0f69f31c2bf2/75056_rapport_6_20241120.pdf"
       },
@@ -282,26 +179,11 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.332,
-              48.828
-            ],
-            [
-              2.332,
-              48.838
-            ],
-            [
-              2.347,
-              48.838
-            ],
-            [
-              2.347,
-              48.828
-            ],
-            [
-              2.332,
-              48.828
-            ]
+            [2.332, 48.828],
+            [2.332, 48.838],
+            [2.347, 48.838],
+            [2.347, 48.828],
+            [2.332, 48.828]
           ]
         ]
       }
@@ -312,7 +194,7 @@
         "name": "Maine–Montparnasse (6e/14e/15e)",
         "label": "Verified",
         "verification_status": "verified",
-        "verification_basis": "Identified as OAP n°9 (Maine-Montparnasse, VIe/XIVe/XVe) in the Paris PLU bioclimatique report; the OAP emphasizes reallocating street space and improving active mobility connections consistent with the 'quartier du quart d’heure' (15-minute city) approach.",
+        "verification_basis": "Identified as OAP n°9 (Maine-Montparnasse, VIe/XIVe/XVe) in the Paris PLU bioclimatique report; it emphasizes reallocating street space and improving walking/cycling connections, consistent with proximity-based planning.",
         "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
         "verification_source_url": "https://data.geopf.fr/annexes/gpu/documents/DU_75056/4a02192762e3f46a75fe0f69f31c2bf2/75056_rapport_6_20241120.pdf"
       },
@@ -320,26 +202,11 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.306,
-              48.835
-            ],
-            [
-              2.306,
-              48.852
-            ],
-            [
-              2.332,
-              48.852
-            ],
-            [
-              2.332,
-              48.835
-            ],
-            [
-              2.306,
-              48.835
-            ]
+            [2.306, 48.835],
+            [2.306, 48.852],
+            [2.332, 48.852],
+            [2.332, 48.835],
+            [2.306, 48.835]
           ]
         ]
       }
@@ -350,7 +217,7 @@
         "name": "Bartholomé–Brancion (15e)",
         "label": "Verified",
         "verification_status": "verified",
-        "verification_basis": "Identified as OAP n°10 (Bartholomé–Brancion, XVe) in the Paris PLU bioclimatique report; the OAP explicitly focuses on requalifying car-dominated public space in favor of walking/cycling continuity, aligned with the 'quartier du quart d’heure' (15-minute city) framing.",
+        "verification_basis": "Identified as OAP n°10 (Bartholomé-Brancion, XVe) in the Paris PLU bioclimatique report; it focuses on improving the public realm and continuity for active mobility.",
         "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
         "verification_source_url": "https://data.geopf.fr/annexes/gpu/documents/DU_75056/4a02192762e3f46a75fe0f69f31c2bf2/75056_rapport_6_20241120.pdf"
       },
@@ -358,26 +225,11 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.286,
-              48.825
-            ],
-            [
-              2.286,
-              48.836
-            ],
-            [
-              2.305,
-              48.836
-            ],
-            [
-              2.305,
-              48.825
-            ],
-            [
-              2.286,
-              48.825
-            ]
+            [2.286, 48.825],
+            [2.286, 48.836],
+            [2.305, 48.836],
+            [2.305, 48.825],
+            [2.286, 48.825]
           ]
         ]
       }
@@ -388,7 +240,7 @@
         "name": "Paul Bourget (13e)",
         "label": "Verified",
         "verification_status": "verified",
-        "verification_basis": "Identified as OAP n°4 (Paul Bourget, XIIIe) in the Paris PLU bioclimatique report; it is presented within the broader PLU framework that promotes the 'quartier du quart d’heure' (15-minute city) and local access to amenities.",
+        "verification_basis": "Identified as OAP n°4 (Paul Bourget, XIIIe) in the Paris PLU bioclimatique report; it is included in the OAP choices supporting local quality of life and proximity amenities.",
         "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
         "verification_source_url": "https://data.geopf.fr/annexes/gpu/documents/DU_75056/4a02192762e3f46a75fe0f69f31c2bf2/75056_rapport_6_20241120.pdf"
       },
@@ -396,26 +248,11 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.343,
-              48.814
-            ],
-            [
-              2.343,
-              48.824
-            ],
-            [
-              2.364,
-              48.824
-            ],
-            [
-              2.364,
-              48.814
-            ],
-            [
-              2.343,
-              48.814
-            ]
+            [2.343, 48.814],
+            [2.343, 48.824],
+            [2.364, 48.824],
+            [2.364, 48.814],
+            [2.343, 48.814]
           ]
         ]
       }
@@ -426,7 +263,7 @@
         "name": "Olympiades / Villa d’Este / Place de Vénétie (13e)",
         "label": "Verified",
         "verification_status": "verified",
-        "verification_basis": "Identified as OAP n°5 (Olympiades/Villa d’Este–Place de Vénétie, XIIIe) in the Paris PLU bioclimatique report; it sits within the PLU's 'quartier du quart d’heure' policy context emphasizing nearby services and active mobility.",
+        "verification_basis": "Identified as OAP n°5 (Olympiades/Villa d’Este–Place de Vénétie, XIIIe) in the Paris PLU bioclimatique report; it fits within the PLU’s proximity-oriented planning framework.",
         "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
         "verification_source_url": "https://data.geopf.fr/annexes/gpu/documents/DU_75056/4a02192762e3f46a75fe0f69f31c2bf2/75056_rapport_6_20241120.pdf"
       },
@@ -434,26 +271,11 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.357,
-              48.820
-            ],
-            [
-              2.357,
-              48.833
-            ],
-            [
-              2.372,
-              48.833
-            ],
-            [
-              2.372,
-              48.820
-            ],
-            [
-              2.357,
-              48.820
-            ]
+            [2.357, 48.82],
+            [2.357, 48.833],
+            [2.372, 48.833],
+            [2.372, 48.82],
+            [2.357, 48.82]
           ]
         ]
       }
@@ -464,7 +286,7 @@
         "name": "Bédier–Oudiné (13e)",
         "label": "Verified",
         "verification_status": "verified",
-        "verification_basis": "Identified as OAP n°7 (Bédier–Oudiné, XIIIe) in the Paris PLU bioclimatique report; it is part of the PLU's strategy to strengthen proximity amenities and reduce travel needs in line with the 'quartier du quart d’heure' (15-minute city) approach.",
+        "verification_basis": "Identified as OAP n°7 (Bédier–Oudiné, XIIIe) in the Paris PLU bioclimatique report; it supports upgrading the area with improved connections and local quality-of-life goals.",
         "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
         "verification_source_url": "https://data.geopf.fr/annexes/gpu/documents/DU_75056/4a02192762e3f46a75fe0f69f31c2bf2/75056_rapport_6_20241120.pdf"
       },
@@ -472,30 +294,16 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.368,
-              48.810
-            ],
-            [
-              2.368,
-              48.822
-            ],
-            [
-              2.389,
-              48.822
-            ],
-            [
-              2.389,
-              48.810
-            ],
-            [
-              2.368,
-              48.810
-            ]
+            [2.368, 48.81],
+            [2.368, 48.822],
+            [2.389, 48.822],
+            [2.389, 48.81],
+            [2.368, 48.81]
           ]
         ]
       }
-    }
+    },
+
     {
       "type": "Feature",
       "properties": {
@@ -506,26 +314,11 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.336,
-              48.876
-            ],
-            [
-              2.336,
-              48.886
-            ],
-            [
-              2.346,
-              48.886
-            ],
-            [
-              2.346,
-              48.876
-            ],
-            [
-              2.336,
-              48.876
-            ]
+            [2.336, 48.876],
+            [2.336, 48.886],
+            [2.346, 48.886],
+            [2.346, 48.876],
+            [2.336, 48.876]
           ]
         ]
       }
@@ -540,26 +333,11 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.366,
-              48.864
-            ],
-            [
-              2.366,
-              48.874
-            ],
-            [
-              2.376,
-              48.874
-            ],
-            [
-              2.376,
-              48.864
-            ],
-            [
-              2.366,
-              48.864
-            ]
+            [2.366, 48.864],
+            [2.366, 48.874],
+            [2.376, 48.874],
+            [2.376, 48.864],
+            [2.366, 48.864]
           ]
         ]
       }
@@ -574,26 +352,11 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.363,
-              48.853
-            ],
-            [
-              2.363,
-              48.863
-            ],
-            [
-              2.373,
-              48.863
-            ],
-            [
-              2.373,
-              48.853
-            ],
-            [
-              2.363,
-              48.853
-            ]
+            [2.363, 48.853],
+            [2.363, 48.863],
+            [2.373, 48.863],
+            [2.373, 48.853],
+            [2.363, 48.853]
           ]
         ]
       }
@@ -608,26 +371,11 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.24,
-              48.878
-            ],
-            [
-              2.24,
-              48.888
-            ],
-            [
-              2.25,
-              48.888
-            ],
-            [
-              2.25,
-              48.878
-            ],
-            [
-              2.24,
-              48.878
-            ]
+            [2.24, 48.878],
+            [2.24, 48.888],
+            [2.25, 48.888],
+            [2.25, 48.878],
+            [2.24, 48.878]
           ]
         ]
       }
@@ -642,26 +390,11 @@
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              2.393,
-              48.88
-            ],
-            [
-              2.393,
-              48.89
-            ],
-            [
-              2.403,
-              48.89
-            ],
-            [
-              2.403,
-              48.88
-            ],
-            [
-              2.393,
-              48.88
-            ]
+            [2.393, 48.88],
+            [2.393, 48.89],
+            [2.403, 48.89],
+            [2.403, 48.88],
+            [2.393, 48.88]
           ]
         ]
       }
