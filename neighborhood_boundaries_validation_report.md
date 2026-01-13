@@ -172,3 +172,60 @@ This report validates the boundaries defined in `paris_neighborhoods.geojson` ag
 
 **Report Generated**: Based on online validation searches
 **Next Steps**: Obtain official GeoJSON boundaries from Paris administrative sources
+
+---
+
+## UPDATE: Official Boundaries Obtained (2024-12-19)
+
+### Successfully Updated with Official Polygons
+
+**8 out of 14 neighborhoods** have been updated with official polygon boundaries from the **PLU bioclimatique OAP** dataset (Paris Open Data):
+
+1. ✅ **Paris Rive Gauche** - 93 points (official polygon)
+2. ✅ **Beaugrenelle / 15th Arr.** - 33 points (official polygon)
+3. ✅ **Saint-Vincent-de-Paul (14e)** - 17 points (official polygon)
+4. ✅ **Maine–Montparnasse (6e/14e/15e)** - 101 points (official polygon)
+5. ✅ **Bartholomé–Brancion (15e)** - 33 points (official polygon)
+6. ✅ **Paul Bourget (13e)** - 30 points (official polygon)
+7. ✅ **Olympiades / Villa d'Este / Place de Vénétie (13e)** - 11 points (official polygon)
+8. ✅ **Bédier–Oudiné (13e)** - 80 points (official polygon)
+
+**Data Source**: PLU bioclimatique OAP boundaries downloaded from Paris Open Data portal (opendata.paris.fr)
+- Dataset: `plub_oap_perim`
+- Format: GeoJSON with actual polygon coordinates
+- License: Open Database Licence (ODbL)
+
+### Still Using Rectangular Approximations
+
+**6 neighborhoods** still need official polygon boundaries:
+
+1. ⚠️ **Clichy-Batignolles** - Needs verification of OSM relation or arrondissement boundaries
+2. ⚠️ **Montmartre** - Not an official administrative quartier; may need custom boundary definition
+3. ⚠️ **Belleville** - Spans multiple arrondissements; needs quartier-level boundaries
+4. ⚠️ **Bastille / Oberkampf** - Needs 11th arrondissement quartier boundaries
+5. ⚠️ **La Défense** - Located outside Paris city limits; needs separate data source
+6. ⚠️ **Buttes-Chaumont / 19th Arr.** - Needs 19th arrondissement quartier boundaries
+
+### Recommendations for Remaining Neighborhoods
+
+1. **For Clichy-Batignolles**: The OSM relation ID 152279 may be incorrect. Consider using arrondissement boundaries or verifying the correct relation ID.
+
+2. **For Montmartre, Belleville, Bastille/Oberkampf**: These are cultural/historical neighborhoods rather than official administrative quartiers. Options:
+   - Use arrondissement quartier boundaries (admin_level=10 in OSM)
+   - Define custom boundaries based on historical/cultural definitions
+   - Use OpenStreetMap place=neighbourhood or place=suburb tags
+
+3. **For La Défense**: This is in the suburbs (Puteaux/Courbevoie/Nanterre). May need:
+   - Data from those municipalities
+   - OSM relation for the business district
+   - Custom boundary definition
+
+4. **For Buttes-Chaumont**: Use 19th arrondissement quartier boundaries from Paris Open Data or OSM admin_level=10.
+
+### Files Updated
+
+- `paris_neighborhoods.geojson` - Updated with official polygon boundaries for 8 neighborhoods
+- All updated neighborhoods include metadata:
+  - `boundary_source`: "PLU bioclimatique OAP (Paris Open Data)"
+  - `boundary_updated`: "2024-12-19"
+  - `boundary_type`: "official_polygon"
