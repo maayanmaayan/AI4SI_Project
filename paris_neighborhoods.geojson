@@ -5,7 +5,7 @@
       "type": "Feature",
       "properties": {
         "name": "Paris Rive Gauche",
-        "label": "Verified",
+        "label": "Compliant",
         "verification_status": "verified",
         "verification_basis": "Listed as a sector under the PLU bioclimatique thematic OAP \"Quartier du quart d’heure\" (Paris – Rive Gauche, 13e).",
         "verification_by": "Ville de Paris (PLU bioclimatique – OAP)",
@@ -28,7 +28,7 @@
       "type": "Feature",
       "properties": {
         "name": "Clichy-Batignolles",
-        "label": "Verified",
+        "label": "Compliant",
         "verification_status": "verified",
         "verification_basis": "Paris.fr describes a mixed-use project within Clichy-Batignolles (Stream Building) \"dans l’esprit de la ville du quart d’heure\".",
         "verification_by": "Ville de Paris (paris.fr)",
@@ -52,8 +52,8 @@
       "type": "Feature",
       "properties": {
         "name": "Le Marais",
-        "label": "Unverified",
-        "verification_status": "not_verified",
+        "label": "Compliant",
+        "verification_status": "unverified",
         "verification_basis": "No reliable official City of Paris / PLU source was found that explicitly identifies Le Marais as a \"ville du quart d’heure\" implementation area (it may still be walkable/dense, but that is not the same as an explicit designation).",
         "verification_by": null,
         "verification_source_url": null
@@ -75,8 +75,8 @@
       "type": "Feature",
       "properties": {
         "name": "Quartier Latin",
-        "label": "Unverified",
-        "verification_status": "not_verified",
+        "label": "Compliant",
+        "verification_status": "unverified",
         "verification_basis": "No reliable official City of Paris / PLU source was found that explicitly identifies Quartier Latin as a \"ville du quart d’heure\" implementation area.",
         "verification_by": null,
         "verification_source_url": null
@@ -98,8 +98,8 @@
       "type": "Feature",
       "properties": {
         "name": "Saint-Germain-des-Prés",
-        "label": "Unverified",
-        "verification_status": "not_verified",
+        "label": "Compliant",
+        "verification_status": "unverified",
         "verification_basis": "No reliable official City of Paris / PLU source was found that explicitly identifies Saint-Germain-des-Prés as a \"ville du quart d’heure\" implementation area.",
         "verification_by": null,
         "verification_source_url": null
@@ -121,8 +121,8 @@
       "type": "Feature",
       "properties": {
         "name": "Île de la Cité",
-        "label": "Unverified",
-        "verification_status": "not_verified",
+        "label": "Compliant",
+        "verification_status": "unverified",
         "verification_basis": "No reliable official City of Paris / PLU source was found that explicitly identifies Île de la Cité as a \"ville du quart d’heure\" implementation area.",
         "verification_by": null,
         "verification_source_url": null
@@ -145,7 +145,7 @@
       "type": "Feature",
       "properties": {
         "name": "Beaugrenelle / 15th Arr.",
-        "label": "Verified",
+        "label": "Compliant",
         "verification_status": "verified",
         "verification_basis": "Listed as a sector under the PLU bioclimatique thematic OAP \"Quartier du quart d’heure\" (Beaugrenelle – Front de Seine, 15e).",
         "verification_by": "Ville de Paris (PLU bioclimatique – OAP)",
@@ -169,7 +169,7 @@
       "type": "Feature",
       "properties": {
         "name": "Saint-Vincent-de-Paul (14e)",
-        "label": "Verified",
+        "label": "Compliant",
         "verification_status": "verified",
         "verification_basis": "Identified as OAP n°8 (Saint-Vincent de Paul, XIVe) in the Paris PLU bioclimatique report; this OAP is presented within the PLU choices for OAPs and supports proximity amenities and active mobility consistent with the 'quartier du quart d’heure' (15-minute city) approach.",
         "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
@@ -192,7 +192,7 @@
       "type": "Feature",
       "properties": {
         "name": "Maine–Montparnasse (6e/14e/15e)",
-        "label": "Verified",
+        "label": "Compliant",
         "verification_status": "verified",
         "verification_basis": "Identified as OAP n°9 (Maine-Montparnasse, VIe/XIVe/XVe) in the Paris PLU bioclimatique report; it emphasizes reallocating street space and improving walking/cycling connections, consistent with proximity-based planning.",
         "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
@@ -215,7 +215,7 @@
       "type": "Feature",
       "properties": {
         "name": "Bartholomé–Brancion (15e)",
-        "label": "Verified",
+        "label": "Compliant",
         "verification_status": "verified",
         "verification_basis": "Identified as OAP n°10 (Bartholomé-Brancion, XVe) in the Paris PLU bioclimatique report; it focuses on improving the public realm and continuity for active mobility.",
         "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
@@ -238,7 +238,7 @@
       "type": "Feature",
       "properties": {
         "name": "Paul Bourget (13e)",
-        "label": "Verified",
+        "label": "Compliant",
         "verification_status": "verified",
         "verification_basis": "Identified as OAP n°4 (Paul Bourget, XIIIe) in the Paris PLU bioclimatique report; it is included in the OAP choices supporting local quality of life and proximity amenities.",
         "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
@@ -261,7 +261,7 @@
       "type": "Feature",
       "properties": {
         "name": "Olympiades / Villa d’Este / Place de Vénétie (13e)",
-        "label": "Verified",
+        "label": "Compliant",
         "verification_status": "verified",
         "verification_basis": "Identified as OAP n°5 (Olympiades/Villa d’Este–Place de Vénétie, XIIIe) in the Paris PLU bioclimatique report; it fits within the PLU’s proximity-oriented planning framework.",
         "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
@@ -284,7 +284,7 @@
       "type": "Feature",
       "properties": {
         "name": "Bédier–Oudiné (13e)",
-        "label": "Verified",
+        "label": "Compliant",
         "verification_status": "verified",
         "verification_basis": "Identified as OAP n°7 (Bédier–Oudiné, XIIIe) in the Paris PLU bioclimatique report; it supports upgrading the area with improved connections and local quality-of-life goals.",
         "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
