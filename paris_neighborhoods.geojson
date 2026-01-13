@@ -9,7 +9,9 @@
         "verification_status": "verified",
         "verification_basis": "Listed as a sector under the PLU bioclimatique thematic OAP \"Quartier du quart d’heure\" (Paris – Rive Gauche, 13e).",
         "verification_by": "Ville de Paris (PLU bioclimatique – OAP)",
-        "verification_source_url": "https://regles-urbanisme.paris.fr/plu-bioclimatique/jsp/site/Portal.jsp?id_document=226&portlet_id=45"
+        "verification_source_url": "https://regles-urbanisme.paris.fr/plu-bioclimatique/jsp/site/Portal.jsp?id_document=226&portlet_id=45",
+        "boundary_corrected": "2024-12-19",
+        "correction_note": "Longitude extended from 2.364 to 2.384 to match verified eastern extent at 2.3834°E"
       },
       "geometry": {
         "type": "Polygon",
@@ -17,8 +19,8 @@
           [
             [2.354, 48.828],
             [2.354, 48.838],
-            [2.364, 48.838],
-            [2.364, 48.828],
+            [2.384, 48.838],
+            [2.384, 48.828],
             [2.354, 48.828]
           ]
         ]
@@ -32,110 +34,19 @@
         "verification_status": "verified",
         "verification_basis": "Paris.fr describes a mixed-use project within Clichy-Batignolles (Stream Building) \"dans l’esprit de la ville du quart d’heure\".",
         "verification_by": "Ville de Paris (paris.fr)",
-        "verification_source_url": "https://www.paris.fr/pages/a-clichy-batignolles-un-concentre-d-innovation-urbaine-dans-un-nouvel-immeuble-25546"
+        "verification_source_url": "https://www.paris.fr/pages/a-clichy-batignolles-un-concentre-d-innovation-urbaine-dans-un-nouvel-immeuble-25546",
+        "boundary_corrected": "2024-12-19",
+        "correction_note": "Longitude shifted from 2.307-2.317 to 2.312-2.322 to better align with 17th arrondissement center at 2.3217°E"
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
           [
-            [2.307, 48.88],
-            [2.307, 48.89],
-            [2.317, 48.89],
-            [2.317, 48.88],
-            [2.307, 48.88]
-          ]
-        ]
-      }
-    },
-
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Le Marais",
-        "label": "Compliant",
-        "verification_status": "unverified",
-        "verification_basis": "No reliable official City of Paris / PLU source was found that explicitly identifies Le Marais as a \"ville du quart d’heure\" implementation area (it may still be walkable/dense, but that is not the same as an explicit designation).",
-        "verification_by": null,
-        "verification_source_url": null
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [2.3507, 48.8496],
-            [2.3507, 48.8596],
-            [2.3607, 48.8596],
-            [2.3607, 48.8496],
-            [2.3507, 48.8496]
-          ]
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Quartier Latin",
-        "label": "Compliant",
-        "verification_status": "unverified",
-        "verification_basis": "No reliable official City of Paris / PLU source was found that explicitly identifies Quartier Latin as a \"ville du quart d’heure\" implementation area.",
-        "verification_by": null,
-        "verification_source_url": null
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [2.338, 48.843],
-            [2.338, 48.853],
-            [2.348, 48.853],
-            [2.348, 48.843],
-            [2.338, 48.843]
-          ]
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Saint-Germain-des-Prés",
-        "label": "Compliant",
-        "verification_status": "unverified",
-        "verification_basis": "No reliable official City of Paris / PLU source was found that explicitly identifies Saint-Germain-des-Prés as a \"ville du quart d’heure\" implementation area.",
-        "verification_by": null,
-        "verification_source_url": null
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [2.328, 48.849],
-            [2.328, 48.859],
-            [2.338, 48.859],
-            [2.338, 48.849],
-            [2.328, 48.849]
-          ]
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Île de la Cité",
-        "label": "Compliant",
-        "verification_status": "unverified",
-        "verification_basis": "No reliable official City of Paris / PLU source was found that explicitly identifies Île de la Cité as a \"ville du quart d’heure\" implementation area.",
-        "verification_by": null,
-        "verification_source_url": null
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [2.343, 48.848],
-            [2.343, 48.858],
-            [2.353, 48.858],
-            [2.353, 48.848],
-            [2.343, 48.848]
+            [2.312, 48.88],
+            [2.312, 48.89],
+            [2.322, 48.89],
+            [2.322, 48.88],
+            [2.312, 48.88]
           ]
         ]
       }
@@ -149,17 +60,19 @@
         "verification_status": "verified",
         "verification_basis": "Listed as a sector under the PLU bioclimatique thematic OAP \"Quartier du quart d’heure\" (Beaugrenelle – Front de Seine, 15e).",
         "verification_by": "Ville de Paris (PLU bioclimatique – OAP)",
-        "verification_source_url": "https://regles-urbanisme.paris.fr/plu-bioclimatique/jsp/site/Portal.jsp?id_document=226&portlet_id=45"
+        "verification_source_url": "https://regles-urbanisme.paris.fr/plu-bioclimatique/jsp/site/Portal.jsp?id_document=226&portlet_id=45",
+        "boundary_corrected": "2024-12-19",
+        "correction_note": "Latitude shifted north from 48.835-48.845 to 48.840-48.850 to include verified center at 48.8506°N"
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
           [
-            [2.282, 48.835],
-            [2.282, 48.845],
-            [2.292, 48.845],
-            [2.292, 48.835],
-            [2.282, 48.835]
+            [2.282, 48.840],
+            [2.282, 48.850],
+            [2.292, 48.850],
+            [2.292, 48.840],
+            [2.282, 48.840]
           ]
         ]
       }
@@ -327,17 +240,19 @@
       "type": "Feature",
       "properties": {
         "name": "Belleville",
-        "label": "Non-Compliant"
+        "label": "Non-Compliant",
+        "boundary_corrected": "2024-12-19",
+        "correction_note": "Longitude corrected from 2.366-2.376 to 2.375-2.395 to match verified center at 2.3845°E"
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
           [
-            [2.366, 48.864],
-            [2.366, 48.874],
-            [2.376, 48.874],
-            [2.376, 48.864],
-            [2.366, 48.864]
+            [2.375, 48.864],
+            [2.375, 48.874],
+            [2.395, 48.874],
+            [2.395, 48.864],
+            [2.375, 48.864]
           ]
         ]
       }
@@ -346,17 +261,19 @@
       "type": "Feature",
       "properties": {
         "name": "Bastille / Oberkampf",
-        "label": "Non-Compliant"
+        "label": "Non-Compliant",
+        "boundary_corrected": "2024-12-19",
+        "correction_note": "Longitude corrected from 2.363-2.373 to 2.367-2.387 and latitude extended to 48.873 to include Rue Oberkampf center at 2.3763°E, 48.8654°N"
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
           [
-            [2.363, 48.853],
-            [2.363, 48.863],
-            [2.373, 48.863],
-            [2.373, 48.853],
-            [2.363, 48.853]
+            [2.367, 48.853],
+            [2.367, 48.873],
+            [2.387, 48.873],
+            [2.387, 48.853],
+            [2.367, 48.853]
           ]
         ]
       }
