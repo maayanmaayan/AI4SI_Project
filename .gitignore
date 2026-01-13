@@ -6,3 +6,37 @@ node_modules
 .ruff_cache
 .vscode
 __pycache__
+
+# Data files (large, should use DVC or similar for versioning)
+data/raw/osm/*
+data/raw/census/*
+data/processed/*
+!data/processed/.gitkeep
+!data/processed/**/.gitkeep
+
+# Model checkpoints (large files)
+models/checkpoints/*
+!models/checkpoints/.gitkeep
+
+# Experiment outputs
+experiments/runs/*
+!experiments/runs/.gitkeep
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Python cache
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

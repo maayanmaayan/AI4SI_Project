@@ -4,9 +4,9 @@
 
 This project develops a Tabular Transformer (FT-Transformer)-based AI model to support data-driven implementation of the 15-minute city model in existing urban contexts. The system addresses the challenge of identifying service gaps and recommending appropriate interventions to improve walkability and accessibility in neighborhoods that do not currently meet 15-minute city principles.
 
-**Core Value Proposition**: The model learns implicit service distribution patterns from neighborhoods already designed according to 15-minute city principles, then uses these learned patterns to identify gaps and predict the most appropriate service category interventions for locations in non-compliant neighborhoods. This approach enables scalable, adaptive decision-making in urban renewal processes without requiring explicit rule-based planning systems.
+**Core Value Proposition**: The model learns implicit service distribution patterns by training exclusively on neighborhoods already designed according to 15-minute city principles. It uses a distance-based loss function that measures how close the predicted service category is to the nearest actual service of that type. The model then applies these learned patterns to identify gaps and predict the most appropriate service category interventions for locations in non-compliant neighborhoods. Model success is validated by demonstrating significantly lower loss (shorter distances to services) on 15-minute neighborhoods compared to non-compliant ones, indicating the model has learned to recognize optimal service distribution patterns.
 
-**MVP Goal**: Build a working end-to-end system with a Tabular Transformer (FT-Transformer) that predicts probability distributions over service categories for intervention recommendations, validated against 15-minute city principles, within a 2-week timeline.
+**MVP Goal**: Build a working end-to-end system with a Tabular Transformer (FT-Transformer) that trains exclusively on 15-minute city compliant neighborhoods, predicts probability distributions over service categories using distance-based loss, and validates success by comparing loss between compliant and non-compliant neighborhoods, within a 2-week timeline.
 
 ## 2. Mission
 
@@ -45,11 +45,13 @@ This project develops a Tabular Transformer (FT-Transformer)-based AI model to s
 
 - ✅ Single robust Tabular Transformer (FT-Transformer) model
 - ✅ Feature extraction pipeline for 30+ urban/demographic features
-- ✅ Data collection from OSM and Census sources for 6 neighborhoods (3 compliant + 3 non-compliant)
+- ✅ Data collection from OSM and Census sources for Paris neighborhoods (neighborhood boundaries and labels defined in `paris_neighborhoods.geojson`)
+- ✅ Training exclusively on 15-minute city compliant neighborhoods
+- ✅ Distance-based loss function measuring distance from predicted service category to nearest actual service
 - ✅ Training on 8 NEXI service categories (Education, Entertainment, Grocery, Health, Posts and banks, Parks, Sustenance, Shops)
 - ✅ Probability vector output over service categories
-- ✅ Model validation against 15-minute city principles
-- ✅ Comparative analysis between compliant and non-compliant neighborhoods
+- ✅ Model validation by comparing loss between compliant and non-compliant neighborhoods
+- ✅ Statistical validation that compliant neighborhoods have significantly lower loss
 - ✅ Basic evaluation metrics and visualization tools
 
 **Technical**:
@@ -61,10 +63,12 @@ This project develops a Tabular Transformer (FT-Transformer)-based AI model to s
 
 **Data**:
 
-- ✅ OSM data extraction for service presence/absence
+- ✅ OSM data extraction for service presence/absence and geospatial locations
 - ✅ Census data integration for demographic features
 - ✅ Feature engineering for walkability metrics
-- ✅ Train/validation/test splits with proper stratification
+- ✅ Neighborhood boundaries and compliance labels from `paris_neighborhoods.geojson`
+- ✅ Train/validation/test splits from compliant neighborhoods only
+- ✅ Test set includes both compliant and non-compliant neighborhoods for validation
 
 ### Out of Scope (Future Phases)
 
@@ -84,7 +88,7 @@ This project develops a Tabular Transformer (FT-Transformer)-based AI model to s
 
 **Advanced Features**:
 
-- ❌ Multi-label predictions (MVP: single best intervention)
+- ⚠️ Multi-label predictions (optional enhancement: predict multiple services simultaneously, but MVP focuses on single best intervention)
 - ❌ Confidence intervals or uncertainty quantification
 - ❌ Interactive visualization dashboard
 - ❌ Integration with GIS software
@@ -111,28 +115,33 @@ This project develops a Tabular Transformer (FT-Transformer)-based AI model to s
 
 ### High-Level Architecture
 
-The system uses a **single-stage Tabular Transformer (FT-Transformer)**:
+The system uses a **single-stage Tabular Transformer (FT-Transformer)** with an exemplar-based learning approach:
 
 **Model Training & Prediction**
 
-- Input: Feature vectors from all neighborhoods (compliant + non-compliant)
-- Process: FT-Transformer learns complex, context-dependent feature interactions and predicts interventions
+- Input: Feature vectors from 15-minute city compliant neighborhoods only (training set)
+- Process: FT-Transformer learns complex, context-dependent feature interactions and service distribution patterns from exemplar neighborhoods
 - Output: Probability vector over 8 service categories indicating most appropriate intervention
-- Learning Approach: Model implicitly learns service distribution patterns from compliant neighborhoods through training on all data, with neighborhood compliance status as a feature or through stratified training
+- Loss Function: Distance-based loss measuring the distance from the predicted service category to the nearest actual service of that type (using network-based walking distance via OSMnx)
+- Learning Approach: Model learns optimal service distribution patterns directly from compliant neighborhoods, then generalizes to identify gaps in non-compliant neighborhoods
+- Validation: Model success measured by significantly lower loss (shorter distances) on compliant neighborhoods compared to non-compliant ones
 
 ### Architecture Diagram
 
 ```mermaid
 flowchart TD
     subgraph DataCollection["Data Collection Stage"]
+        GeoJSON[paris_neighborhoods.geojson<br/>Neighborhood Boundaries & Labels] --> Split[Split Neighborhoods]
         OSM[OSM Data] --> Features1[Feature Extraction]
         Census[Census Data] --> Features1
-        Features1 --> AllData["All Neighborhoods<br/>(Compliant + Non-Compliant)"]
+        Features1 --> CompliantData["15-Minute Compliant<br/>Neighborhoods"]
+        Features1 --> NonCompliantData["Non-Compliant<br/>Neighborhoods"]
     end
     
     subgraph Training["Model Training"]
-        AllData --> TTModel[Tabular Transformer<br/>(FT-Transformer)]
-        TTModel --> TrainedModel[Trained Model]
+        CompliantData --> TTModel[Tabular Transformer<br/>(FT-Transformer)]
+        TTModel --> DistanceLoss[Distance-Based Loss<br/>Distance to Nearest Service]
+        DistanceLoss --> TrainedModel[Trained Model]
     end
     
     subgraph Prediction["Prediction"]
@@ -141,8 +150,11 @@ flowchart TD
     end
     
     subgraph Evaluation["Evaluation"]
-        ProbVector --> Validation[Validate Against<br/>15-Minute Principles]
-        ProbVector --> Comparison[Comparative Analysis<br/>Compliant vs Non-Compliant]
+        ProbVector --> CompliantEval[Measure Loss on<br/>Compliant Neighborhoods]
+        ProbVector --> NonCompliantEval[Measure Loss on<br/>Non-Compliant Neighborhoods]
+        CompliantEval --> Comparison[Statistical Comparison<br/>Compliant vs Non-Compliant]
+        NonCompliantEval --> Comparison
+        Comparison --> Validation[Validate: Lower Loss<br/>on Compliant Neighborhoods]
         ProbVector --> Interpretability[Attention & SHAP<br/>Interpretability]
     end
     
@@ -203,31 +215,38 @@ AI4SI_Project/
 │   └── fixtures/
 ├── requirements.txt
 ├── README.md
-└── CURSOR.md
+├── PRD.md
+├── CURSOR.md
+└── paris_neighborhoods.geojson  # Paris neighborhood boundaries and compliance labels
 ```
 
 ### Key Design Patterns
 
-**1. Single-Stage Transformer Pattern**
+**1. Exemplar-Based Learning Pattern**
 
-- FT-Transformer learns patterns directly from all data
-- Model implicitly captures differences between compliant and non-compliant neighborhoods
+- FT-Transformer learns patterns exclusively from 15-minute city compliant neighborhoods
+- Model learns optimal service distribution patterns directly from exemplar neighborhoods
 - Simpler architecture enables faster iteration and debugging
+- Clear validation hypothesis: model should perform better (lower loss) on neighborhoods similar to training data
 
 **2. Feature Engineering Pipeline**
 
 - Modular feature computation (demographics, built form, services, walkability)
 - Reproducible feature extraction with versioning
 
-**3. Weak Supervision Pattern**
+**3. Distance-Based Loss Pattern**
 
-- Use continuous gap scores derived from OSM data as soft labels
-- Model learns to refine these scores based on learned patterns
+- Loss function measures actual distance from predicted service category to nearest service of that type
+- Uses network-based walking distance (via OSMnx) for realistic accessibility measurement
+- Loss directly relates to 15-minute city principles (shorter distances = better alignment)
+- Hybrid approach: combines distance-based loss with classification component for robust learning
 
 **4. Comparative Evaluation Pattern**
 
-- Always evaluate predictions in context of neighborhood compliance status
-- Validate that model outputs differ appropriately between compliant/non-compliant areas
+- Evaluate model on both compliant and non-compliant neighborhoods
+- Validate that loss (distance to services) is significantly lower on compliant neighborhoods
+- Statistical validation ensures model has learned to recognize optimal service distribution patterns
+- Multi-service prediction capability allows predicting multiple needed services simultaneously
 
 ## 7. Tools/Features
 
@@ -246,31 +265,37 @@ AI4SI_Project/
 
 **2. Tabular Transformer Model (FT-Transformer)**
 
-- **Purpose**: Learn complex, context-dependent service distribution patterns and predict intervention recommendations
+- **Purpose**: Learn complex, context-dependent service distribution patterns from exemplar neighborhoods and predict intervention recommendations
 - **Operations**:
-  - Train on feature vectors from all neighborhoods
+  - Train exclusively on feature vectors from 15-minute city compliant neighborhoods
   - Learn feature interactions via multi-head self-attention
   - Predict probability distribution over 8 NEXI service categories
+  - Use distance-based loss: measure distance from predicted service to nearest actual service of that type
+  - Support multi-service prediction (predict multiple needed services simultaneously)
   - Output attention patterns and SHAP values for interpretability
-- **Key Features**: Attention-based modeling for tabular features, strong performance on complex tabular relationships, interpretable via attention maps
+- **Key Features**: Attention-based modeling for tabular features, exemplar-based learning, distance-based loss for domain-relevant optimization, interpretable via attention maps
 
 **3. Validation System**
 
-- **Purpose**: Validate model outputs against 15-minute city principles
+- **Purpose**: Validate model outputs against 15-minute city principles using distance-based metrics
 - **Operations**:
-  - Compare predictions between compliant and non-compliant neighborhoods
-  - Verify that compliant neighborhoods receive lower intervention probabilities
-  - Check alignment with 15-minute accessibility thresholds
-- **Key Features**: Principle-based evaluation, comparative analysis, statistical validation
+  - Measure loss (distance to nearest service) on both compliant and non-compliant neighborhoods
+  - Verify that compliant neighborhoods have significantly lower loss than non-compliant ones
+  - Statistical validation (e.g., t-test) to ensure difference is significant
+  - Check alignment with 15-minute accessibility thresholds (normalize distances by 15-minute walk distance ≈ 1.2 km)
+- **Key Features**: Distance-based evaluation, comparative analysis, statistical validation, domain-relevant metrics
 
 **4. Evaluation Metrics**
 
-- **Purpose**: Measure model performance and alignment with goals
+- **Purpose**: Measure model performance and alignment with goals using distance-based metrics
 - **Operations**:
-  - Compute probability distribution metrics (entropy, top-k accuracy)
-  - Measure alignment with 15-minute principles (coverage scores, walk time targets)
-  - Compare distributions between neighborhood types
-- **Key Features**: Domain-specific metrics, interpretable scores, visualization support
+  - Compute distance-based loss (distance to nearest service of predicted category)
+  - Normalize distances by 15-minute walk distance (≈ 1.2 km) for comparability
+  - Measure alignment with 15-minute principles (percentage of predictions within 15-minute threshold)
+  - Compare loss distributions between compliant and non-compliant neighborhoods
+  - Statistical tests (t-test, Mann-Whitney U) to validate significant differences
+  - Probability distribution metrics (entropy, top-k accuracy) as secondary metrics
+- **Key Features**: Domain-specific metrics, interpretable scores, statistical validation, visualization support
 
 ## 8. Technology Stack
 
@@ -292,6 +317,7 @@ AI4SI_Project/
 - **OSM Data**: Overpass API or osmnx library
 - **Census Data**: National/regional census APIs or downloaded files
 - **Geospatial**: Shapely, Fiona for geometry operations
+- **Distance Calculation**: OSMnx for network-based walking distance calculations (not Euclidean)
 
 ### Evaluation & Visualization
 
@@ -354,13 +380,13 @@ AI4SI_Project/
 
 The MVP is successful if:
 
-1. ✅ Model completes training without errors
+1. ✅ Model completes training without errors on compliant neighborhoods only
 2. ✅ Model outputs probability distributions over 8 service categories
-3. ✅ Model predictions show systematic differences between compliant and non-compliant neighborhoods
-4. ✅ Compliant neighborhoods receive lower intervention probabilities than non-compliant (validation)
-5. ✅ Model recommendations align with 15-minute city accessibility principles
+3. ✅ Distance-based loss function correctly computes distances to nearest services
+4. ✅ Model loss is significantly lower on compliant neighborhoods compared to non-compliant ones (statistical validation)
+5. ✅ Model recommendations align with 15-minute city accessibility principles (distances within 15-minute threshold)
 6. ✅ Feature extraction pipeline produces consistent, reproducible features
-7. ✅ Evaluation metrics demonstrate model learning (not random predictions)
+7. ✅ Evaluation metrics demonstrate model learning (not random predictions, clear separation between neighborhood types)
 
 ### Functional Requirements
 
@@ -373,15 +399,17 @@ The MVP is successful if:
 
 **Model Training**:
 
-- ✅ Train FT-Transformer on all neighborhoods
-- ✅ Model learns context-dependent feature interactions and neighborhood-specific patterns
+- ✅ Train FT-Transformer exclusively on 15-minute city compliant neighborhoods
+- ✅ Model learns context-dependent feature interactions and optimal service distribution patterns
+- ✅ Distance-based loss function implemented (network-based walking distance via OSMnx)
 - ✅ Training converges (validation loss decreases; metrics improve)
 - ✅ Model checkpoints saved and loadable (`.pt`)
 
 **Evaluation**:
 
-- ✅ Comparative analysis shows expected differences between neighborhood types
-- ✅ Validation confirms alignment with 15-minute principles
+- ✅ Loss (distance to services) measured on both compliant and non-compliant neighborhoods
+- ✅ Statistical validation confirms significantly lower loss on compliant neighborhoods
+- ✅ Validation confirms alignment with 15-minute principles (distances within threshold)
 - ✅ Feature importance and SHAP values provide interpretable insights
 - ✅ Results are reproducible (same random seeds produce same outputs)
 
@@ -406,12 +434,14 @@ The MVP is successful if:
 
 **Deliverables**:
 
-- ✅ OSM data extraction scripts
+- ✅ OSM data extraction scripts (including service locations for distance calculations)
 - ✅ Census data integration
 - ✅ Feature engineering pipeline (all 30+ features)
-- ✅ Feature extraction for 6 neighborhoods
+- ✅ Load neighborhood boundaries and labels from `paris_neighborhoods.geojson`
+- ✅ Feature extraction for all Paris neighborhoods (both compliant and non-compliant)
 - ✅ Data validation and quality checks
-- ✅ Train/validation/test splits
+- ✅ Train/validation/test splits from compliant neighborhoods only
+- ✅ Test set includes both compliant and non-compliant neighborhoods for validation
 
 **Validation Criteria**:
 
@@ -426,18 +456,21 @@ The MVP is successful if:
 **Deliverables**:
 
 - ✅ FT-Transformer model implementation (PyTorch)
+- ✅ Distance-based loss function implementation (network-based walking distance)
 - ✅ Training script with hyperparameter tuning
-- ✅ Model training on all neighborhoods
+- ✅ Model training exclusively on compliant neighborhoods
 - ✅ Probability distribution outputs
+- ✅ Multi-service prediction capability (optional)
 - ✅ Attention analysis utilities (and optional SHAP)
 - ✅ Trained model checkpoint (`.pt`)
 
 **Validation Criteria**:
 
 - Model outputs valid probability distributions (sum to 1, non-negative)
-- Predictions differ between compliant and non-compliant neighborhoods
+- Distance-based loss function correctly computes distances to nearest services
 - Training metrics improve over baseline
-- Model training completes successfully
+- Model training completes successfully on compliant neighborhoods
+- Loss decreases during training, indicating learning of service distribution patterns
 
 ### Phase 3: Evaluation & Validation (Days 11-12)
 
@@ -445,16 +478,18 @@ The MVP is successful if:
 
 **Deliverables**:
 
-- ✅ Comparative analysis (compliant vs non-compliant)
-- ✅ Principle-based validation metrics
+- ✅ Loss measurement on both compliant and non-compliant neighborhoods
+- ✅ Statistical validation (t-test, Mann-Whitney U) showing significantly lower loss on compliant neighborhoods
+- ✅ Principle-based validation metrics (percentage within 15-minute threshold)
 - ✅ Attention analysis and (optional) SHAP visualization
 - ✅ Results documentation and visualization
-- ✅ Final model evaluation report
+- ✅ Final model evaluation report with statistical significance tests
 
 **Validation Criteria**:
 
-- Compliant neighborhoods show lower intervention needs
-- Model recommendations align with 15-minute accessibility targets
+- Compliant neighborhoods show significantly lower loss (shorter distances to services)
+- Statistical tests confirm significant difference between compliant and non-compliant neighborhoods
+- Model recommendations align with 15-minute accessibility targets (distances within threshold)
 - Results are statistically significant and interpretable
 
 ### Phase 4: Documentation & Refinement (Days 13-14)
@@ -530,13 +565,16 @@ The MVP is successful if:
 
 ### Risk 3: Validation Doesn't Align with 15-Minute Principles
 
-**Risk**: Model predictions don't match expected 15-minute city patterns
+**Risk**: Model loss doesn't show significant difference between compliant and non-compliant neighborhoods, or distances don't align with 15-minute thresholds
 
 **Mitigation**:
 
-- Define clear validation criteria upfront
+- Define clear validation criteria upfront (statistical significance thresholds)
 - Use rule-based baselines for comparison
+- Ensure distance calculations use network-based walking distance, not Euclidean
+- Normalize distances by 15-minute walk distance for better interpretability
 - Iterate on model architecture and training if validation fails
+- Consider hybrid loss function (distance + classification) if pure distance-based loss is unstable
 - Document any discrepancies and analyze causes
 
 ### Risk 4: Computational Resources Insufficient
@@ -603,17 +641,25 @@ See user-provided CSV with 30+ features including:
 
 ### Learning Approach
 
-The model uses a **weakly supervised / rule-guided learning** approach:
+The model uses an **exemplar-based learning** approach with **distance-based supervision**:
 
-- Training signals are derived from rule-based gap scores reflecting deviations from 15-minute city targets
-- Model learns implicit service distribution patterns from neighborhoods designed according to 15-minute city principles
-- These patterns serve as reference structures, allowing the model to identify which service additions would most effectively move a given location toward a similar walkable configuration
-- Compliant neighborhoods are used as reference cases to validate that the model assigns lower intervention probabilities where service coverage is already adequate
+- Model trains exclusively on 15-minute city compliant neighborhoods to learn optimal service distribution patterns
+- Training uses distance-based loss: for each prediction, measure the distance from the predicted service category to the nearest actual service of that type
+- Distance calculations use network-based walking distance (via OSMnx) for realistic accessibility measurement
+- Loss function combines distance-based component with classification component for robust learning
+- Model learns implicit service distribution patterns from exemplar neighborhoods, then generalizes to identify gaps in non-compliant neighborhoods
+- Validation: Model success is measured by significantly lower loss (shorter distances) on compliant neighborhoods compared to non-compliant ones, indicating the model has learned to recognize optimal patterns
+- Multi-service prediction capability allows predicting multiple needed services simultaneously for more comprehensive gap analysis
 
 ### Data Collection Strategy
 
-- **Neighborhood Selection**: Choose a city and separate it into neighborhoods that are planned by the 15-minute model (3 neighborhoods) and those that aren't (3 neighborhoods)
-- **Selection Method**: Use existing urban planning documents to identify compliant vs non-compliant neighborhoods
+- **City Focus**: Paris, France
+- **Neighborhood Selection**: Neighborhood boundaries and compliance labels are defined in `paris_neighborhoods.geojson`
+  - Compliant neighborhoods: Verified 15-minute city neighborhoods (e.g., Paris Rive Gauche, Clichy-Batignolles, Beaugrenelle)
+  - Non-compliant neighborhoods: Neighborhoods not following 15-minute city principles (e.g., Montmartre, Belleville, La Défense)
+- **Selection Method**: Neighborhood labels based on official Paris urban planning documents (PLU bioclimatique, paris.fr)
 - **Feature Collection**: Collect features uniformly for all locations in both types of neighborhoods
-- **Label Creation**: Use existing OSM data to verify service presence/absence, create soft/heuristic labels based on gap between what exists and what should exist according to 15-minute city principles
+- **Training Strategy**: Train model exclusively on compliant neighborhoods
+- **Loss Calculation**: Use OSM data to compute actual distances from each location to nearest services of each category (network-based walking distance)
+- **Validation Strategy**: Test model on both compliant and non-compliant neighborhoods; validate that loss is significantly lower on compliant neighborhoods
 

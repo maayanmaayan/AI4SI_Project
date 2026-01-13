@@ -1,6 +1,6 @@
 # AI for Social Good - 15-Minute City Service Gap Prediction
 
-This project implements a Tabular Transformer (FT-Transformer)-based AI model to support data-driven implementation of the 15-minute city model. The system identifies service gaps and recommends appropriate interventions to improve walkability and accessibility in neighborhoods.
+This project implements a Tabular Transformer (FT-Transformer)-based AI model to support data-driven implementation of the 15-minute city model. The system learns service distribution patterns from neighborhoods already designed according to 15-minute city principles, then identifies service gaps and recommends appropriate interventions to improve walkability and accessibility in other neighborhoods.
 
 ## Project Overview
 
@@ -9,6 +9,9 @@ This is an AI/ML project built with Cursor that focuses on:
 - **Model**: Tabular Transformer (FT-Transformer) for tabular data classification
 - **Input**: Map location coordinates + 30+ urban/demographic features
 - **Output**: Probability distribution over 8 NEXI service categories (Education, Entertainment, Grocery, Health, Posts and banks, Parks, Sustenance, Shops)
+- **Training Strategy**: Model trains exclusively on 15-minute city compliant neighborhoods to learn optimal service distribution patterns
+- **Loss Function**: Distance-based loss measuring the distance from predicted service category to the nearest actual service of that type
+- **Validation**: Model success measured by significantly lower loss on 15-minute neighborhoods compared to non-compliant neighborhoods
 
 ## What's Included
 
@@ -21,10 +24,10 @@ This is an AI/ML project built with Cursor that focuses on:
 
 1. **Review the PRD** — Read `PRD.md` for comprehensive project requirements and architecture
 2. **Set up the environment** — Install dependencies for ML development (PyTorch, FT-Transformer, data processing libraries, etc.)
-3. **Data collection** — Extract OSM and Census data for 6 neighborhoods (3 compliant + 3 non-compliant with 15-minute city principles)
-4. **Feature engineering** — Build pipeline to compute 30+ urban/demographic features
-5. **Model training** — Train the FT-Transformer model to predict service category interventions
-6. **Evaluation** — Validate model against 15-minute city principles and compare predictions across neighborhood types
+3. **Data collection** — Extract OSM and Census data for Paris neighborhoods. Neighborhood boundaries and compliance labels are defined in `paris_neighborhoods.geojson` (includes verified 15-minute neighborhoods and non-compliant neighborhoods)
+4. **Feature engineering** — Build pipeline to compute 30+ urban/demographic features for all locations
+5. **Model training** — Train the FT-Transformer model exclusively on 15-minute city compliant neighborhoods using distance-based loss
+6. **Evaluation** — Validate model by comparing loss (distance to nearest service) between 15-minute and non-compliant neighborhoods
 
 See `PRD.md` for detailed implementation phases and timeline (2-week MVP).
 
@@ -32,11 +35,11 @@ See `PRD.md` for detailed implementation phases and timeline (2-week MVP).
 
 When working with Cursor on this AI project:
 
-1. **Data Collection** — Extract OSM data (services, buildings, walkability) and Census data (demographics)
-2. **Feature Engineering** — Compute 30+ features including demographics, built form, services, and walkability metrics
-3. **Model Training** — Train the FT-Transformer on all neighborhoods
-4. **Hyperparameter Tuning** — Optimize model performance with cross-validation
-5. **Evaluation** — Validate against 15-minute city principles, compare compliant vs non-compliant neighborhoods
+1. **Data Collection** — Extract OSM data (services, buildings, walkability) and Census data (demographics) for Paris neighborhoods defined in `paris_neighborhoods.geojson`
+2. **Feature Engineering** — Compute 30+ features including demographics, built form, services, and walkability metrics for all locations
+3. **Model Training** — Train the FT-Transformer exclusively on 15-minute city compliant neighborhoods using distance-based loss (distance to nearest service of predicted category)
+4. **Hyperparameter Tuning** — Optimize model performance with cross-validation on compliant neighborhoods
+5. **Evaluation** — Validate model by measuring loss on both 15-minute and non-compliant neighborhoods; success is indicated by significantly lower loss on compliant neighborhoods
 6. **Interpretability** — Analyze attention patterns and SHAP values to understand model decisions
 
 ## Project Structure
@@ -70,7 +73,8 @@ AI4SI_Project/
 ├── requirements.txt            # Python dependencies
 ├── README.md                   # This file
 ├── PRD.md                      # Product Requirements Document
-└── CURSOR.md                   # Project documentation for AI assistant
+├── CURSOR.md                   # Project documentation for AI assistant
+└── paris_neighborhoods.geojson # Paris neighborhood boundaries and compliance labels
 ```
 
 ## Cursor Commands

@@ -4,12 +4,14 @@
 
 ## Project Overview
 
-This project implements a Tabular Transformer (FT-Transformer)-based classification model that:
+This project implements a Tabular Transformer (FT-Transformer)-based model that:
 - **Input**: Map location (coordinates) + 30+ urban/demographic features
 - **Output**: Probability distribution over 8 NEXI service categories
-- **Task**: Multi-class classification (service gap prediction)
+- **Task**: Service gap prediction with distance-based learning
 - **Domain**: 15-minute city implementation using OpenStreetMap and Census data
-- **Learning Approach**: Weakly supervised / rule-guided learning - learns patterns from compliant neighborhoods
+- **Learning Approach**: Exemplar-based learning - trains exclusively on 15-minute city compliant neighborhoods to learn optimal service distribution patterns
+- **Loss Function**: Distance-based loss measuring network-based walking distance from predicted service category to nearest actual service
+- **Validation**: Model success validated by significantly lower loss (shorter distances) on compliant neighborhoods compared to non-compliant ones
 
 ## Tech Stack
 
@@ -123,10 +125,12 @@ mypy src/
 <!-- Document the data flow and preprocessing steps -->
 
 ### Data Sources
-- **OSM Data**: OpenStreetMap data for services, buildings, walkability features
+- **OSM Data**: OpenStreetMap data for services, buildings, walkability features, and network-based distance calculations
 - **Census Data**: Demographics, socioeconomic indicators, population data
-- **Neighborhood Boundaries**: Geographic boundaries for 6 neighborhoods (3 compliant + 3 non-compliant with 15-minute city principles)
-- **Labels**: Continuous gap scores derived from OSM data (weak supervision)
+- **Neighborhood Boundaries**: Geographic boundaries and compliance labels from `paris_neighborhoods.geojson` (6 neighborhoods: 3 compliant + 3 non-compliant)
+- **Training Data**: Exclusively from 15-minute city compliant neighborhoods
+- **Test Data**: Includes both compliant and non-compliant neighborhoods for validation
+- **Distance Calculations**: Network-based walking distance via OSMnx (not Euclidean)
 
 ### Feature Categories (30+ features)
 - **Demographics**: Population density, SES index, car ownership, children per capita, household size, elderly ratio
@@ -136,12 +140,15 @@ mypy src/
 - **Composite**: Essential services coverage, average walk time to essentials, 15-minute walk score
 
 ### Preprocessing Steps
-1. OSM data extraction (services, buildings, network)
-2. Census data integration
-3. Feature engineering (compute all 30+ features)
-4. Data validation and quality checks
-5. Normalization/scaling
-6. Train/validation/test split (stratified by neighborhood type)
+1. Load neighborhood boundaries and compliance labels from `paris_neighborhoods.geojson`
+2. OSM data extraction (services, buildings, network for distance calculations)
+3. Census data integration
+4. Feature engineering (compute all 30+ features)
+5. Extract service locations for distance-based loss calculations
+6. Data validation and quality checks
+7. Normalization/scaling
+8. Train/validation/test split from compliant neighborhoods only
+9. Test set includes both compliant and non-compliant neighborhoods for validation
 
 ## Model Architecture
 
@@ -149,31 +156,48 @@ mypy src/
 
 ### Tabular Transformer (FT-Transformer) Design
 - **Architecture**: FT-Transformer (single primary model)
-- **Input**: Tabular feature vectors (30+ features)
-- **Output**: Probability distribution over 8 NEXI service categories
-- **Learning Approach**: Weakly supervised / rule-guided learning; learns implicit patterns from compliant neighborhoods and predicts interventions for all locations
+- **Input**: Tabular feature vectors (30+ features) from 15-minute city compliant neighborhoods only (training)
+- **Output**: Probability distribution over 8 NEXI service categories (supports multi-service prediction)
+- **Learning Approach**: Exemplar-based learning - learns optimal service distribution patterns directly from compliant neighborhoods, then generalizes to identify gaps in non-compliant neighborhoods
 
 ### Training Configuration
 - **Model Type**: Transformer encoder over feature tokens (multi-class classification head)
-- **Loss Function**: Multi-class cross-entropy
+- **Training Data**: Exclusively from 15-minute city compliant neighborhoods
+- **Loss Function**: Distance-based loss (hybrid approach)
+  - Primary: Network-based walking distance from predicted service category to nearest actual service of that type (via OSMnx)
+  - Secondary: Classification component (cross-entropy) for robust learning
+  - Normalize distances by 15-minute walk distance (≈ 1.2 km) for comparability
 - **Hyperparameters**:
   - d_token, n_layers, n_heads, dropout, learning rate, weight decay, batch size
   - Tune via validation (or lightweight hyperparameter search)
 - **Early Stopping**: Based on validation loss with patience
-- **Class Imbalance**: Consider class weights or focal loss if needed
+- **Multi-Service Prediction**: Optional capability to predict multiple needed services simultaneously
 
 ## Evaluation Metrics
 
 <!-- Document the metrics used to evaluate the model -->
 
-- **Primary Metrics**: Accuracy, F1-score (macro/micro), Precision, Recall, Log Loss
+### Primary Metrics (Distance-Based)
+- **Distance-Based Loss**: Network-based walking distance from predicted service category to nearest actual service
+- **Normalized Distance**: Distances normalized by 15-minute walk distance (≈ 1.2 km)
+- **15-Minute Alignment**: Percentage of predictions within 15-minute threshold
+- **Comparative Loss**: Loss measured on both compliant and non-compliant neighborhoods
+- **Statistical Validation**: t-test or Mann-Whitney U test to verify significantly lower loss on compliant neighborhoods
+
+### Secondary Metrics (Classification)
+- **Accuracy, F1-score** (macro/micro), **Precision, Recall, Log Loss**
 - **Per-Class Metrics**: Confusion matrix, per-class F1 scores, precision/recall per service category
-- **Interpretability**: attention analysis (global patterns + local examples); SHAP (optional)
-- **Domain-Specific Validation**: 
-  - Alignment with 15-minute city principles
-  - Comparative analysis (compliant vs non-compliant neighborhoods)
-  - Intervention probability distributions
-- **Additional Analysis**: Probability distribution entropy, top-k accuracy
+- **Probability Distribution Metrics**: Entropy, top-k accuracy
+
+### Interpretability
+- **Attention Analysis**: Feature-token attention patterns (global patterns + local examples)
+- **SHAP Values**: Optional post-hoc explanations if feasible on trained model
+- **Feature Importance**: Analysis of which features drive predictions
+
+### Domain-Specific Validation
+- **Principle Alignment**: Validate that compliant neighborhoods have significantly lower loss (shorter distances)
+- **Comparative Analysis**: Statistical comparison of loss distributions between compliant and non-compliant neighborhoods
+- **Intervention Probability Distributions**: Analyze predicted service category distributions
 
 ## Code Conventions
 
@@ -182,19 +206,30 @@ mypy src/
 ### Python Style
 - Follow PEP 8
 - Use type hints where possible
-- Docstrings for all functions and classes
+- Docstrings for all functions and classes (Google or NumPy style)
 - Maximum line length: 100 characters
+- Use meaningful variable names that reflect domain concepts
 
 ### ML Code Patterns
-- Separate data, model, and training logic
-- Use configuration files for hyperparameters
-- Make code reproducible (set random seeds)
+- Separate data, model, and training logic (modular design)
+- Use configuration files (YAML/JSON) for hyperparameters
+- Make code reproducible (set random seeds for all stochastic operations)
 - Version control data preprocessing steps
+- Always validate data splits maintain neighborhood balance
+- Use OSMnx for network-based distance calculations (never Euclidean for walkability)
 
 ### File Naming
 - Use snake_case for Python files
 - Descriptive names that indicate purpose
 - Keep functions focused and modular
+- Prefix test files with `test_`
+- Use consistent naming: `*_extractor.py`, `*_loader.py`, `*_engineer.py` for data collection
+
+### Architecture Patterns
+- **Exemplar-Based Learning**: Always train exclusively on compliant neighborhoods
+- **Distance-Based Loss**: Use network-based walking distance via OSMnx
+- **Comparative Evaluation**: Always evaluate on both compliant and non-compliant neighborhoods
+- **Statistical Validation**: Include statistical tests (t-test, Mann-Whitney U) for validation
 
 ## Logging
 
@@ -244,11 +279,13 @@ tests/
 
 - Save experiment configurations (hyperparameters, feature sets, data splits)
 - Track hyperparameters and results (metrics, validation scores)
-- Version model checkpoints (`.pt`)
+- Version model checkpoints (`.pt`) with descriptive names including date/experiment ID
 - Document findings and insights (attention analysis, optional SHAP analysis)
 - Compare different hyperparameter configurations and model sizes
 - Track validation against 15-minute city principles
 - Document comparative analysis results (compliant vs non-compliant neighborhoods)
+- **Always record**: Distance-based loss on both neighborhood types, statistical test results, 15-minute alignment percentages
+- Store experiment outputs in `experiments/runs/` with timestamped directories
 
 ## Key Project Details
 
@@ -263,10 +300,12 @@ tests/
 - **Shops**: department_store, general, kiosk, mall, boutique, clothes, etc.
 
 ### Learning Approach
-- **Weakly Supervised / Rule-Guided Learning**: Training signals derived from rule-based gap scores
-- **Pattern Learning**: Model learns implicit service distribution patterns from compliant neighborhoods
+- **Exemplar-Based Learning**: Model trains exclusively on 15-minute city compliant neighborhoods to learn optimal service distribution patterns
+- **Distance-Based Supervision**: Loss function measures network-based walking distance from predicted service category to nearest actual service of that type
+- **Pattern Learning**: Model learns implicit service distribution patterns directly from exemplar neighborhoods, then generalizes to identify gaps in non-compliant neighborhoods
 - **Reference-Based**: Compliant neighborhoods serve as reference structures for identifying gaps
-- **Validation**: Model validated against 15-minute city principles, not just predictive accuracy
+- **Validation**: Model success measured by significantly lower loss (shorter distances) on compliant neighborhoods compared to non-compliant ones, indicating learned recognition of optimal patterns
+- **Multi-Service Prediction**: Optional capability to predict multiple needed services simultaneously for comprehensive gap analysis
 
 ### Timeline
 - **MVP**: 2 weeks (14 days)
@@ -274,3 +313,152 @@ tests/
 - **Phase 2**: Model Training & Evaluation (Days 6-10)
 - **Phase 3**: Evaluation & Validation (Days 11-12)
 - **Phase 4**: Documentation & Refinement (Days 13-14)
+
+## PIV Loop Conventions
+
+<!-- Standard conventions for Plan-Implement-Verify loops to ensure consistent implementation -->
+
+### PIV Loop Structure
+
+Every feature, component, or enhancement should follow the Plan-Implement-Verify pattern:
+
+1. **PLAN**: Define requirements, design approach, and success criteria
+2. **IMPLEMENT**: Write code following project conventions
+3. **VERIFY**: Test, validate, and document results
+
+### Planning Phase Standards
+
+**Before implementing any component:**
+- ✅ Review PRD.md for requirements and architecture patterns
+- ✅ Check CURSOR.md for conventions and existing patterns
+- ✅ Define clear success criteria (functional and validation)
+- ✅ Identify dependencies and integration points
+- ✅ Plan data flow and interfaces
+- ✅ Document assumptions and design decisions
+
+**For Data Components:**
+- Specify input/output formats
+- Define feature computation logic
+- Plan error handling and validation
+- Consider reproducibility (random seeds, versioning)
+
+**For Model Components:**
+- Define architecture and hyperparameters
+- Specify loss function (distance-based + classification)
+- Plan training data requirements (compliant neighborhoods only)
+- Define evaluation metrics (distance-based + statistical validation)
+
+**For Evaluation Components:**
+- Define metrics to compute
+- Plan statistical validation approach
+- Specify visualization requirements
+- Plan comparative analysis (compliant vs non-compliant)
+
+### Implementation Phase Standards
+
+**Code Quality:**
+- ✅ Follow PEP 8 and project style guidelines
+- ✅ Add type hints and docstrings
+- ✅ Use meaningful variable names
+- ✅ Keep functions focused and modular
+- ✅ Handle errors gracefully with appropriate logging
+
+**Architecture Adherence:**
+- ✅ Train exclusively on compliant neighborhoods (training set)
+- ✅ Use network-based distance calculations (OSMnx, not Euclidean)
+- ✅ Implement distance-based loss function
+- ✅ Support multi-service prediction capability
+- ✅ Include attention analysis and optional SHAP
+
+**Data Handling:**
+- ✅ Load neighborhood boundaries from `paris_neighborhoods.geojson`
+- ✅ Preserve raw data (never modify)
+- ✅ Version processed data
+- ✅ Use reproducible splits (save splits to `data/splits/`)
+- ✅ Validate data quality at each step
+
+**Model Training:**
+- ✅ Set random seeds for reproducibility
+- ✅ Save model checkpoints with descriptive names
+- ✅ Log training progress (loss, metrics per epoch)
+- ✅ Implement early stopping based on validation loss
+- ✅ Track experiment configurations
+
+### Verification Phase Standards
+
+**Testing Requirements:**
+- ✅ Unit tests for individual functions/components
+- ✅ Integration tests for pipelines
+- ✅ Model tests (forward pass, output shapes, gradient flow)
+- ✅ Test on both compliant and non-compliant neighborhoods
+
+**Validation Requirements:**
+- ✅ **Distance-Based Validation**: Measure loss on both neighborhood types
+- ✅ **Statistical Validation**: Perform t-test or Mann-Whitney U test
+- ✅ **Principle Validation**: Verify significantly lower loss on compliant neighborhoods
+- ✅ **15-Minute Alignment**: Check percentage within 15-minute threshold
+- ✅ **Reproducibility**: Verify same random seeds produce same results
+
+**Documentation Requirements:**
+- ✅ Update code comments and docstrings
+- ✅ Document any deviations from PRD or conventions
+- ✅ Record experiment results and insights
+- ✅ Update relevant sections of CURSOR.md if conventions change
+- ✅ Document statistical test results and validation outcomes
+
+### PIV Loop Checklist
+
+**Before starting any PIV loop:**
+- [ ] Read relevant sections of PRD.md
+- [ ] Review CURSOR.md conventions
+- [ ] Understand existing codebase patterns
+- [ ] Define clear success criteria
+
+**During implementation:**
+- [ ] Follow code conventions (PEP 8, type hints, docstrings)
+- [ ] Adhere to architecture patterns (exemplar-based learning, distance-based loss)
+- [ ] Write tests alongside implementation
+- [ ] Log important decisions and assumptions
+
+**After implementation:**
+- [ ] Run all relevant tests
+- [ ] Validate against success criteria
+- [ ] Perform statistical validation (if applicable)
+- [ ] Document results and insights
+- [ ] Update documentation if needed
+
+### Common PIV Loop Scenarios
+
+**Adding a New Feature:**
+1. **PLAN**: Define feature computation logic, input/output, validation
+2. **IMPLEMENT**: Add to `feature_engineer.py`, follow naming conventions
+3. **VERIFY**: Test computation, validate against manual calculations, check integration
+
+**Modifying Model Architecture:**
+1. **PLAN**: Define changes, impact on loss function, hyperparameters
+2. **IMPLEMENT**: Update `transformer.py`, maintain distance-based loss
+3. **VERIFY**: Test forward pass, validate training converges, compare metrics
+
+**Adding Evaluation Metric:**
+1. **PLAN**: Define metric computation, statistical validation approach
+2. **IMPLEMENT**: Add to `metrics.py` or `validate_principles.py`
+3. **VERIFY**: Test on known examples, validate statistical tests, document results
+
+**Data Pipeline Changes:**
+1. **PLAN**: Define preprocessing steps, data flow, validation checks
+2. **IMPLEMENT**: Update preprocessing scripts, maintain reproducibility
+3. **VERIFY**: Validate data quality, check splits, verify feature consistency
+
+### Standard Validation Workflow
+
+For any model or component that affects predictions:
+
+1. **Train on compliant neighborhoods only**
+2. **Evaluate on both compliant and non-compliant neighborhoods**
+3. **Compute distance-based loss for both groups**
+4. **Perform statistical test (t-test or Mann-Whitney U)**
+5. **Verify compliant neighborhoods have significantly lower loss**
+6. **Check 15-minute alignment percentages**
+7. **Document all results and statistical significance**
+
+This ensures every implementation follows the core validation principle: the model should perform better (lower loss, shorter distances) on neighborhoods similar to training data.
