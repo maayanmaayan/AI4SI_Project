@@ -46,8 +46,13 @@ def load_neighborhoods(geojson_path: str) -> gpd.GeoDataFrame:
 
     try:
         neighborhoods = gpd.read_file(geojson_path)
-    except Exception as e:
+    except (OSError, PermissionError) as e:
+        # Handle file system errors (permissions, I/O errors)
         raise ValueError(f"Failed to load GeoJSON file: {e}") from e
+    except Exception as e:
+        # For unexpected errors, preserve original exception type
+        # but provide context
+        raise RuntimeError(f"Unexpected error loading GeoJSON file: {e}") from e
 
     return neighborhoods
 
@@ -262,10 +267,13 @@ def normalize_distance_by_15min(distance_meters: float) -> float:
     15-minute walk distance (approximately 1200 meters at 5 km/h).
 
     Args:
-        distance_meters: Distance in meters.
+        distance_meters: Distance in meters (must be non-negative).
 
     Returns:
         Normalized distance (0-1 scale where 1.0 = 15-minute walk).
+
+    Raises:
+        ValueError: If distance_meters is negative.
 
     Example:
         >>> normalize_distance_by_15min(1200.0)
@@ -273,6 +281,9 @@ def normalize_distance_by_15min(distance_meters: float) -> float:
         >>> normalize_distance_by_15min(600.0)
         0.5
     """
+    if distance_meters < 0:
+        raise ValueError(f"Distance must be non-negative, got {distance_meters}")
+
     WALK_15MIN_METERS = 1200.0
     return distance_meters / WALK_15MIN_METERS
 

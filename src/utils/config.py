@@ -4,11 +4,14 @@ This module provides functions to load YAML configuration files, merge environme
 variable overrides, and provide typed access to configuration values with validation.
 """
 
+import logging
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import yaml
+
+logger = logging.getLogger(__name__)
 
 
 # Global cache for configuration
@@ -121,12 +124,17 @@ def _set_nested_value(config: Dict[str, Any], path: List[str], value: Any) -> No
     current = config
 
     # Navigate to the parent of the target key
-    for key in path[:-1]:
+    for i, key in enumerate(path[:-1]):
         key_lower = key.lower()
         if key_lower not in current:
             current[key_lower] = {}
         elif not isinstance(current[key_lower], dict):
-            # If the path conflicts with an existing non-dict value, skip
+            # If the path conflicts with an existing non-dict value, log warning and skip
+            conflict_path = ".".join(path[: i + 1])
+            logger.warning(
+                f"Cannot set environment variable override: '{'__'.join(path)}' "
+                f"conflicts with existing non-dict value at path '{conflict_path}'"
+            )
             return
         current = current[key_lower]
 

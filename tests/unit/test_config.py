@@ -163,6 +163,26 @@ def test_merge_env_overrides():
         os.environ.pop("DATA__TRAIN_SPLIT", None)
 
 
+def test_env_var_override_conflict_logs_warning(caplog):
+    """Test that environment variable override conflicts log a warning."""
+    import logging
+
+    logging.basicConfig(level=logging.WARNING)
+    # Config with non-dict value that conflicts with env var path
+    config = {"data": "not_a_dict"}
+
+    os.environ["DATA__TRAIN_SPLIT"] = "0.8"
+
+    try:
+        merged = _merge_env_overrides(config)
+        # Should not have set the value due to conflict
+        assert merged["data"] == "not_a_dict"
+        # Should have logged a warning
+        assert "conflicts with existing non-dict value" in caplog.text.lower()
+    finally:
+        os.environ.pop("DATA__TRAIN_SPLIT", None)
+
+
 def test_load_config_default_path():
     """Test that load_config uses default path when None provided."""
     # Reset cache to test default path loading
