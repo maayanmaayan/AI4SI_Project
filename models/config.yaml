@@ -41,3 +41,12 @@ paths:
   neighborhoods_geojson: "./paris_neighborhoods.geojson"
   checkpoints_dir: "./models/checkpoints"
   experiments_dir: "./experiments/runs"
+
+osm_extraction:
+  buffer_meters: 100  # Buffer around neighborhood boundaries
+  network_type: "walk"  # 'walk', 'drive', 'bike', 'all'
+  simplify: true  # Simplify network geometry
+  cache_results: true  # Skip if data already exists
+  retry_attempts: 3  # Number of retries on failure
+  retry_delay: 5  # Seconds between retries
+  min_services_warning: 5  # Warn if fewer services found
