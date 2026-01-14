@@ -139,7 +139,7 @@ mypy src/
 - Each point (center or grid cell) has its own feature vector
 
 **Features per point**:
-- **Demographics**: Population density, SES index, car ownership, children per capita, household size, elderly ratio
+- **Demographics**: Population density, SES index, car ownership rate, children per capita (estimated), elderly ratio (estimated), unemployment rate, student ratio, walking ratio, cycling ratio, public transport ratio, two-wheelers ratio, car commute ratio, retired ratio, permanent employment ratio, temporary employment ratio, median income, poverty rate
 - **Built Form**: Building density, building count, average building levels, floor area per capita
 - **Services**: Counts per category within the 15-minute walk radius from that point's perspective (8 features, configurable via `features.walk_15min_radius_meters` in config.yaml):
   - `count_education_15min`, `count_entertainment_15min`, `count_grocery_15min`, `count_health_15min`, `count_posts_banks_15min`, `count_parks_15min`, `count_sustenance_15min`, `count_shops_15min`

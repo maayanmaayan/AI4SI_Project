@@ -35,7 +35,7 @@ See `PRD.md` for detailed implementation phases and timeline (2-week MVP).
 
 When working with Cursor on this AI project:
 
-1. **Data Collection** — Extract OSM data (services, buildings, walkability) and Census data (demographics) for Paris neighborhoods defined in `paris_neighborhoods.geojson`
+1. **Data Collection** — Extract OSM data (services, buildings, walkability) and Census data (demographics, socioeconomic indicators, income, car ownership) for Paris neighborhoods defined in `paris_neighborhoods.geojson`. Note: Children per capita and elderly ratio are estimated using Paris-wide age distribution ratios due to IRIS-level data limitations.
 2. **Feature Engineering** — Generate regular grid cells around each location, compute 20+ features (demographics, built form, service counts, walkability) for center point + all grid cells within 15-minute walk radius. Grid cells represent spatial context of people who can access each location.
 3. **Model Training** — Train the FT-Transformer exclusively on 15-minute city compliant neighborhoods using distance-based loss (distance to nearest service of predicted category)
 4. **Hyperparameter Tuning** — Train 7 model variants: baseline (lr=0.001, n_layers=3, temp=200m), then vary learning rate [0.0005, 0.002], model depth [2, 4 layers], and temperature [150, 250m] independently. Select best model based on validation KL divergence loss

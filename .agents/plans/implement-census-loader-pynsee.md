@@ -8,13 +8,14 @@ Pay special attention to naming of existing utils types and models. Import from 
 
 Implement a census data loader that uses the `pynsee` Python library to fetch demographic and socioeconomic data for Paris neighborhoods at the IRIS (French census unit) level. **The loader will ONLY process neighborhoods with `"label": "Compliant"` from the paris_neighborhoods.geojson file**, following the exemplar-based learning approach where training data comes exclusively from compliant neighborhoods.
 
-The loader will extract required features (population density, SES index, car ownership, children per capita, household size, elderly ratio) and match IRIS data to neighborhood boundaries for downstream feature engineering.
+The loader will extract demographic and socioeconomic features and match IRIS data to neighborhood boundaries for downstream feature engineering.
 
 **Core Functionality:**
 - Explore available INSEE datasets using pynsee metadata functions
 - Download demographic data at IRIS level for Paris (INSEE code: 75056)
+- Download FILOSOFI income data at IRIS level
 - **Process ONLY compliant neighborhoods** (filter by `label == "Compliant"`)
-- Extract required features: population density, SES index, car ownership, children per capita, household size, elderly ratio
+- Extract features: population density, SES index, car ownership rate, children per capita (estimated), elderly ratio (estimated), unemployment rate, student ratio, walking ratio, cycling ratio, public transport ratio, two-wheelers ratio, car commute ratio, retired ratio, permanent employment ratio, temporary employment ratio, median income, poverty rate
 - Match IRIS boundaries to neighborhood geometries using spatial joins
 - Save census data organized in directory structure matching OSM data organization
 - Support configurable caching (skip if data exists, with force flag)
@@ -59,7 +60,10 @@ So that **I can compute demographic features needed for training the 15-minute c
 
 ## Problem Statement
 
-The project requires census data for computing demographic features (population density, SES index, car ownership, children per capita, household size, elderly ratio) at the grid cell level. Currently, no census data collection pipeline exists. The feature engineering phase depends on this demographic data to compute the 20+ features per point required for model training.
+The project requires census data for computing demographic and socioeconomic features at the grid cell level. Currently, no census data collection pipeline exists. The feature engineering phase depends on this demographic data to compute the 20+ features per point required for model training.
+
+**Feature Limitations:**
+- **Children per capita** and **Elderly ratio**: These are estimated using Paris-wide age distribution ratios since RP_ACTRES_IRIS only contains working-age population (15-64). The estimation uses commune-level total population and IRIS-level working-age population to estimate total population per neighborhood, then applies Paris-wide proportions (47% children, 53% elderly of non-working-age population). This is a limitation as actual IRIS-level age data is not available.
 
 **Critical Constraint:** Following the exemplar-based learning approach, census data extraction must **ONLY process compliant neighborhoods** (`label == "Compliant"`). Non-compliant neighborhoods are excluded from census data collection, consistent with the training strategy that uses only compliant neighborhoods.
 

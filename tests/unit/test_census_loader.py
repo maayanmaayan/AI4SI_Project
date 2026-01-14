@@ -1,13 +1,18 @@
-"""Unit tests for Census loader module."""
+"""Unit tests for Census loader module.
+
+These tests are intentionally offline:
+- No pynsee downloads (mocked)
+- No geopandas spatial index requirement (sjoin mocked)
+"""
 
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import geopandas as gpd
 import pandas as pd
 import pytest
-from shapely.geometry import Point, Polygon, box
+from shapely.geometry import box
 
 from src.data.collection.census_loader import CensusLoader
 
@@ -50,15 +55,16 @@ def test_neighborhood_non_compliant():
 @pytest.fixture
 def mock_iris_data():
     """Create mock IRIS census DataFrame."""
+    # Minimal columns used by CensusLoader:
+    # - IRIS + COM for filtering
+    # - a couple RP_ACTRES_IRIS-style columns for aggregation
     return pd.DataFrame(
         {
-            "CODE_IRIS": ["750101001", "750101002", "750101003"],
-            "POP": [1000, 2000, 1500],
-            "MENAGES": [500, 1000, 750],
-            "REVENU_MEDIAN": [30000, 40000, 35000],
-            "VOITURES": [300, 600, 450],
-            "ENFANTS": [200, 400, 300],
-            "AGE_65_PLUS": [150, 300, 225],
+            "IRIS": ["750101001", "750101002", "930010001"],
+            "COM": ["75056", "75056", "93001"],
+            "P17_POP1564": [1000, 2000, 1500],
+            "C17_ACTOCC15P_VOIT": [100, 200, 50],
+            "P17_ACTOCC15P": [200, 400, 100],
         }
     )
 
@@ -68,7 +74,9 @@ def mock_iris_boundaries():
     """Create mock IRIS boundaries GeoDataFrame."""
     return gpd.GeoDataFrame(
         {
-            "CODE_IRIS": ["750101001", "750101002", "750101003"],
+            "CODE_IRIS": ["750101001", "750101002", "930010001"],
+            # Some boundary datasets include INSEE_COM used for filtering
+            "INSEE_COM": ["75", "75", "93"],
             "geometry": [
                 box(2.350, 48.850, 2.351, 48.851),
                 box(2.351, 48.851, 2.352, 48.852),
@@ -156,29 +164,36 @@ class TestCache:
 class TestFetchIrisData:
     """Test IRIS data fetching."""
 
-    @patch("src.data.collection.census_loader.get_local_data")
-    def test_fetch_iris_data_success(self, mock_get_local_data, loader, mock_iris_data):
-        """Test successful IRIS data fetching."""
-        mock_get_local_data.return_value = mock_iris_data
+    @patch("src.data.collection.census_loader.download_file")
+    def test_fetch_iris_data_success_filters_paris(self, mock_download_file, loader, mock_iris_data):
+        """Should keep only COM starting with '75' when iris_codes is None."""
+        mock_download_file.return_value = mock_iris_data
 
         result = loader._fetch_iris_data()
         assert not result.empty
-        assert len(result) == 3
-        assert "CODE_IRIS" in result.columns
+        assert set(result["COM"].unique()) == {"75056"}
+        assert "IRIS" in result.columns
 
-    @patch("src.data.collection.census_loader.get_local_data")
-    def test_fetch_iris_data_empty(self, mock_get_local_data, loader):
+    @patch("src.data.collection.census_loader.download_file")
+    def test_fetch_iris_data_filters_by_iris_codes(self, mock_download_file, loader, mock_iris_data):
+        """Should filter by explicit IRIS codes when provided."""
+        mock_download_file.return_value = mock_iris_data
+
+        result = loader._fetch_iris_data(iris_codes=["750101002"])
+        assert not result.empty
+        assert result["IRIS"].tolist() == ["750101002"]
+
+    @patch("src.data.collection.census_loader.download_file")
+    def test_fetch_iris_data_empty(self, mock_download_file, loader):
         """Test IRIS data fetching with empty result."""
-        mock_get_local_data.return_value = pd.DataFrame()
-
+        mock_download_file.return_value = pd.DataFrame()
         result = loader._fetch_iris_data()
         assert result.empty
 
-    @patch("src.data.collection.census_loader.get_local_data")
-    def test_fetch_iris_data_error(self, mock_get_local_data, loader):
+    @patch("src.data.collection.census_loader.download_file")
+    def test_fetch_iris_data_error(self, mock_download_file, loader):
         """Test IRIS data fetching error handling."""
-        mock_get_local_data.side_effect = Exception("API Error")
-
+        mock_download_file.side_effect = Exception("API Error")
         result = loader._fetch_iris_data()
         assert result.empty
 
@@ -191,23 +206,13 @@ class TestLoadIrisBoundaries:
         self, mock_read_file, loader, mock_iris_boundaries
     ):
         """Test successful IRIS boundaries loading."""
-        # Create temporary file
-        with tempfile.NamedTemporaryFile(suffix=".geojson", delete=False) as f:
-            temp_path = Path(f.name)
-
-        try:
-            # Mock file existence
-            with patch("src.data.collection.census_loader.Path.exists", return_value=True):
-                with patch("src.data.collection.census_loader.Path", return_value=temp_path):
-                    mock_read_file.return_value = mock_iris_boundaries
-
-                    result = loader._load_iris_boundaries()
-                    assert not result.empty
-                    assert len(result) == 3
-                    assert "CODE_IRIS" in result.columns
-        finally:
-            if temp_path.exists():
-                temp_path.unlink()
+        mock_read_file.return_value = mock_iris_boundaries
+        with patch("src.data.collection.census_loader.Path.exists", return_value=True):
+            result = loader._load_iris_boundaries()
+        assert not result.empty
+        # Loader filters boundaries to Paris (INSEE_COM startswith '75')
+        assert len(result) == 2
+        assert "CODE_IRIS" in result.columns
 
     def test_load_iris_boundaries_missing_file(self, loader):
         """Test IRIS boundaries loading when file doesn't exist."""
@@ -219,16 +224,27 @@ class TestLoadIrisBoundaries:
 class TestSpatialJoin:
     """Test spatial join functionality."""
 
+    @patch("src.data.collection.census_loader.gpd.sjoin")
     def test_match_iris_to_neighborhoods_success(
-        self, loader, mock_iris_data, mock_iris_boundaries, mock_neighborhoods_gdf
+        self, mock_sjoin, loader, mock_iris_data, mock_iris_boundaries, mock_neighborhoods_gdf
     ):
-        """Test successful spatial join."""
+        """Test successful spatial join (sjoin mocked to avoid spatial-index dependency)."""
+        def _fake_sjoin(iris_gdf, neighborhoods_subset, how="inner", predicate="intersects"):
+            # Pretend every IRIS unit intersects the test neighborhood
+            out = iris_gdf.copy()
+            out["name"] = "Test Neighborhood"
+            out["index_right"] = 0
+            return out
+
+        mock_sjoin.side_effect = _fake_sjoin
+
         result = loader._match_iris_to_neighborhoods(
             mock_iris_data, mock_iris_boundaries, mock_neighborhoods_gdf
         )
-
         assert not result.empty
         assert "neighborhood_name" in result.columns
+        # Aggregated numeric columns should be present
+        assert "P17_POP1564" in result.columns
 
     def test_match_iris_to_neighborhoods_empty_data(self, loader, mock_iris_boundaries, mock_neighborhoods_gdf):
         """Test spatial join with empty IRIS data."""
@@ -252,24 +268,44 @@ class TestSpatialJoin:
 class TestFeatureExtraction:
     """Test demographic feature extraction."""
 
-    def test_extract_demographic_features_success(self, loader):
-        """Test successful feature extraction."""
+    def test_extract_demographic_features_car_ownership_from_percentage(self, loader):
+        """Car ownership rate should be derived from PCT_MEN_VOIT when present."""
         matched_data = pd.DataFrame(
             {
                 "neighborhood_name": ["Test Neighborhood"],
-                "POP": [1000],
-                "MENAGES": [500],
-                "REVENU_MEDIAN": [30000],
-                "VOITURES": [300],
-                "ENFANTS": [200],
-                "AGE_65_PLUS": [150],
-                "area": [1000000],  # 1 km²
+                "PCT_MEN_VOIT": [20.0],  # percent
+                "P17_MEN": [100.0],  # provide denominator column so detection passes
+                "C17_ACTOCC15P_VOIT": [100.0],
+                "P17_ACTOCC15P": [200.0],
             }
         )
 
-        result = loader._extract_demographic_features(matched_data)
+        # Avoid calling external APIs for age estimation
+        with patch.object(loader, "_fetch_commune_age_data", return_value=pd.DataFrame()):
+            result = loader._extract_demographic_features(matched_data, neighborhoods=None)
+
         assert not result.empty
-        assert "neighborhood_name" in result.columns
+        assert result.loc[0, "car_ownership_rate"] == pytest.approx(0.20)
+        assert result.loc[0, "car_commute_ratio"] == pytest.approx(0.50)
+
+    def test_extract_demographic_features_car_ownership_from_counts(self, loader):
+        """Car ownership rate should be derived from household counts when present."""
+        matched_data = pd.DataFrame(
+            {
+                "neighborhood_name": ["Test Neighborhood"],
+                "P17_MEN": [100.0],
+                "C17_MEN_VOIT1": [30.0],
+                "C17_MEN_VOIT2P": [10.0],
+                "C17_ACTOCC15P_VOIT": [100.0],
+                "P17_ACTOCC15P": [200.0],
+            }
+        )
+
+        with patch.object(loader, "_fetch_commune_age_data", return_value=pd.DataFrame()):
+            result = loader._extract_demographic_features(matched_data, neighborhoods=None)
+
+        assert result.loc[0, "car_ownership_rate"] == pytest.approx(0.40)
+        assert result.loc[0, "car_commute_ratio"] == pytest.approx(0.50)
 
     def test_extract_demographic_features_empty(self, loader):
         """Test feature extraction with empty data."""
@@ -285,10 +321,14 @@ class TestLoadNeighborhood:
     @patch("src.data.collection.census_loader.CensusLoader._extract_demographic_features")
     @patch("src.data.collection.census_loader.CensusLoader._match_iris_to_neighborhoods")
     @patch("src.data.collection.census_loader.CensusLoader._load_iris_boundaries")
+    @patch("src.data.collection.census_loader.CensusLoader._fetch_logement_car_ownership")
+    @patch("src.data.collection.census_loader.CensusLoader._fetch_filosofi_income")
     @patch("src.data.collection.census_loader.CensusLoader._fetch_iris_data")
     def test_load_neighborhood_census_success(
         self,
         mock_fetch,
+        mock_fetch_filosofi,
+        mock_fetch_logement,
         mock_boundaries,
         mock_match,
         mock_extract,
@@ -303,14 +343,16 @@ class TestLoadNeighborhood:
         """Test successful census loading for compliant neighborhood."""
         # Setup mocks
         mock_fetch.return_value = mock_iris_data
+        mock_fetch_filosofi.return_value = pd.DataFrame()
+        mock_fetch_logement.return_value = pd.DataFrame()
         mock_boundaries.return_value = mock_iris_boundaries
         mock_load_neighborhoods.return_value = mock_neighborhoods_gdf
 
         matched_df = pd.DataFrame(
             {
                 "neighborhood_name": ["Test Neighborhood"],
-                "POP": [1000],
-                "MENAGES": [500],
+                "P17_POP1564": [1000],
+                "P17_ACTOCC15P": [500],
             }
         )
         mock_match.return_value = matched_df
@@ -327,7 +369,8 @@ class TestLoadNeighborhood:
         # Mock output directory
         with patch.object(loader, "_get_output_directory", return_value=tmp_path):
             with patch.object(loader, "_check_cache", return_value=False):
-                result = loader.load_neighborhood_census(test_neighborhood_compliant)
+                with patch("src.data.collection.census_loader.save_dataframe") as _:
+                    result = loader.load_neighborhood_census(test_neighborhood_compliant)
 
         assert result["status"] == "success"
         assert result["neighborhood_name"] == "Test Neighborhood"
@@ -372,7 +415,11 @@ class TestLoadNeighborhood:
         """Test retry logic on failure."""
         # Setup mocks to fail
         mock_fetch.side_effect = Exception("API Error")
-        mock_boundaries.return_value = gpd.GeoDataFrame()
+        # Must return non-empty boundaries so loader reaches _fetch_iris_data
+        mock_boundaries.return_value = gpd.GeoDataFrame(
+            {"CODE_IRIS": ["750101001"], "geometry": [box(2.35, 48.85, 2.351, 48.851)]},
+            crs="EPSG:4326",
+        )
         mock_load_neighborhoods.return_value = gpd.GeoDataFrame()
 
         with patch.object(loader, "_get_output_directory", return_value=tmp_path):
