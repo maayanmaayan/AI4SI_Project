@@ -7,11 +7,11 @@ This project implements a Tabular Transformer (FT-Transformer)-based AI model to
 This is an AI/ML project built with Cursor that focuses on:
 - **Problem**: Identifying service gaps in urban neighborhoods for 15-minute city implementation
 - **Model**: Tabular Transformer (FT-Transformer) for tabular data classification
-- **Input**: Map location coordinates + 30+ urban/demographic features
+- **Input**: Multi-point sequences - each location represented as [center point] + [all grid cells within 15-minute walk radius], each with 20+ urban/demographic features
 - **Output**: Probability distribution over 8 NEXI service categories (Education, Entertainment, Grocery, Health, Posts and banks, Parks, Sustenance, Shops)
 - **Training Strategy**: Model trains exclusively on 15-minute city compliant neighborhoods to learn optimal service distribution patterns
-- **Loss Function**: Distance-based loss measuring the distance from predicted service category to the nearest actual service of that type
-- **Validation**: Model success measured by significantly lower loss on 15-minute neighborhoods compared to non-compliant neighborhoods
+- **Loss Function**: Distance-based similarity loss using KL divergence between predicted and distance-based target probability vectors
+- **Validation**: Model evaluation on compliant neighborhoods only (train/validation/test splits from compliant neighborhoods)
 
 ## What's Included
 
@@ -25,9 +25,9 @@ This is an AI/ML project built with Cursor that focuses on:
 1. **Review the PRD** — Read `PRD.md` for comprehensive project requirements and architecture
 2. **Set up the environment** — Install dependencies for ML development (PyTorch, FT-Transformer, data processing libraries, etc.)
 3. **Data collection** — Extract OSM and Census data for Paris neighborhoods. Neighborhood boundaries and compliance labels are defined in `paris_neighborhoods.geojson` (includes verified 15-minute neighborhoods and non-compliant neighborhoods)
-4. **Feature engineering** — Build pipeline to compute 30+ urban/demographic features for all locations
-5. **Model training** — Train the FT-Transformer model exclusively on 15-minute city compliant neighborhoods using distance-based loss
-6. **Evaluation** — Validate model by comparing loss (distance to nearest service) between 15-minute and non-compliant neighborhoods
+4. **Feature engineering** — Build pipeline to generate grid cells and compute 20+ urban/demographic features for center point + all grid cells within 15-minute walk radius (configurable via `features.walk_15min_radius_meters` and `features.grid_cell_size_meters` in config.yaml)
+5. **Model training** — Train the FT-Transformer model exclusively on 15-minute city compliant neighborhoods using distance-based similarity loss
+6. **Evaluation** — Evaluate model on compliant neighborhoods only (train/validation/test splits from compliant neighborhoods)
 
 See `PRD.md` for detailed implementation phases and timeline (2-week MVP).
 
@@ -36,10 +36,10 @@ See `PRD.md` for detailed implementation phases and timeline (2-week MVP).
 When working with Cursor on this AI project:
 
 1. **Data Collection** — Extract OSM data (services, buildings, walkability) and Census data (demographics) for Paris neighborhoods defined in `paris_neighborhoods.geojson`
-2. **Feature Engineering** — Compute 30+ features including demographics, built form, services, and walkability metrics for all locations
+2. **Feature Engineering** — Generate regular grid cells around each location, compute 20+ features (demographics, built form, service counts, walkability) for center point + all grid cells within 15-minute walk radius. Grid cells represent spatial context of people who can access each location.
 3. **Model Training** — Train the FT-Transformer exclusively on 15-minute city compliant neighborhoods using distance-based loss (distance to nearest service of predicted category)
-4. **Hyperparameter Tuning** — Optimize model performance with cross-validation on compliant neighborhoods
-5. **Evaluation** — Validate model by measuring loss on both 15-minute and non-compliant neighborhoods; success is indicated by significantly lower loss on compliant neighborhoods
+4. **Hyperparameter Tuning** — Train 7 model variants: baseline (lr=0.001, n_layers=3, temp=200m), then vary learning rate [0.0005, 0.002], model depth [2, 4 layers], and temperature [150, 250m] independently. Select best model based on validation KL divergence loss
+5. **Evaluation** — Evaluate model on compliant neighborhoods only (train/validation/test splits); model success indicated by learning (decreasing loss, improving metrics)
 6. **Interpretability** — Analyze attention patterns and SHAP values to understand model decisions
 
 ## Project Structure

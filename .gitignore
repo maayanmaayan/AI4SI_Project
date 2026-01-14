@@ -40,3 +40,6 @@ experiments/runs/*
 # OS
 .DS_Store
 Thumbs.db
+
+# OSMnx cache (Overpass API responses)
+cache/

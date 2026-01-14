@@ -4,9 +4,9 @@
 
 This project develops a Tabular Transformer (FT-Transformer)-based AI model to support data-driven implementation of the 15-minute city model in existing urban contexts. The system addresses the challenge of identifying service gaps and recommending appropriate interventions to improve walkability and accessibility in neighborhoods that do not currently meet 15-minute city principles.
 
-**Core Value Proposition**: The model learns implicit service distribution patterns by training exclusively on neighborhoods already designed according to 15-minute city principles. It uses a distance-based loss function that measures how close the predicted service category is to the nearest actual service of that type. The model then applies these learned patterns to identify gaps and predict the most appropriate service category interventions for locations in non-compliant neighborhoods. Model success is validated by demonstrating significantly lower loss (shorter distances to services) on 15-minute neighborhoods compared to non-compliant ones, indicating the model has learned to recognize optimal service distribution patterns.
+**Core Value Proposition**: The model learns implicit service distribution patterns by training exclusively on neighborhoods already designed according to 15-minute city principles. It uses a distance-based similarity loss function that compares predicted probability distributions to distance-based target vectors. The model then applies these learned patterns to identify gaps and predict the most appropriate service category interventions for locations in neighborhoods.
 
-**MVP Goal**: Build a working end-to-end system with a Tabular Transformer (FT-Transformer) that trains exclusively on 15-minute city compliant neighborhoods, predicts probability distributions over service categories using distance-based loss, and validates success by comparing loss between compliant and non-compliant neighborhoods, within a 2-week timeline.
+**MVP Goal**: Build a working end-to-end system with a Tabular Transformer (FT-Transformer) that trains exclusively on 15-minute city compliant neighborhoods, predicts probability distributions over service categories using distance-based similarity loss, and validates success through evaluation on compliant neighborhoods only, within a 2-week timeline.
 
 ## 2. Mission
 
@@ -44,14 +44,13 @@ This project develops a Tabular Transformer (FT-Transformer)-based AI model to s
 **Core Functionality**:
 
 - ✅ Single robust Tabular Transformer (FT-Transformer) model
-- ✅ Feature extraction pipeline for 30+ urban/demographic features
+- ✅ Feature extraction pipeline for 20+ urban/demographic features
 - ✅ Data collection from OSM and Census sources for Paris neighborhoods (neighborhood boundaries and labels defined in `paris_neighborhoods.geojson`)
 - ✅ Training exclusively on 15-minute city compliant neighborhoods
 - ✅ Distance-based loss function measuring distance from predicted service category to nearest actual service
 - ✅ Training on 8 NEXI service categories (Education, Entertainment, Grocery, Health, Posts and banks, Parks, Sustenance, Shops)
 - ✅ Probability vector output over service categories
-- ✅ Model validation by comparing loss between compliant and non-compliant neighborhoods
-- ✅ Statistical validation that compliant neighborhoods have significantly lower loss
+- ✅ Model evaluation on compliant neighborhoods only (train/validation/test splits)
 - ✅ Basic evaluation metrics and visualization tools
 
 **Technical**:
@@ -65,10 +64,9 @@ This project develops a Tabular Transformer (FT-Transformer)-based AI model to s
 
 - ✅ OSM data extraction for service presence/absence and geospatial locations
 - ✅ Census data integration for demographic features
-- ✅ Feature engineering for walkability metrics
+- ✅ Feature engineering for walkability metrics and service counts within the 15-minute walk radius
 - ✅ Neighborhood boundaries and compliance labels from `paris_neighborhoods.geojson`
-- ✅ Train/validation/test splits from compliant neighborhoods only
-- ✅ Test set includes both compliant and non-compliant neighborhoods for validation
+- ✅ Train/validation/test splits from compliant neighborhoods only (all data from compliant neighborhoods)
 
 ### Out of Scope (Future Phases)
 
@@ -79,6 +77,7 @@ This project develops a Tabular Transformer (FT-Transformer)-based AI model to s
 - ❌ Integration with actual urban planning software
 - ❌ Cost/feasibility analysis of interventions
 - ❌ Temporal dynamics (model is static, not time-series)
+- ❌ Control group evaluation comparing compliant vs non-compliant neighborhoods (post-MVP: after model selection in a later stage, evaluate if model has different success rates on non-compliant neighborhoods)
 
 **Technical**:
 
@@ -97,7 +96,7 @@ This project develops a Tabular Transformer (FT-Transformer)-based AI model to s
 
 1. **As an urban planner**, I want to identify which service category is most needed at a specific location, so that I can prioritize interventions that improve walkability.
 
-2. **As a researcher**, I want to compare model predictions between compliant and non-compliant neighborhoods, so that I can validate whether the model aligns with 15-minute city principles.
+2. **As a researcher**, I want to evaluate model predictions on compliant neighborhoods, so that I can validate whether the model learns service distribution patterns from exemplar neighborhoods. (Post-MVP: compare predictions between compliant and non-compliant neighborhoods as a control group evaluation)
 
 3. **As a policy maker**, I want to see probability distributions over service categories, so that I can understand the relative priority of different interventions.
 
@@ -119,12 +118,15 @@ The system uses a **single-stage Tabular Transformer (FT-Transformer)** with an 
 
 **Model Training & Prediction**
 
-- Input: Feature vectors from 15-minute city compliant neighborhoods only (training set)
-- Process: FT-Transformer learns complex, context-dependent feature interactions and service distribution patterns from exemplar neighborhoods
+- Input: Multi-point sequences of feature vectors from 15-minute city compliant neighborhoods only (training set)
+  - Each location is represented as a sequence: [center point feature vector] + [all grid cells within 15-minute walk radius]
+  - Grid cells represent the demographic and built environment context of people who can access the center location
+  - All grid cells within the radius are included (no truncation)
+- Process: FT-Transformer learns complex, context-dependent feature interactions and spatial patterns via attention over the sequence
 - Output: Probability vector over 8 service categories indicating most appropriate intervention
-- Loss Function: Distance-based loss measuring the distance from the predicted service category to the nearest actual service of that type (using network-based walking distance via OSMnx)
-- Learning Approach: Model learns optimal service distribution patterns directly from compliant neighborhoods, then generalizes to identify gaps in non-compliant neighborhoods
-- Validation: Model success measured by significantly lower loss (shorter distances) on compliant neighborhoods compared to non-compliant ones
+- Loss Function: Distance-based similarity loss using KL divergence between predicted and distance-based target probability vectors
+- Learning Approach: Model learns optimal service distribution patterns directly from compliant neighborhoods by understanding spatial context
+- Validation: Model evaluation on compliant neighborhoods only (train/validation/test splits from compliant neighborhoods)
 
 ### Architecture Diagram
 
@@ -234,18 +236,19 @@ AI4SI_Project/
 - Modular feature computation (demographics, built form, services, walkability)
 - Reproducible feature extraction with versioning
 
-**3. Distance-Based Loss Pattern**
+**3. Distance-Based Similarity Loss Pattern**
 
-- Loss function measures actual distance from predicted service category to nearest service of that type
-- Uses network-based walking distance (via OSMnx) for realistic accessibility measurement
-- Loss directly relates to 15-minute city principles (shorter distances = better alignment)
-- Hybrid approach: combines distance-based loss with classification component for robust learning
+- Loss function uses similarity-based approach: compares model's predicted probability vector to a distance-based target vector
+- Target vector constructed from actual walking distances to nearest service in each category (via OSMnx network distance)
+- Distance-to-probability conversion using temperature-scaled softmax (τ=200m): closer services get higher probabilities
+- Loss measured using KL divergence between predicted and target probability distributions
+- Aligns with 15-minute city principles: model learns that closer services should have higher predicted probabilities
 
-**4. Comparative Evaluation Pattern**
+**4. Compliant-Only Evaluation Pattern**
 
-- Evaluate model on both compliant and non-compliant neighborhoods
-- Validate that loss (distance to services) is significantly lower on compliant neighborhoods
-- Statistical validation ensures model has learned to recognize optimal service distribution patterns
+- Evaluate model exclusively on compliant neighborhoods (train/validation/test splits from compliant neighborhoods only)
+- Validate model learning through standard evaluation metrics (loss, accuracy, etc.)
+- Ensure model learns service distribution patterns from exemplar neighborhoods
 - Multi-service prediction capability allows predicting multiple needed services simultaneously
 
 ## 7. Tools/Features
@@ -254,48 +257,49 @@ AI4SI_Project/
 
 **1. Feature Extraction System**
 
-- **Purpose**: Compute 30+ urban/demographic features for each location
+- **Purpose**: Compute 20+ urban/demographic features for each location and its spatial context
 - **Operations**:
   - Extract OSM data (services, buildings, walkability features)
   - Integrate Census data (demographics, SES)
   - Compute walkability metrics (intersection density, block length, etc.)
-  - Calculate service accessibility (counts, walk times, 15-minute thresholds)
-  - Generate composite scores (essential services coverage, 15-minute walk score)
-- **Key Features**: Modular design, reproducible computation, efficient OSM queries
+  - Generate regular grid cells (configurable size, default: 100m × 100m) around each prediction location
+  - For each location: compute features for center point + all grid cells within 15-minute walk radius
+  - Each grid cell gets its own feature vector representing that spatial context
+  - Include all grid cells within radius (no truncation)
+- **Key Features**: Modular design, reproducible computation, efficient OSM queries, spatial context representation
 
 **2. Tabular Transformer Model (FT-Transformer)**
 
 - **Purpose**: Learn complex, context-dependent service distribution patterns from exemplar neighborhoods and predict intervention recommendations
 - **Operations**:
-  - Train exclusively on feature vectors from 15-minute city compliant neighborhoods
-  - Learn feature interactions via multi-head self-attention
+  - Train exclusively on multi-point sequences from 15-minute city compliant neighborhoods
+  - Input: Sequence of feature vectors [center point + grid cells within radius] for each location
+  - Learn spatial patterns and feature interactions via multi-head self-attention over the sequence
+  - Attention mechanism learns relationships between grid cells and identifies which spatial contexts matter most
   - Predict probability distribution over 8 NEXI service categories
   - Use distance-based loss: measure distance from predicted service to nearest actual service of that type
   - Support multi-service prediction (predict multiple needed services simultaneously)
   - Output attention patterns and SHAP values for interpretability
-- **Key Features**: Attention-based modeling for tabular features, exemplar-based learning, distance-based loss for domain-relevant optimization, interpretable via attention maps
+- **Key Features**: Attention-based modeling over spatial sequences, exemplar-based learning, distance-based loss for domain-relevant optimization, interpretable via attention maps showing which grid cells drive predictions
 
 **3. Validation System**
 
-- **Purpose**: Validate model outputs against 15-minute city principles using distance-based metrics
+- **Purpose**: Validate model outputs and learning using distance-based similarity metrics on compliant neighborhoods
 - **Operations**:
-  - Measure loss (distance to nearest service) on both compliant and non-compliant neighborhoods
-  - Verify that compliant neighborhoods have significantly lower loss than non-compliant ones
-  - Statistical validation (e.g., t-test) to ensure difference is significant
-  - Check alignment with 15-minute accessibility thresholds (normalize distances by 15-minute walk distance ≈ 1.2 km)
-- **Key Features**: Distance-based evaluation, comparative analysis, statistical validation, domain-relevant metrics
+  - Measure similarity-based loss (KL divergence between predicted and target probability vectors) on compliant neighborhoods
+  - Evaluate model performance using standard metrics (loss, accuracy, etc.) on train/validation/test splits from compliant neighborhoods
+  - Check alignment with 15-minute city principles through distance-based target vectors
+- **Key Features**: Distance-based evaluation, domain-relevant metrics, interpretable probability distributions
 
 **4. Evaluation Metrics**
 
-- **Purpose**: Measure model performance and alignment with goals using distance-based metrics
+- **Purpose**: Measure model performance and alignment with goals using distance-based similarity metrics
 - **Operations**:
-  - Compute distance-based loss (distance to nearest service of predicted category)
-  - Normalize distances by 15-minute walk distance (≈ 1.2 km) for comparability
-  - Measure alignment with 15-minute principles (percentage of predictions within 15-minute threshold)
-  - Compare loss distributions between compliant and non-compliant neighborhoods
-  - Statistical tests (t-test, Mann-Whitney U) to validate significant differences
-  - Probability distribution metrics (entropy, top-k accuracy) as secondary metrics
-- **Key Features**: Domain-specific metrics, interpretable scores, statistical validation, visualization support
+  - Compute similarity-based loss (KL divergence between predicted and distance-based target probability vectors)
+  - Evaluate on compliant neighborhoods only (train/validation/test splits)
+  - Measure alignment with 15-minute city principles through distance-to-probability target vectors
+  - Probability distribution metrics (entropy, top-k accuracy) as evaluation metrics
+- **Key Features**: Domain-specific metrics, interpretable scores, visualization support
 
 ## 8. Technology Stack
 
@@ -382,18 +386,19 @@ The MVP is successful if:
 
 1. ✅ Model completes training without errors on compliant neighborhoods only
 2. ✅ Model outputs probability distributions over 8 service categories
-3. ✅ Distance-based loss function correctly computes distances to nearest services
-4. ✅ Model loss is significantly lower on compliant neighborhoods compared to non-compliant ones (statistical validation)
-5. ✅ Model recommendations align with 15-minute city accessibility principles (distances within 15-minute threshold)
-6. ✅ Feature extraction pipeline produces consistent, reproducible features
-7. ✅ Evaluation metrics demonstrate model learning (not random predictions, clear separation between neighborhood types)
+3. ✅ Distance-based similarity loss function correctly computes target vectors from distances
+4. ✅ Model evaluation on compliant neighborhoods shows learning (decreasing loss, improving metrics)
+5. ✅ Model predictions align with 15-minute city accessibility principles (distance-based target vectors)
+6. ✅ Feature extraction pipeline produces consistent, reproducible multi-point sequences (center point + grid cells within radius)
+7. ✅ Evaluation metrics demonstrate model learning (not random predictions, improving performance on validation set)
 
 ### Functional Requirements
 
 **Data Pipeline**:
 
 - ✅ Extract features for all locations in 6 neighborhoods
-- ✅ Compute all 30+ features from feature specification
+- ✅ Generate grid cells and compute all 20+ features for center point + all grid cells within 15-minute walk radius
+- ✅ Handle variable-length sequences (different numbers of grid cells per location) with proper padding/masking
 - ✅ Create train/validation/test splits with proper stratification
 - ✅ Handle missing data appropriately
 
@@ -407,9 +412,9 @@ The MVP is successful if:
 
 **Evaluation**:
 
-- ✅ Loss (distance to services) measured on both compliant and non-compliant neighborhoods
-- ✅ Statistical validation confirms significantly lower loss on compliant neighborhoods
-- ✅ Validation confirms alignment with 15-minute principles (distances within threshold)
+- ✅ Similarity-based loss (KL divergence) measured on compliant neighborhoods (train/validation/test splits)
+- ✅ Model performance metrics (loss, accuracy, etc.) demonstrate learning on compliant neighborhoods
+- ✅ Validation confirms alignment with 15-minute principles through distance-based target vectors
 - ✅ Feature importance and SHAP values provide interpretable insights
 - ✅ Results are reproducible (same random seeds produce same outputs)
 
@@ -436,16 +441,19 @@ The MVP is successful if:
 
 - ✅ OSM data extraction scripts (including service locations for distance calculations)
 - ✅ Census data integration
-- ✅ Feature engineering pipeline (all 30+ features)
+- ✅ Grid cell generation pipeline (regular grid, filter cells within 15-minute walk radius)
+- ✅ Feature engineering pipeline (compute all 20+ features for center point + all grid cells within radius)
+- ✅ Multi-point sequence construction (handle variable-length sequences with padding/masking)
 - ✅ Load neighborhood boundaries and labels from `paris_neighborhoods.geojson`
-- ✅ Feature extraction for all Paris neighborhoods (both compliant and non-compliant)
+- ✅ Feature extraction for compliant neighborhoods (for MVP model training and evaluation)
 - ✅ Data validation and quality checks
 - ✅ Train/validation/test splits from compliant neighborhoods only
-- ✅ Test set includes both compliant and non-compliant neighborhoods for validation
 
 **Validation Criteria**:
 
-- All features computed correctly (spot-check against manual calculations)
+- Grid cells generated correctly (all cells within radius included, no truncation)
+- All features computed correctly for center point and grid cells (spot-check against manual calculations)
+- Multi-point sequences constructed correctly (variable-length handling, padding/masking)
 - Data coverage complete for all neighborhoods
 - Splits maintain neighborhood balance
 
@@ -455,22 +463,54 @@ The MVP is successful if:
 
 **Deliverables**:
 
-- ✅ FT-Transformer model implementation (PyTorch)
+- ✅ FT-Transformer model implementation (PyTorch) - handles multi-point sequences with attention over grid cells
 - ✅ Distance-based loss function implementation (network-based walking distance)
 - ✅ Training script with hyperparameter tuning
+- ✅ Hyperparameter tuning: Train 6-8 model variants with different hyperparameters
 - ✅ Model training exclusively on compliant neighborhoods
 - ✅ Probability distribution outputs
 - ✅ Multi-service prediction capability (optional)
 - ✅ Attention analysis utilities (and optional SHAP)
 - ✅ Trained model checkpoint (`.pt`)
 
+**Hyperparameter Tuning Strategy**:
+
+- **Number of models**: Train 7 model variants
+- **Selection criteria**: Best validation KL divergence loss
+- **Strategy**: Start with baseline, then vary each hyperparameter independently (one-at-a-time) to understand individual effects
+- All models evaluated on validation set from compliant neighborhoods
+- Final model selection based on validation performance metrics
+
+**Model Configurations**:
+
+| Model | Learning Rate | n_layers | Temperature (τ, meters) | Description |
+|-------|---------------|----------|------------------------|-------------|
+| 1 | 0.001 | 3 | 200 | Baseline (current config) |
+| 2 | 0.0005 | 3 | 200 | Lower learning rate |
+| 3 | 0.002 | 3 | 200 | Higher learning rate |
+| 4 | 0.001 | 2 | 200 | Fewer layers (shallow) |
+| 5 | 0.001 | 4 | 200 | More layers (deeper) |
+| 6 | 0.001 | 3 | 150 | Lower temperature (sharper target distribution) |
+| 7 | 0.001 | 3 | 250 | Higher temperature (smoother target distribution) |
+
+**Fixed hyperparameters** (same for all models):
+- `d_token`: 128
+- `n_heads`: 4
+- `dropout`: 0.1
+- `batch_size`: 64
+- `weight_decay`: 0.0001
+- `activation`: gelu
+
 **Validation Criteria**:
 
+- Model correctly processes multi-point sequences (handles variable-length sequences, attention over grid cells)
 - Model outputs valid probability distributions (sum to 1, non-negative)
-- Distance-based loss function correctly computes distances to nearest services
+- Distance-based similarity loss function correctly computes target vectors from distances
 - Training metrics improve over baseline
 - Model training completes successfully on compliant neighborhoods
-- Loss decreases during training, indicating learning of service distribution patterns
+- Loss decreases during training, indicating learning of spatial patterns and service distribution patterns
+- Attention patterns show meaningful spatial relationships between grid cells
+- Best model selected based on validation KL divergence loss
 
 ### Phase 3: Evaluation & Validation (Days 11-12)
 
@@ -478,19 +518,19 @@ The MVP is successful if:
 
 **Deliverables**:
 
-- ✅ Loss measurement on both compliant and non-compliant neighborhoods
-- ✅ Statistical validation (t-test, Mann-Whitney U) showing significantly lower loss on compliant neighborhoods
-- ✅ Principle-based validation metrics (percentage within 15-minute threshold)
+- ✅ Similarity-based loss measurement on compliant neighborhoods (train/validation/test splits)
+- ✅ Model performance metrics (loss, accuracy, etc.) demonstrating learning
+- ✅ Alignment with 15-minute city principles through distance-based target vectors
 - ✅ Attention analysis and (optional) SHAP visualization
 - ✅ Results documentation and visualization
-- ✅ Final model evaluation report with statistical significance tests
+- ✅ Final model evaluation report with performance metrics
 
 **Validation Criteria**:
 
-- Compliant neighborhoods show significantly lower loss (shorter distances to services)
-- Statistical tests confirm significant difference between compliant and non-compliant neighborhoods
-- Model recommendations align with 15-minute accessibility targets (distances within threshold)
-- Results are statistically significant and interpretable
+- Model shows learning (decreasing loss, improving metrics on validation set)
+- Model predictions align with 15-minute city accessibility principles (distance-based target vectors)
+- Evaluation metrics demonstrate model performance on compliant neighborhoods
+- Results are reproducible and interpretable
 
 ### Phase 4: Documentation & Refinement (Days 13-14)
 
@@ -563,9 +603,9 @@ The MVP is successful if:
 - Hyperparameter tuning to optimize model performance
 - Consider ensemble methods if single model insufficient
 
-### Risk 3: Validation Doesn't Align with 15-Minute Principles
+### Risk 3: Model Doesn't Learn from Compliant Neighborhoods
 
-**Risk**: Model loss doesn't show significant difference between compliant and non-compliant neighborhoods, or distances don't align with 15-minute thresholds
+**Risk**: Model doesn't learn meaningful patterns from compliant neighborhoods, or loss doesn't decrease during training
 
 **Mitigation**:
 
@@ -620,13 +660,39 @@ See [CURSOR.md](CURSOR.md) Section "Project Structure" for detailed directory la
 
 ### Feature Specification
 
-See user-provided CSV with 30+ features including:
+**Input Structure**: Multi-point sequences (not single feature vectors)
+- Each prediction location is represented as a sequence of feature vectors
+- Sequence structure: [center point] + [all grid cells within 15-minute walk radius]
+- Sequence length varies per location (all cells within radius are included)
+- Padding/masking used for batching variable-length sequences
 
-- Demographics (population density, SES, car ownership, etc.)
-- Built Form (building density, floor area, etc.)
-- Services (counts, walk times, 15-minute thresholds for each category)
-- Walkability (intersection density, block length, pedestrian infrastructure)
-- Composite scores (essential services coverage, 15-minute walk score)
+**Features per point** (center point and each grid cell):
+
+- **Demographics**: Population density, SES index, car ownership, children per capita, household size, elderly ratio
+- **Built Form**: Building density, building count, average building levels, floor area per capita
+- **Services**: Counts per category within the 15-minute walk radius from that point's perspective (8 features, configurable via `features.walk_15min_radius_meters` in config.yaml):
+  - `count_education_15min`: Number of education services within the 15-minute walk radius
+  - `count_entertainment_15min`: Number of entertainment services within the 15-minute walk radius
+  - `count_grocery_15min`: Number of grocery services within the 15-minute walk radius
+  - `count_health_15min`: Number of health services within the 15-minute walk radius
+  - `count_posts_banks_15min`: Number of posts/banks services within the 15-minute walk radius
+  - `count_parks_15min`: Number of parks within the 15-minute walk radius
+  - `count_sustenance_15min`: Number of sustenance services within the 15-minute walk radius
+  - `count_shops_15min`: Number of shops within the 15-minute walk radius
+- **Walkability**: Intersection density, average block length, pedestrian street ratio, sidewalk presence
+
+**Grid Cell Generation**:
+- Regular grid with configurable cell size (default: 100m × 100m via `features.grid_cell_size_meters`)
+- For each prediction location: generate grid cells covering bounding box, filter to include only cells within `walk_15min_radius_meters`
+- All cells within radius are included (no truncation)
+- Maximum sequence length auto-calculated: `ceil(π × (radius/cell_size)²) + buffer` (configurable via `features.max_context_points`)
+
+**Feature Engineering Rationale**:
+- **Multi-point sequences**: Model learns from spatial distribution of people/services, not just aggregated statistics. Grid cells represent demographic and built environment context of people who can access the center location.
+- **Service counts vs. walking distances**: Service features use counts within the 15-minute walk radius (configurable via `features.walk_15min_radius_meters` in config.yaml, default: 1200m) rather than walking distances to avoid data leakage. Walking distances are used in the loss function to construct target probability vectors, so including them as features would give the model direct access to what it's trying to predict.
+- **Removed composite features**: Composite features (essential services coverage, average walk time to essentials, 15-minute walk score) are removed to simplify the feature set and avoid redundancy. The transformer model can learn these patterns from the individual features if needed.
+- **15-minute walk radius**: The configurable walk radius (default: 1200m ≈ 1.2 km) aligns with the 15-minute walk threshold, capturing service density at the neighborhood scale relevant to 15-minute city principles. This radius can be adjusted in `models/config.yaml` via the `features.walk_15min_radius_meters` parameter.
+- **Why FT-Transformer**: With multi-point sequences, the transformer's attention mechanism can learn spatial relationships between grid cells, identifying which areas matter most for service gap prediction. This leverages the transformer's strength in learning from sequences.
 
 ### Service Categories (NEXI → OSM Mapping)
 
@@ -644,11 +710,11 @@ See user-provided CSV with 30+ features including:
 The model uses an **exemplar-based learning** approach with **distance-based supervision**:
 
 - Model trains exclusively on 15-minute city compliant neighborhoods to learn optimal service distribution patterns
-- Training uses distance-based loss: for each prediction, measure the distance from the predicted service category to the nearest actual service of that type
+- Training uses distance-based similarity loss: KL divergence between predicted probability vectors and distance-based target vectors
 - Distance calculations use network-based walking distance (via OSMnx) for realistic accessibility measurement
-- Loss function combines distance-based component with classification component for robust learning
-- Model learns implicit service distribution patterns from exemplar neighborhoods, then generalizes to identify gaps in non-compliant neighborhoods
-- Validation: Model success is measured by significantly lower loss (shorter distances) on compliant neighborhoods compared to non-compliant ones, indicating the model has learned to recognize optimal patterns
+- Target vectors constructed from distances to nearest services in each category, converted to probabilities using temperature-scaled softmax
+- Model learns implicit service distribution patterns from exemplar neighborhoods
+- Validation: Model evaluation on compliant neighborhoods only (train/validation/test splits); model success measured by learning (decreasing loss, improving metrics)
 - Multi-service prediction capability allows predicting multiple needed services simultaneously for more comprehensive gap analysis
 
 ### Data Collection Strategy
@@ -661,5 +727,5 @@ The model uses an **exemplar-based learning** approach with **distance-based sup
 - **Feature Collection**: Collect features uniformly for all locations in both types of neighborhoods
 - **Training Strategy**: Train model exclusively on compliant neighborhoods
 - **Loss Calculation**: Use OSM data to compute actual distances from each location to nearest services of each category (network-based walking distance)
-- **Validation Strategy**: Test model on both compliant and non-compliant neighborhoods; validate that loss is significantly lower on compliant neighborhoods
+- **Validation Strategy**: Evaluate model on compliant neighborhoods only (train/validation/test splits from compliant neighborhoods). Post-MVP: After model selection, conduct control group evaluation comparing success rates on compliant vs non-compliant neighborhoods
 

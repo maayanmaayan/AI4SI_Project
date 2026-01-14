@@ -5,7 +5,7 @@
 ## Project Overview
 
 This project implements a Tabular Transformer (FT-Transformer)-based model that:
-- **Input**: Map location (coordinates) + 30+ urban/demographic features
+- **Input**: Map location (coordinates) + 20+ urban/demographic features
 - **Output**: Probability distribution over 8 NEXI service categories
 - **Task**: Service gap prediction with distance-based learning
 - **Domain**: 15-minute city implementation using OpenStreetMap and Census data
@@ -132,18 +132,37 @@ mypy src/
 - **Test Data**: Includes both compliant and non-compliant neighborhoods for validation
 - **Distance Calculations**: Network-based walking distance via OSMnx (not Euclidean)
 
-### Feature Categories (30+ features)
+### Feature Categories (20+ features per point)
+
+**Input Structure**: Multi-point sequences
+- Each prediction location: sequence of [center point] + [all grid cells within 15-minute walk radius]
+- Each point (center or grid cell) has its own feature vector
+
+**Features per point**:
 - **Demographics**: Population density, SES index, car ownership, children per capita, household size, elderly ratio
 - **Built Form**: Building density, building count, average building levels, floor area per capita
-- **Services**: Counts and walk times for each service category (Education, Grocery, Health, Parks, Sustenance, Shops)
+- **Services**: Counts per category within the 15-minute walk radius from that point's perspective (8 features, configurable via `features.walk_15min_radius_meters` in config.yaml):
+  - `count_education_15min`, `count_entertainment_15min`, `count_grocery_15min`, `count_health_15min`, `count_posts_banks_15min`, `count_parks_15min`, `count_sustenance_15min`, `count_shops_15min`
 - **Walkability**: Intersection density, average block length, pedestrian street ratio, sidewalk presence
-- **Composite**: Essential services coverage, average walk time to essentials, 15-minute walk score
+
+**Grid Cell Generation**:
+- Regular grid with configurable cell size (default: 100m × 100m via `features.grid_cell_size_meters`)
+- For each location: generate grid cells, filter to include only cells within `walk_15min_radius_meters`
+- All cells within radius included (no truncation)
+- Max sequence length auto-calculated or configurable via `features.max_context_points`
+
+**Feature Engineering Rationale**:
+- **Multi-point sequences**: Model learns from spatial distribution of people/services, not just aggregated statistics. Grid cells represent demographic and built environment context of people who can access the center location. This is essential for the model's purpose: understanding who can reach a location, not just what's at the location.
+- **Service counts vs. walking distances**: Service features use counts within the 15-minute walk radius (configurable via `features.walk_15min_radius_meters` in config.yaml, default: 1200m) rather than walking distances to avoid data leakage. Walking distances are used in the loss function to construct target probability vectors, so including them as features would give the model direct access to what it's trying to predict.
+- **Removed composite features**: Composite features (essential services coverage, average walk time to essentials, 15-minute walk score) are removed to simplify the feature set and avoid redundancy. The transformer model can learn these patterns from the individual features if needed.
+- **15-minute walk radius**: The configurable walk radius (default: 1200m ≈ 1.2 km) aligns with the 15-minute walk threshold, capturing service density at the neighborhood scale relevant to 15-minute city principles. This radius can be adjusted in `models/config.yaml` via the `features.walk_15min_radius_meters` parameter.
+- **Why FT-Transformer**: With multi-point sequences, the transformer's attention mechanism can learn spatial relationships between grid cells, identifying which areas matter most for service gap prediction. This leverages the transformer's strength in learning from sequences - without sequences, a simple MLP would suffice.
 
 ### Preprocessing Steps
 1. Load neighborhood boundaries and compliance labels from `paris_neighborhoods.geojson`
 2. OSM data extraction (services, buildings, network for distance calculations)
 3. Census data integration
-4. Feature engineering (compute all 30+ features)
+4. Feature engineering (generate grid cells, compute all 20+ features for center point + all grid cells within the 15-minute walk radius)
 5. Extract service locations for distance-based loss calculations
 6. Data validation and quality checks
 7. Normalization/scaling
@@ -156,22 +175,34 @@ mypy src/
 
 ### Tabular Transformer (FT-Transformer) Design
 - **Architecture**: FT-Transformer (single primary model)
-- **Input**: Tabular feature vectors (30+ features) from 15-minute city compliant neighborhoods only (training)
+- **Input**: Multi-point sequences of feature vectors from 15-minute city compliant neighborhoods only (training)
+  - Each location: sequence of [center point feature vector] + [all grid cells within 15-minute walk radius]
+  - Grid cells represent demographic and built environment context of people who can access the center location
+  - Sequence length varies per location (all cells within radius included)
+  - Padding/masking used for batching variable-length sequences
 - **Output**: Probability distribution over 8 NEXI service categories (supports multi-service prediction)
-- **Learning Approach**: Exemplar-based learning - learns optimal service distribution patterns directly from compliant neighborhoods, then generalizes to identify gaps in non-compliant neighborhoods
+- **Learning Approach**: Exemplar-based learning - learns optimal service distribution patterns directly from compliant neighborhoods by understanding spatial context via attention over grid cell sequences, then generalizes to identify gaps in non-compliant neighborhoods
 
 ### Training Configuration
-- **Model Type**: Transformer encoder over feature tokens (multi-class classification head)
+- **Model Type**: Transformer encoder over sequence of feature vectors (multi-class classification head)
 - **Training Data**: Exclusively from 15-minute city compliant neighborhoods
+- **Input Processing**:
+  - Generate regular grid cells (configurable size, default: 100m × 100m) around each location
+  - Include all grid cells within `walk_15min_radius_meters` (no truncation)
+  - Compute features for center point + each grid cell
+  - Handle variable sequence lengths with padding/masking
 - **Loss Function**: Distance-based loss (hybrid approach)
   - Primary: Network-based walking distance from predicted service category to nearest actual service of that type (via OSMnx)
   - Secondary: Classification component (cross-entropy) for robust learning
-  - Normalize distances by 15-minute walk distance (≈ 1.2 km) for comparability
+  - Normalize distances by the 15-minute walk radius (configurable via `features.walk_15min_radius_meters`, default: 1200m) for comparability
 - **Hyperparameters**:
   - d_token, n_layers, n_heads, dropout, learning rate, weight decay, batch size
+  - Grid cell size (`features.grid_cell_size_meters`, default: 100m)
+  - Max context points (`features.max_context_points`, auto-calculated or explicit)
   - Tune via validation (or lightweight hyperparameter search)
 - **Early Stopping**: Based on validation loss with patience
 - **Multi-Service Prediction**: Optional capability to predict multiple needed services simultaneously
+- **Attention Mechanism**: Learns spatial relationships between grid cells, identifying which areas matter most for predictions
 
 ## Evaluation Metrics
 
@@ -179,7 +210,7 @@ mypy src/
 
 ### Primary Metrics (Distance-Based)
 - **Distance-Based Loss**: Network-based walking distance from predicted service category to nearest actual service
-- **Normalized Distance**: Distances normalized by 15-minute walk distance (≈ 1.2 km)
+- **Normalized Distance**: Distances normalized by the 15-minute walk radius (configurable via `features.walk_15min_radius_meters`, default: 1200m)
 - **15-Minute Alignment**: Percentage of predictions within 15-minute threshold
 - **Comparative Loss**: Loss measured on both compliant and non-compliant neighborhoods
 - **Statistical Validation**: t-test or Mann-Whitney U test to verify significantly lower loss on compliant neighborhoods

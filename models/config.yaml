@@ -17,12 +17,16 @@ training:
   early_stopping_patience: 10
   early_stopping_min_delta: 0.001
 
+features:
+  walk_15min_radius_meters: 1200  # 15-minute walk radius in meters (default: 1200m ≈ 1.2 km)
+  grid_cell_size_meters: 100  # Size of grid cells for spatial context (default: 100m × 100m)
+  max_context_points: null  # Auto-calculate based on radius and cell size: ceil(π × (radius/cell_size)²) + buffer, or set explicitly
+
 loss:
-  type: "distance_based"  # distance_based, hybrid, or classification
-  distance_weight: 1.0
-  classification_weight: 0.5
-  normalize_by_15min: true  # Normalize distances by 15-minute walk distance (~1.2 km)
+  type: "distance_similarity"  # Distance-based similarity loss using KL divergence
+  temperature: 200  # Temperature parameter τ for distance-to-probability conversion (in meters)
   use_network_distance: true  # Use OSMnx network distance, not Euclidean
+  missing_service_penalty: 2400  # Distance (meters) to use when service category is missing
 
 data:
   train_split: 0.7
