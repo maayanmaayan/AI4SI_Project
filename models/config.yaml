@@ -54,3 +54,11 @@ osm_extraction:
   retry_attempts: 3  # Number of retries on failure
   retry_delay: 5  # Seconds between retries
   min_services_warning: 5  # Warn if fewer services found
+
+census_extraction:
+  cache_results: true  # Skip if data already exists
+  retry_attempts: 3  # Number of retries on failure
+  retry_delay: 5  # Seconds between retries
+  paris_geocode: "75056"  # INSEE code for Paris
+  iris_level: "IRIS"  # Geographic level
+  min_data_warning: 10  # Warn if fewer IRIS units found
