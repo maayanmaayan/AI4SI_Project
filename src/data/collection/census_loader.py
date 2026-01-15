@@ -181,10 +181,7 @@ class CensusLoader:
             return iris_data
 
         except Exception as e:
-            logger.error(f"Error fetching IRIS data: {e}")
-            import traceback
-
-            traceback.print_exc()
+            logger.exception(f"Error fetching IRIS data: {e}")
             return pd.DataFrame()
 
     def _fetch_commune_age_data(self) -> pd.DataFrame:
@@ -304,10 +301,7 @@ class CensusLoader:
             return filosofi_data
 
         except Exception as e:
-            logger.error(f"Error fetching FILOSOFI income data: {e}")
-            import traceback
-
-            traceback.print_exc()
+            logger.exception(f"Error fetching FILOSOFI income data: {e}")
             return pd.DataFrame()
 
     def _fetch_logement_car_ownership(self, iris_codes: list = None) -> pd.DataFrame:
@@ -417,10 +411,7 @@ class CensusLoader:
             return aggregated
 
         except Exception as e:
-            logger.error(f"Error fetching RP_LOGEMENT car ownership data: {e}")
-            import traceback
-
-            traceback.print_exc()
+            logger.exception(f"Error fetching RP_LOGEMENT car ownership data: {e}")
             return pd.DataFrame()
 
     def _load_iris_boundaries(self) -> gpd.GeoDataFrame:
@@ -718,7 +709,11 @@ class CensusLoader:
         return aggregated
 
     def _extract_demographic_features(
-        self, matched_data: pd.DataFrame, neighborhoods: gpd.GeoDataFrame = None
+        self,
+        matched_data: pd.DataFrame,
+        neighborhoods: gpd.GeoDataFrame = None,
+        commune_age_data: Optional[pd.DataFrame] = None,
+        iris_data_all: Optional[pd.DataFrame] = None,
     ) -> pd.DataFrame:
         """Extract demographic features from matched census data.
 
@@ -749,6 +744,8 @@ class CensusLoader:
         Args:
             matched_data: DataFrame with neighborhood_name and raw census variables.
             neighborhoods: GeoDataFrame with neighborhood boundaries (for area calculation).
+            commune_age_data: Optional pre-fetched commune-level age data. If None, will fetch internally.
+            iris_data_all: Optional pre-fetched Paris-wide IRIS data. If None, will fetch internally.
 
         Returns:
             DataFrame with neighborhood_name and extracted feature columns.
@@ -857,12 +854,16 @@ class CensusLoader:
             working_age_pop = matched_data[total_pop_col]
             
             # Get commune-level data and full Paris IRIS data to estimate total population
-            commune_age_data = self._fetch_commune_age_data()
+            # Use provided data if available, otherwise fetch (for backward compatibility)
+            if commune_age_data is None:
+                commune_age_data = self._fetch_commune_age_data()
             if not commune_age_data.empty and "total_population" in commune_age_data.columns:
                 total_pop_commune = commune_age_data["total_population"].iloc[0]
                 
                 # Get working-age from ALL Paris IRIS data for accurate ratio
-                iris_data_all = self._fetch_iris_data()
+                # Use provided data if available, otherwise fetch (for backward compatibility)
+                if iris_data_all is None:
+                    iris_data_all = self._fetch_iris_data()
                 if not iris_data_all.empty and total_pop_col in iris_data_all.columns:
                     iris_data_all[total_pop_col] = pd.to_numeric(
                         iris_data_all[total_pop_col], errors="coerce"
@@ -1067,7 +1068,9 @@ class CensusLoader:
         # RP_ACTRES_IRIS only has working-age (15-64), so we estimate total population
         # using commune-level total population and IRIS working-age population
         # Strategy: Use Paris-wide working-age ratio to estimate total population per neighborhood
-        commune_age_data = self._fetch_commune_age_data()
+        # Use provided data if available, otherwise fetch (for backward compatibility)
+        if commune_age_data is None:
+            commune_age_data = self._fetch_commune_age_data()
         total_pop_col = "P17_POP1564" if "P17_POP1564" in matched_data.columns else pop_cols[0] if pop_cols else None
         
         # Initialize estimated_total_pop as None - will be calculated if data is available
@@ -1078,7 +1081,9 @@ class CensusLoader:
             
             # Get working-age population from ALL Paris IRIS data (not just matched neighborhoods)
             # This gives us the true Paris-wide ratio (~71% working-age)
-            iris_data_all = self._fetch_iris_data()  # Get all Paris IRIS data
+            # Use provided data if available, otherwise fetch (for backward compatibility)
+            if iris_data_all is None:
+                iris_data_all = self._fetch_iris_data()  # Get all Paris IRIS data
             if not iris_data_all.empty and total_pop_col in iris_data_all.columns:
                 iris_data_all[total_pop_col] = pd.to_numeric(
                     iris_data_all[total_pop_col], errors="coerce"
@@ -1445,8 +1450,19 @@ class CensusLoader:
                 if neighborhood_data.empty:
                     raise ValueError(f"No IRIS data matched to {neighborhood_name}")
 
+                # Fetch commune age data and Paris-wide IRIS data once (shared across all neighborhoods)
+                # This avoids redundant API calls when processing multiple neighborhoods
+                commune_age_data = self._fetch_commune_age_data()
+                iris_data_all = self._fetch_iris_data()  # Get all Paris IRIS data for ratio calculations
+
                 # Extract demographic features (pass neighborhoods for area calculation)
-                features_df = self._extract_demographic_features(neighborhood_data, neighborhoods)
+                # Pass pre-fetched commune_age_data and iris_data_all to avoid redundant calls
+                features_df = self._extract_demographic_features(
+                    neighborhood_data,
+                    neighborhoods,
+                    commune_age_data=commune_age_data,
+                    iris_data_all=iris_data_all,
+                )
                 result["features_count"] = (
                     len(features_df.columns) - 1
                 )  # Exclude neighborhood_name

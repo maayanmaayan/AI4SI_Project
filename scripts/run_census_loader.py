@@ -6,10 +6,14 @@ if __name__ == "__main__":
     print("=" * 80)
     print("Running CensusLoader for all compliant neighborhoods")
     print("=" * 80)
+    print("Note: Using force=True to regenerate with performance fixes")
+    print("Note: pynsee caches downloaded files (e.g., RP_LOGEMENT) automatically")
+    print("=" * 80)
     
     loader = CensusLoader()
     
-    # Load all compliant neighborhoods (force=True to regenerate with new features)
+    # Load all compliant neighborhoods (force=True to regenerate with performance fixes)
+    # Note: pynsee caches downloaded files (e.g., RP_LOGEMENT) automatically, so won't re-download
     summary = loader.load_all_neighborhoods(force=True)
     
     print("\n" + "=" * 80)
