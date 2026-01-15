@@ -1,0 +1,1243 @@
+{
+  "summary": {
+    "total_neighborhoods": 7,
+    "passed": 0,
+    "warnings": 2,
+    "failed": 5,
+    "total_checks": 56,
+    "passed_checks": 34,
+    "warning_checks": 13,
+    "failed_checks": 9
+  },
+  "neighborhoods": [
+    {
+      "neighborhood_name": "Paris Rive Gauche",
+      "status": "fail",
+      "issues": [
+        "Building levels out of hard bounds (1 - 60)",
+        "Building area out of hard bounds (1 - 100000 m\u00b2)",
+        "Intersection degree out of hard bounds (3 - 10)",
+        "Population density (780/km\u00b2) out of hard bounds (1000 - 60000)"
+      ],
+      "warnings": [
+        "Missing service categories: ['Posts and banks']",
+        "High missing levels ratio: 56.50% (threshold: 50.00%)",
+        "Building area ratio (16.23%) outside typical range (30.00% - 90.00%)",
+        "Intersection density (491.59/km\u00b2) outside typical range (10 - 400)",
+        "walking_ratio (0.0341) outside typical range (0.1 - 0.6)",
+        "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+      ],
+      "checks": {
+        "file_structure": {
+          "status": "pass",
+          "issues": [],
+          "files_found": [
+            "data/raw/osm/compliant/paris_rive_gauche/services.geojson",
+            "data/raw/osm/compliant/paris_rive_gauche/buildings.geojson",
+            "data/raw/osm/compliant/paris_rive_gauche/network.graphml",
+            "data/raw/osm/compliant/paris_rive_gauche/intersections.geojson",
+            "data/raw/osm/compliant/paris_rive_gauche/pedestrian_infrastructure.geojson",
+            "data/raw/census/compliant/paris_rive_gauche/census_data.parquet"
+          ],
+          "files_missing": []
+        },
+        "services": {
+          "status": "warn",
+          "issues": [],
+          "warnings": [
+            "Missing service categories: ['Posts and banks']"
+          ],
+          "statistics": {
+            "service_count": 112,
+            "service_density": 48.5516878403451
+          }
+        },
+        "buildings": {
+          "status": "fail",
+          "issues": [
+            "Building levels out of hard bounds (1 - 60)",
+            "Building area out of hard bounds (1 - 100000 m\u00b2)"
+          ],
+          "warnings": [
+            "High missing levels ratio: 56.50% (threshold: 50.00%)",
+            "Building area ratio (16.23%) outside typical range (30.00% - 90.00%)"
+          ],
+          "statistics": {
+            "building_count": 246,
+            "building_density": 106.64031436361513,
+            "avg_building_levels": 5.897196261682243,
+            "max_building_levels": 39.0,
+            "missing_levels_ratio": 0.5650406504065041,
+            "avg_building_area": 1522.0373401802758,
+            "max_building_area": 38466.013082391386,
+            "building_area_ratio": 0.16231054042998527
+          }
+        },
+        "network": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "node_count": 1467,
+            "edge_count": 3968,
+            "node_edge_ratio": 2.704839809134288,
+            "connectivity_ratio": 1.0
+          }
+        },
+        "intersections": {
+          "status": "fail",
+          "issues": [
+            "Intersection degree out of hard bounds (3 - 10)"
+          ],
+          "warnings": [
+            "Intersection density (491.59/km\u00b2) outside typical range (10 - 400)"
+          ],
+          "statistics": {
+            "intersection_count": 1134,
+            "intersection_density": 491.58583938349415,
+            "avg_degree": 6.4109347442680775,
+            "min_degree": 4.0,
+            "max_degree": 30.0
+          }
+        },
+        "pedestrian_features": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "pedestrian_count": 917
+          }
+        },
+        "census": {
+          "status": "fail",
+          "issues": [
+            "Population density (780/km\u00b2) out of hard bounds (1000 - 60000)"
+          ],
+          "warnings": [
+            "walking_ratio (0.0341) outside typical range (0.1 - 0.6)",
+            "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+          ],
+          "statistics": {
+            "population_density": 779.7674413491942,
+            "children_per_capita": 0.13534542870895808,
+            "elderly_ratio": 0.15262356854414422,
+            "ses_index": 0.35969418647997714,
+            "unemployment_rate": 0.13509503886749002,
+            "poverty_rate": 0.18077777777777776,
+            "car_ownership_rate": 0.3346370463078848,
+            "car_commute_ratio": 0.10463310890319177,
+            "walking_ratio": 0.03409999141101492,
+            "cycling_ratio": 0.030260632057504167,
+            "public_transport_ratio": 0.7052520407054432,
+            "two_wheelers_ratio": 0.02571320080455962,
+            "student_ratio": 0.09923265840300063,
+            "retired_ratio": 0.1722118408868956,
+            "permanent_employment_ratio": 0.8250852583126127,
+            "temporary_employment_ratio": 0.10679536338861415,
+            "median_income": 22987.0
+          }
+        },
+        "cross_source_consistency": {
+          "status": "pass",
+          "issues": [],
+          "warnings": []
+        }
+      },
+      "statistics": {
+        "services": {
+          "service_count": 112,
+          "service_density": 48.5516878403451
+        },
+        "buildings": {
+          "building_count": 246,
+          "building_density": 106.64031436361513,
+          "avg_building_levels": 5.897196261682243,
+          "max_building_levels": 39.0,
+          "missing_levels_ratio": 0.5650406504065041,
+          "avg_building_area": 1522.0373401802758,
+          "max_building_area": 38466.013082391386,
+          "building_area_ratio": 0.16231054042998527
+        },
+        "network": {
+          "node_count": 1467,
+          "edge_count": 3968,
+          "node_edge_ratio": 2.704839809134288,
+          "connectivity_ratio": 1.0
+        },
+        "intersections": {
+          "intersection_count": 1134,
+          "intersection_density": 491.58583938349415,
+          "avg_degree": 6.4109347442680775,
+          "min_degree": 4.0,
+          "max_degree": 30.0
+        },
+        "pedestrian_features": {
+          "pedestrian_count": 917
+        },
+        "census": {
+          "population_density": 779.7674413491942,
+          "children_per_capita": 0.13534542870895808,
+          "elderly_ratio": 0.15262356854414422,
+          "ses_index": 0.35969418647997714,
+          "unemployment_rate": 0.13509503886749002,
+          "poverty_rate": 0.18077777777777776,
+          "car_ownership_rate": 0.3346370463078848,
+          "car_commute_ratio": 0.10463310890319177,
+          "walking_ratio": 0.03409999141101492,
+          "cycling_ratio": 0.030260632057504167,
+          "public_transport_ratio": 0.7052520407054432,
+          "two_wheelers_ratio": 0.02571320080455962,
+          "student_ratio": 0.09923265840300063,
+          "retired_ratio": 0.1722118408868956,
+          "permanent_employment_ratio": 0.8250852583126127,
+          "temporary_employment_ratio": 0.10679536338861415,
+          "median_income": 22987.0
+        },
+        "area_km2": 2.306819906411804
+      }
+    },
+    {
+      "neighborhood_name": "Clichy-Batignolles",
+      "status": "fail",
+      "issues": [
+        "Building area out of hard bounds (1 - 100000 m\u00b2)",
+        "Population density (840/km\u00b2) out of hard bounds (1000 - 60000)"
+      ],
+      "warnings": [
+        "Some buildings have > 12 levels (max: 17.0)",
+        "Building area ratio (24.47%) outside typical range (30.00% - 90.00%)",
+        "walking_ratio (0.0414) outside typical range (0.1 - 0.6)",
+        "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+      ],
+      "checks": {
+        "file_structure": {
+          "status": "pass",
+          "issues": [],
+          "files_found": [
+            "data/raw/osm/compliant/clichy-batignolles/services.geojson",
+            "data/raw/osm/compliant/clichy-batignolles/buildings.geojson",
+            "data/raw/osm/compliant/clichy-batignolles/network.graphml",
+            "data/raw/osm/compliant/clichy-batignolles/intersections.geojson",
+            "data/raw/osm/compliant/clichy-batignolles/pedestrian_infrastructure.geojson",
+            "data/raw/census/compliant/clichy-batignolles/census_data.parquet"
+          ],
+          "files_missing": []
+        },
+        "services": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "service_count": 663,
+            "service_density": 199.2147151971215
+          }
+        },
+        "buildings": {
+          "status": "fail",
+          "issues": [
+            "Building area out of hard bounds (1 - 100000 m\u00b2)"
+          ],
+          "warnings": [
+            "Some buildings have > 12 levels (max: 17.0)",
+            "Building area ratio (24.47%) outside typical range (30.00% - 90.00%)"
+          ],
+          "statistics": {
+            "building_count": 2224,
+            "building_density": 668.255696226845,
+            "avg_building_levels": 5.411728395061728,
+            "max_building_levels": 17.0,
+            "missing_levels_ratio": 0.2715827338129496,
+            "avg_building_area": 366.1837004040073,
+            "max_building_area": 19657.036129858927,
+            "building_area_ratio": 0.24470434366040233
+          }
+        },
+        "network": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "node_count": 1463,
+            "edge_count": 4098,
+            "node_edge_ratio": 2.8010936431989064,
+            "connectivity_ratio": 1.0
+          }
+        },
+        "intersections": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "intersection_count": 1269,
+            "intersection_density": 381.30237343159456,
+            "avg_degree": 6.152876280535855,
+            "min_degree": 4.0,
+            "max_degree": 10.0
+          }
+        },
+        "pedestrian_features": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "pedestrian_count": 1203
+          }
+        },
+        "census": {
+          "status": "fail",
+          "issues": [
+            "Population density (840/km\u00b2) out of hard bounds (1000 - 60000)"
+          ],
+          "warnings": [
+            "walking_ratio (0.0414) outside typical range (0.1 - 0.6)",
+            "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+          ],
+          "statistics": {
+            "population_density": 840.1058465472728,
+            "children_per_capita": 0.13534542870895808,
+            "elderly_ratio": 0.15262356854414422,
+            "ses_index": 0.5429404665999497,
+            "unemployment_rate": 0.11150980979185589,
+            "poverty_rate": 0.1563684210526316,
+            "car_ownership_rate": 0.2806601536564545,
+            "car_commute_ratio": 0.11331667787455095,
+            "walking_ratio": 0.0413663675466217,
+            "cycling_ratio": 0.04105183839517625,
+            "public_transport_ratio": 0.6150795161361097,
+            "two_wheelers_ratio": 0.06264417259288245,
+            "student_ratio": 0.08465080821626032,
+            "retired_ratio": 0.16934178546274403,
+            "permanent_employment_ratio": 0.8578693655418916,
+            "temporary_employment_ratio": 0.09076124281306344,
+            "median_income": 32550.333333333332
+          }
+        },
+        "cross_source_consistency": {
+          "status": "pass",
+          "issues": [],
+          "warnings": []
+        }
+      },
+      "statistics": {
+        "services": {
+          "service_count": 663,
+          "service_density": 199.2147151971215
+        },
+        "buildings": {
+          "building_count": 2224,
+          "building_density": 668.255696226845,
+          "avg_building_levels": 5.411728395061728,
+          "max_building_levels": 17.0,
+          "missing_levels_ratio": 0.2715827338129496,
+          "avg_building_area": 366.1837004040073,
+          "max_building_area": 19657.036129858927,
+          "building_area_ratio": 0.24470434366040233
+        },
+        "network": {
+          "node_count": 1463,
+          "edge_count": 4098,
+          "node_edge_ratio": 2.8010936431989064,
+          "connectivity_ratio": 1.0
+        },
+        "intersections": {
+          "intersection_count": 1269,
+          "intersection_density": 381.30237343159456,
+          "avg_degree": 6.152876280535855,
+          "min_degree": 4.0,
+          "max_degree": 10.0
+        },
+        "pedestrian_features": {
+          "pedestrian_count": 1203
+        },
+        "census": {
+          "population_density": 840.1058465472728,
+          "children_per_capita": 0.13534542870895808,
+          "elderly_ratio": 0.15262356854414422,
+          "ses_index": 0.5429404665999497,
+          "unemployment_rate": 0.11150980979185589,
+          "poverty_rate": 0.1563684210526316,
+          "car_ownership_rate": 0.2806601536564545,
+          "car_commute_ratio": 0.11331667787455095,
+          "walking_ratio": 0.0413663675466217,
+          "cycling_ratio": 0.04105183839517625,
+          "public_transport_ratio": 0.6150795161361097,
+          "two_wheelers_ratio": 0.06264417259288245,
+          "student_ratio": 0.08465080821626032,
+          "retired_ratio": 0.16934178546274403,
+          "permanent_employment_ratio": 0.8578693655418916,
+          "temporary_employment_ratio": 0.09076124281306344,
+          "median_income": 32550.333333333332
+        },
+        "area_km2": 3.3280674037757016
+      }
+    },
+    {
+      "neighborhood_name": "Beaugrenelle / 15th Arr.",
+      "status": "fail",
+      "issues": [
+        "Building area out of hard bounds (1 - 100000 m\u00b2)",
+        "Intersection density (990.41/km\u00b2) out of hard bounds (20 - 500)"
+      ],
+      "warnings": [
+        "Some buildings have > 12 levels (max: 33.0)",
+        "walking_ratio (0.0372) outside typical range (0.1 - 0.6)",
+        "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+      ],
+      "checks": {
+        "file_structure": {
+          "status": "pass",
+          "issues": [],
+          "files_found": [
+            "data/raw/osm/compliant/beaugrenelle_/_15th_arr./services.geojson",
+            "data/raw/osm/compliant/beaugrenelle_/_15th_arr./buildings.geojson",
+            "data/raw/osm/compliant/beaugrenelle_/_15th_arr./network.graphml",
+            "data/raw/osm/compliant/beaugrenelle_/_15th_arr./intersections.geojson",
+            "data/raw/osm/compliant/beaugrenelle_/_15th_arr./pedestrian_infrastructure.geojson",
+            "data/raw/census/compliant/beaugrenelle_/_15th_arr./census_data.parquet"
+          ],
+          "files_missing": []
+        },
+        "services": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "service_count": 53,
+            "service_density": 125.27864627645576
+          }
+        },
+        "buildings": {
+          "status": "fail",
+          "issues": [
+            "Building area out of hard bounds (1 - 100000 m\u00b2)"
+          ],
+          "warnings": [
+            "Some buildings have > 12 levels (max: 33.0)"
+          ],
+          "statistics": {
+            "building_count": 160,
+            "building_density": 378.19968687231926,
+            "avg_building_levels": 7.125984251968504,
+            "max_building_levels": 33.0,
+            "missing_levels_ratio": 0.20625,
+            "avg_building_area": 1124.1667796036677,
+            "max_building_area": 37744.17196475739,
+            "building_area_ratio": 0.4251595240383707
+          }
+        },
+        "network": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "node_count": 504,
+            "edge_count": 1400,
+            "node_edge_ratio": 2.7777777777777777,
+            "connectivity_ratio": 1.0
+          }
+        },
+        "intersections": {
+          "status": "fail",
+          "issues": [
+            "Intersection density (990.41/km\u00b2) out of hard bounds (20 - 500)"
+          ],
+          "warnings": [],
+          "statistics": {
+            "intersection_count": 419,
+            "intersection_density": 990.410429996886,
+            "avg_degree": 6.276849642004773,
+            "min_degree": 4.0,
+            "max_degree": 10.0
+          }
+        },
+        "pedestrian_features": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "pedestrian_count": 341
+          }
+        },
+        "census": {
+          "status": "warn",
+          "issues": [],
+          "warnings": [
+            "walking_ratio (0.0372) outside typical range (0.1 - 0.6)",
+            "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+          ],
+          "statistics": {
+            "population_density": 5768.296686000033,
+            "children_per_capita": 0.1353454287089581,
+            "elderly_ratio": 0.15262356854414422,
+            "ses_index": 0.5276772519620041,
+            "unemployment_rate": 0.09571397692587413,
+            "poverty_rate": 0.1494,
+            "car_ownership_rate": 0.3202247191011236,
+            "car_commute_ratio": 0.15996751792479832,
+            "walking_ratio": 0.0372101420086158,
+            "cycling_ratio": 0.03718674961206132,
+            "public_transport_ratio": 0.6447379841243314,
+            "two_wheelers_ratio": 0.030540612127167893,
+            "student_ratio": 0.10995015954976832,
+            "retired_ratio": 0.17487791838343827,
+            "permanent_employment_ratio": 0.8692010103207087,
+            "temporary_employment_ratio": 0.07699961688756993,
+            "median_income": 28968.333333333332
+          }
+        },
+        "cross_source_consistency": {
+          "status": "pass",
+          "issues": [],
+          "warnings": []
+        }
+      },
+      "statistics": {
+        "services": {
+          "service_count": 53,
+          "service_density": 125.27864627645576
+        },
+        "buildings": {
+          "building_count": 160,
+          "building_density": 378.19968687231926,
+          "avg_building_levels": 7.125984251968504,
+          "max_building_levels": 33.0,
+          "missing_levels_ratio": 0.20625,
+          "avg_building_area": 1124.1667796036677,
+          "max_building_area": 37744.17196475739,
+          "building_area_ratio": 0.4251595240383707
+        },
+        "network": {
+          "node_count": 504,
+          "edge_count": 1400,
+          "node_edge_ratio": 2.7777777777777777,
+          "connectivity_ratio": 1.0
+        },
+        "intersections": {
+          "intersection_count": 419,
+          "intersection_density": 990.410429996886,
+          "avg_degree": 6.276849642004773,
+          "min_degree": 4.0,
+          "max_degree": 10.0
+        },
+        "pedestrian_features": {
+          "pedestrian_count": 341
+        },
+        "census": {
+          "population_density": 5768.296686000033,
+          "children_per_capita": 0.1353454287089581,
+          "elderly_ratio": 0.15262356854414422,
+          "ses_index": 0.5276772519620041,
+          "unemployment_rate": 0.09571397692587413,
+          "poverty_rate": 0.1494,
+          "car_ownership_rate": 0.3202247191011236,
+          "car_commute_ratio": 0.15996751792479832,
+          "walking_ratio": 0.0372101420086158,
+          "cycling_ratio": 0.03718674961206132,
+          "public_transport_ratio": 0.6447379841243314,
+          "two_wheelers_ratio": 0.030540612127167893,
+          "student_ratio": 0.10995015954976832,
+          "retired_ratio": 0.17487791838343827,
+          "permanent_employment_ratio": 0.8692010103207087,
+          "temporary_employment_ratio": 0.07699961688756993,
+          "median_income": 28968.333333333332
+        },
+        "area_km2": 0.42305693408470807
+      }
+    },
+    {
+      "neighborhood_name": "Maine\u2013Montparnasse (6e/14e/15e)",
+      "status": "fail",
+      "issues": [
+        "Intersection density (1103.67/km\u00b2) out of hard bounds (20 - 500)",
+        "Intersection degree out of hard bounds (3 - 10)"
+      ],
+      "warnings": [
+        "Some buildings have > 12 levels (max: 59.0)",
+        "Building area ratio (25.39%) outside typical range (30.00% - 90.00%)",
+        "Population density (2803/km\u00b2) outside typical range (5000 - 50000)",
+        "walking_ratio (0.0541) outside typical range (0.1 - 0.6)",
+        "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+      ],
+      "checks": {
+        "file_structure": {
+          "status": "pass",
+          "issues": [],
+          "files_found": [
+            "data/raw/osm/compliant/maine\u2013montparnasse_(6e/14e/15e)/services.geojson",
+            "data/raw/osm/compliant/maine\u2013montparnasse_(6e/14e/15e)/buildings.geojson",
+            "data/raw/osm/compliant/maine\u2013montparnasse_(6e/14e/15e)/network.graphml",
+            "data/raw/osm/compliant/maine\u2013montparnasse_(6e/14e/15e)/intersections.geojson",
+            "data/raw/osm/compliant/maine\u2013montparnasse_(6e/14e/15e)/pedestrian_infrastructure.geojson",
+            "data/raw/census/compliant/maine\u2013montparnasse_(6e/14e/15e)/census_data.parquet"
+          ],
+          "files_missing": []
+        },
+        "services": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "service_count": 184,
+            "service_density": 238.07153818973097
+          }
+        },
+        "buildings": {
+          "status": "warn",
+          "issues": [],
+          "warnings": [
+            "Some buildings have > 12 levels (max: 59.0)",
+            "Building area ratio (25.39%) outside typical range (30.00% - 90.00%)"
+          ],
+          "statistics": {
+            "building_count": 107,
+            "building_density": 138.44377492555006,
+            "avg_building_levels": 6.630769230769231,
+            "max_building_levels": 59.0,
+            "missing_levels_ratio": 0.3925233644859813,
+            "avg_building_area": 1834.2775024486614,
+            "max_building_area": 24950.154555395653,
+            "building_area_ratio": 0.2539443017000026
+          }
+        },
+        "network": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "node_count": 1120,
+            "edge_count": 2928,
+            "node_edge_ratio": 2.6142857142857143,
+            "connectivity_ratio": 1.0
+          }
+        },
+        "intersections": {
+          "status": "fail",
+          "issues": [
+            "Intersection density (1103.67/km\u00b2) out of hard bounds (20 - 500)",
+            "Intersection degree out of hard bounds (3 - 10)"
+          ],
+          "warnings": [],
+          "statistics": {
+            "intersection_count": 853,
+            "intersection_density": 1103.6685982382637,
+            "avg_degree": 6.23915592028136,
+            "min_degree": 4.0,
+            "max_degree": 14.0
+          }
+        },
+        "pedestrian_features": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "pedestrian_count": 464
+          }
+        },
+        "census": {
+          "status": "warn",
+          "issues": [],
+          "warnings": [
+            "Population density (2803/km\u00b2) outside typical range (5000 - 50000)",
+            "walking_ratio (0.0541) outside typical range (0.1 - 0.6)",
+            "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+          ],
+          "statistics": {
+            "population_density": 2802.986337561046,
+            "children_per_capita": 0.13534542870895805,
+            "elderly_ratio": 0.1526235685441442,
+            "ses_index": 0.5610609223920916,
+            "unemployment_rate": 0.0987491325036705,
+            "poverty_rate": 0.14933333333333332,
+            "car_ownership_rate": 0.3090599382518897,
+            "car_commute_ratio": 0.11264605213496723,
+            "walking_ratio": 0.05407175851727312,
+            "cycling_ratio": 0.040893921204349405,
+            "public_transport_ratio": 0.6495140147226325,
+            "two_wheelers_ratio": 0.03484590714357788,
+            "student_ratio": 0.1145143604655141,
+            "retired_ratio": 0.1733944449385081,
+            "permanent_employment_ratio": 0.841865737852182,
+            "temporary_employment_ratio": 0.10437502183320599,
+            "median_income": 33381.53846153846
+          }
+        },
+        "cross_source_consistency": {
+          "status": "pass",
+          "issues": [],
+          "warnings": []
+        }
+      },
+      "statistics": {
+        "services": {
+          "service_count": 184,
+          "service_density": 238.07153818973097
+        },
+        "buildings": {
+          "building_count": 107,
+          "building_density": 138.44377492555006,
+          "avg_building_levels": 6.630769230769231,
+          "max_building_levels": 59.0,
+          "missing_levels_ratio": 0.3925233644859813,
+          "avg_building_area": 1834.2775024486614,
+          "max_building_area": 24950.154555395653,
+          "building_area_ratio": 0.2539443017000026
+        },
+        "network": {
+          "node_count": 1120,
+          "edge_count": 2928,
+          "node_edge_ratio": 2.6142857142857143,
+          "connectivity_ratio": 1.0
+        },
+        "intersections": {
+          "intersection_count": 853,
+          "intersection_density": 1103.6685982382637,
+          "avg_degree": 6.23915592028136,
+          "min_degree": 4.0,
+          "max_degree": 14.0
+        },
+        "pedestrian_features": {
+          "pedestrian_count": 464
+        },
+        "census": {
+          "population_density": 2802.986337561046,
+          "children_per_capita": 0.13534542870895805,
+          "elderly_ratio": 0.1526235685441442,
+          "ses_index": 0.5610609223920916,
+          "unemployment_rate": 0.0987491325036705,
+          "poverty_rate": 0.14933333333333332,
+          "car_ownership_rate": 0.3090599382518897,
+          "car_commute_ratio": 0.11264605213496723,
+          "walking_ratio": 0.05407175851727312,
+          "cycling_ratio": 0.040893921204349405,
+          "public_transport_ratio": 0.6495140147226325,
+          "two_wheelers_ratio": 0.03484590714357788,
+          "student_ratio": 0.1145143604655141,
+          "retired_ratio": 0.1733944449385081,
+          "permanent_employment_ratio": 0.841865737852182,
+          "temporary_employment_ratio": 0.10437502183320599,
+          "median_income": 33381.53846153846
+        },
+        "area_km2": 0.7728769318630659
+      }
+    },
+    {
+      "neighborhood_name": "Bartholom\u00e9\u2013Brancion (15e)",
+      "status": "warn",
+      "issues": [],
+      "warnings": [
+        "Some buildings have > 12 levels (max: 19.0)",
+        "Building area ratio (11.25%) outside typical range (30.00% - 90.00%)",
+        "Intersection density (414.94/km\u00b2) outside typical range (10 - 400)",
+        "Population density (1750/km\u00b2) outside typical range (5000 - 50000)",
+        "walking_ratio (0.0280) outside typical range (0.1 - 0.6)",
+        "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+      ],
+      "checks": {
+        "file_structure": {
+          "status": "pass",
+          "issues": [],
+          "files_found": [
+            "data/raw/osm/compliant/bartholom\u00e9\u2013brancion_(15e)/services.geojson",
+            "data/raw/osm/compliant/bartholom\u00e9\u2013brancion_(15e)/buildings.geojson",
+            "data/raw/osm/compliant/bartholom\u00e9\u2013brancion_(15e)/network.graphml",
+            "data/raw/osm/compliant/bartholom\u00e9\u2013brancion_(15e)/intersections.geojson",
+            "data/raw/osm/compliant/bartholom\u00e9\u2013brancion_(15e)/pedestrian_infrastructure.geojson",
+            "data/raw/census/compliant/bartholom\u00e9\u2013brancion_(15e)/census_data.parquet"
+          ],
+          "files_missing": []
+        },
+        "services": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "service_count": 78,
+            "service_density": 54.12251321434086
+          }
+        },
+        "buildings": {
+          "status": "warn",
+          "issues": [],
+          "warnings": [
+            "Some buildings have > 12 levels (max: 19.0)",
+            "Building area ratio (11.25%) outside typical range (30.00% - 90.00%)"
+          ],
+          "statistics": {
+            "building_count": 305,
+            "building_density": 211.63290423556364,
+            "avg_building_levels": 5.048128342245989,
+            "max_building_levels": 19.0,
+            "missing_levels_ratio": 0.38688524590163936,
+            "avg_building_area": 531.4181702495805,
+            "max_building_area": 5551.568823555648,
+            "building_area_ratio": 0.11246557073346794
+          }
+        },
+        "network": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "node_count": 711,
+            "edge_count": 1936,
+            "node_edge_ratio": 2.722925457102672,
+            "connectivity_ratio": 1.0
+          }
+        },
+        "intersections": {
+          "status": "warn",
+          "issues": [],
+          "warnings": [
+            "Intersection density (414.94/km\u00b2) outside typical range (10 - 400)"
+          ],
+          "statistics": {
+            "intersection_count": 598,
+            "intersection_density": 414.9392679766133,
+            "avg_degree": 6.096989966555184,
+            "min_degree": 4.0,
+            "max_degree": 10.0
+          }
+        },
+        "pedestrian_features": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "pedestrian_count": 609
+          }
+        },
+        "census": {
+          "status": "warn",
+          "issues": [],
+          "warnings": [
+            "Population density (1750/km\u00b2) outside typical range (5000 - 50000)",
+            "walking_ratio (0.0280) outside typical range (0.1 - 0.6)",
+            "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+          ],
+          "statistics": {
+            "population_density": 1750.2736344019186,
+            "children_per_capita": 0.13534542870895808,
+            "elderly_ratio": 0.15262356854414424,
+            "ses_index": 0.42079617535337493,
+            "unemployment_rate": 0.1289432349898367,
+            "poverty_rate": 0.16225,
+            "car_ownership_rate": 0.3152714932126697,
+            "car_commute_ratio": 0.12199519190073169,
+            "walking_ratio": 0.02803548258155736,
+            "cycling_ratio": 0.03274633910242245,
+            "public_transport_ratio": 0.6891428703251572,
+            "two_wheelers_ratio": 0.039974283042835936,
+            "student_ratio": 0.09681407549427357,
+            "retired_ratio": 0.17497349948015437,
+            "permanent_employment_ratio": 0.8546032405004411,
+            "temporary_employment_ratio": 0.09317814682685362,
+            "median_income": 25052.5
+          }
+        },
+        "cross_source_consistency": {
+          "status": "pass",
+          "issues": [],
+          "warnings": []
+        }
+      },
+      "statistics": {
+        "services": {
+          "service_count": 78,
+          "service_density": 54.12251321434086
+        },
+        "buildings": {
+          "building_count": 305,
+          "building_density": 211.63290423556364,
+          "avg_building_levels": 5.048128342245989,
+          "max_building_levels": 19.0,
+          "missing_levels_ratio": 0.38688524590163936,
+          "avg_building_area": 531.4181702495805,
+          "max_building_area": 5551.568823555648,
+          "building_area_ratio": 0.11246557073346794
+        },
+        "network": {
+          "node_count": 711,
+          "edge_count": 1936,
+          "node_edge_ratio": 2.722925457102672,
+          "connectivity_ratio": 1.0
+        },
+        "intersections": {
+          "intersection_count": 598,
+          "intersection_density": 414.9392679766133,
+          "avg_degree": 6.096989966555184,
+          "min_degree": 4.0,
+          "max_degree": 10.0
+        },
+        "pedestrian_features": {
+          "pedestrian_count": 609
+        },
+        "census": {
+          "population_density": 1750.2736344019186,
+          "children_per_capita": 0.13534542870895808,
+          "elderly_ratio": 0.15262356854414424,
+          "ses_index": 0.42079617535337493,
+          "unemployment_rate": 0.1289432349898367,
+          "poverty_rate": 0.16225,
+          "car_ownership_rate": 0.3152714932126697,
+          "car_commute_ratio": 0.12199519190073169,
+          "walking_ratio": 0.02803548258155736,
+          "cycling_ratio": 0.03274633910242245,
+          "public_transport_ratio": 0.6891428703251572,
+          "two_wheelers_ratio": 0.039974283042835936,
+          "student_ratio": 0.09681407549427357,
+          "retired_ratio": 0.17497349948015437,
+          "permanent_employment_ratio": 0.8546032405004411,
+          "temporary_employment_ratio": 0.09317814682685362,
+          "median_income": 25052.5
+        },
+        "area_km2": 1.4411747601427405
+      }
+    },
+    {
+      "neighborhood_name": "Olympiades / Villa d\u2019Este / Place de V\u00e9n\u00e9tie (13e)",
+      "status": "fail",
+      "issues": [
+        "Intersection density (551.45/km\u00b2) out of hard bounds (20 - 500)"
+      ],
+      "warnings": [
+        "Some buildings have > 12 levels (max: 36.0)",
+        "Building area ratio (25.14%) outside typical range (30.00% - 90.00%)",
+        "walking_ratio (0.0349) outside typical range (0.1 - 0.6)",
+        "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+      ],
+      "checks": {
+        "file_structure": {
+          "status": "pass",
+          "issues": [],
+          "files_found": [
+            "data/raw/osm/compliant/olympiades_/_villa_d\u2019este_/_place_de_v\u00e9n\u00e9tie_(13e)/services.geojson",
+            "data/raw/osm/compliant/olympiades_/_villa_d\u2019este_/_place_de_v\u00e9n\u00e9tie_(13e)/buildings.geojson",
+            "data/raw/osm/compliant/olympiades_/_villa_d\u2019este_/_place_de_v\u00e9n\u00e9tie_(13e)/network.graphml",
+            "data/raw/osm/compliant/olympiades_/_villa_d\u2019este_/_place_de_v\u00e9n\u00e9tie_(13e)/intersections.geojson",
+            "data/raw/osm/compliant/olympiades_/_villa_d\u2019este_/_place_de_v\u00e9n\u00e9tie_(13e)/pedestrian_infrastructure.geojson",
+            "data/raw/census/compliant/olympiades_/_villa_d\u2019este_/_place_de_v\u00e9n\u00e9tie_(13e)/census_data.parquet"
+          ],
+          "files_missing": []
+        },
+        "services": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "service_count": 114,
+            "service_density": 243.66331763335413
+          }
+        },
+        "buildings": {
+          "status": "warn",
+          "issues": [],
+          "warnings": [
+            "Some buildings have > 12 levels (max: 36.0)",
+            "Building area ratio (25.14%) outside typical range (30.00% - 90.00%)"
+          ],
+          "statistics": {
+            "building_count": 81,
+            "building_density": 173.12919937106741,
+            "avg_building_levels": 15.208333333333334,
+            "max_building_levels": 36.0,
+            "missing_levels_ratio": 0.4074074074074074,
+            "avg_building_area": 1452.22807526772,
+            "max_building_area": 22563.92683684635,
+            "building_area_ratio": 0.25142308397528657
+          }
+        },
+        "network": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "node_count": 355,
+            "edge_count": 892,
+            "node_edge_ratio": 2.5126760563380284,
+            "connectivity_ratio": 1.0
+          }
+        },
+        "intersections": {
+          "status": "fail",
+          "issues": [
+            "Intersection density (551.45/km\u00b2) out of hard bounds (20 - 500)"
+          ],
+          "warnings": [],
+          "statistics": {
+            "intersection_count": 258,
+            "intersection_density": 551.4485609596962,
+            "avg_degree": 6.162790697674419,
+            "min_degree": 4.0,
+            "max_degree": 10.0
+          }
+        },
+        "pedestrian_features": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "pedestrian_count": 238
+          }
+        },
+        "census": {
+          "status": "warn",
+          "issues": [],
+          "warnings": [
+            "walking_ratio (0.0349) outside typical range (0.1 - 0.6)",
+            "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+          ],
+          "statistics": {
+            "population_density": 5555.064302664976,
+            "children_per_capita": 0.1353454287089581,
+            "elderly_ratio": 0.15262356854414427,
+            "ses_index": 0.34588164276705735,
+            "unemployment_rate": 0.14643153159447775,
+            "poverty_rate": 0.20644444444444446,
+            "car_ownership_rate": 0.37061960385982734,
+            "car_commute_ratio": 0.12004042942530607,
+            "walking_ratio": 0.0349132757816372,
+            "cycling_ratio": 0.03078713260763895,
+            "public_transport_ratio": 0.677764068191528,
+            "two_wheelers_ratio": 0.016816145758931925,
+            "student_ratio": 0.0967427160577293,
+            "retired_ratio": 0.1806794746768732,
+            "permanent_employment_ratio": 0.8533290719357223,
+            "temporary_employment_ratio": 0.10198077302257885,
+            "median_income": 20615.555555555555
+          }
+        },
+        "cross_source_consistency": {
+          "status": "pass",
+          "issues": [],
+          "warnings": []
+        }
+      },
+      "statistics": {
+        "services": {
+          "service_count": 114,
+          "service_density": 243.66331763335413
+        },
+        "buildings": {
+          "building_count": 81,
+          "building_density": 173.12919937106741,
+          "avg_building_levels": 15.208333333333334,
+          "max_building_levels": 36.0,
+          "missing_levels_ratio": 0.4074074074074074,
+          "avg_building_area": 1452.22807526772,
+          "max_building_area": 22563.92683684635,
+          "building_area_ratio": 0.25142308397528657
+        },
+        "network": {
+          "node_count": 355,
+          "edge_count": 892,
+          "node_edge_ratio": 2.5126760563380284,
+          "connectivity_ratio": 1.0
+        },
+        "intersections": {
+          "intersection_count": 258,
+          "intersection_density": 551.4485609596962,
+          "avg_degree": 6.162790697674419,
+          "min_degree": 4.0,
+          "max_degree": 10.0
+        },
+        "pedestrian_features": {
+          "pedestrian_count": 238
+        },
+        "census": {
+          "population_density": 5555.064302664976,
+          "children_per_capita": 0.1353454287089581,
+          "elderly_ratio": 0.15262356854414427,
+          "ses_index": 0.34588164276705735,
+          "unemployment_rate": 0.14643153159447775,
+          "poverty_rate": 0.20644444444444446,
+          "car_ownership_rate": 0.37061960385982734,
+          "car_commute_ratio": 0.12004042942530607,
+          "walking_ratio": 0.0349132757816372,
+          "cycling_ratio": 0.03078713260763895,
+          "public_transport_ratio": 0.677764068191528,
+          "two_wheelers_ratio": 0.016816145758931925,
+          "student_ratio": 0.0967427160577293,
+          "retired_ratio": 0.1806794746768732,
+          "permanent_employment_ratio": 0.8533290719357223,
+          "temporary_employment_ratio": 0.10198077302257885,
+          "median_income": 20615.555555555555
+        },
+        "area_km2": 0.4678586875827508
+      }
+    },
+    {
+      "neighborhood_name": "B\u00e9dier\u2013Oudin\u00e9 (13e)",
+      "status": "warn",
+      "issues": [],
+      "warnings": [
+        "Missing service categories: ['Entertainment']",
+        "Some buildings have > 12 levels (max: 20.0)",
+        "Building area ratio (16.07%) outside typical range (30.00% - 90.00%)",
+        "Intersection density (475.20/km\u00b2) outside typical range (10 - 400)",
+        "walking_ratio (0.0365) outside typical range (0.1 - 0.6)",
+        "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+      ],
+      "checks": {
+        "file_structure": {
+          "status": "pass",
+          "issues": [],
+          "files_found": [
+            "data/raw/osm/compliant/b\u00e9dier\u2013oudin\u00e9_(13e)/services.geojson",
+            "data/raw/osm/compliant/b\u00e9dier\u2013oudin\u00e9_(13e)/buildings.geojson",
+            "data/raw/osm/compliant/b\u00e9dier\u2013oudin\u00e9_(13e)/network.graphml",
+            "data/raw/osm/compliant/b\u00e9dier\u2013oudin\u00e9_(13e)/intersections.geojson",
+            "data/raw/osm/compliant/b\u00e9dier\u2013oudin\u00e9_(13e)/pedestrian_infrastructure.geojson",
+            "data/raw/census/compliant/b\u00e9dier\u2013oudin\u00e9_(13e)/census_data.parquet"
+          ],
+          "files_missing": []
+        },
+        "services": {
+          "status": "warn",
+          "issues": [],
+          "warnings": [
+            "Missing service categories: ['Entertainment']"
+          ],
+          "statistics": {
+            "service_count": 36,
+            "service_density": 86.83889599220952
+          }
+        },
+        "buildings": {
+          "status": "warn",
+          "issues": [],
+          "warnings": [
+            "Some buildings have > 12 levels (max: 20.0)",
+            "Building area ratio (16.07%) outside typical range (30.00% - 90.00%)"
+          ],
+          "statistics": {
+            "building_count": 75,
+            "building_density": 180.9143666504365,
+            "avg_building_levels": 5.020833333333333,
+            "max_building_levels": 20.0,
+            "missing_levels_ratio": 0.36,
+            "avg_building_area": 888.4908005541228,
+            "max_building_area": 7502.456862046641,
+            "building_area_ratio": 0.1607407504569884
+          }
+        },
+        "network": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "node_count": 286,
+            "edge_count": 686,
+            "node_edge_ratio": 2.3986013986013988,
+            "connectivity_ratio": 1.0
+          }
+        },
+        "intersections": {
+          "status": "warn",
+          "issues": [],
+          "warnings": [
+            "Intersection density (475.20/km\u00b2) outside typical range (10 - 400)"
+          ],
+          "statistics": {
+            "intersection_count": 197,
+            "intersection_density": 475.2017364018132,
+            "avg_degree": 6.060913705583756,
+            "min_degree": 4.0,
+            "max_degree": 8.0
+          }
+        },
+        "pedestrian_features": {
+          "status": "pass",
+          "issues": [],
+          "warnings": [],
+          "statistics": {
+            "pedestrian_count": 298
+          }
+        },
+        "census": {
+          "status": "warn",
+          "issues": [],
+          "warnings": [
+            "walking_ratio (0.0365) outside typical range (0.1 - 0.6)",
+            "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+          ],
+          "statistics": {
+            "population_density": 5235.003877653612,
+            "children_per_capita": 0.13534542870895805,
+            "elderly_ratio": 0.15262356854414422,
+            "ses_index": 0.32399906553152225,
+            "unemployment_rate": 0.14203204732798974,
+            "poverty_rate": 0.22516666666666665,
+            "car_ownership_rate": 0.3077614623913695,
+            "car_commute_ratio": 0.10066545004568066,
+            "walking_ratio": 0.03650690006659332,
+            "cycling_ratio": 0.024674767949462058,
+            "public_transport_ratio": 0.7264645669559867,
+            "two_wheelers_ratio": 0.018832539670474466,
+            "student_ratio": 0.10420717723982816,
+            "retired_ratio": 0.1696851970676645,
+            "permanent_employment_ratio": 0.8205539773616735,
+            "temporary_employment_ratio": 0.12420941231241636,
+            "median_income": 20520.0
+          }
+        },
+        "cross_source_consistency": {
+          "status": "pass",
+          "issues": [],
+          "warnings": []
+        }
+      },
+      "statistics": {
+        "services": {
+          "service_count": 36,
+          "service_density": 86.83889599220952
+        },
+        "buildings": {
+          "building_count": 75,
+          "building_density": 180.9143666504365,
+          "avg_building_levels": 5.020833333333333,
+          "max_building_levels": 20.0,
+          "missing_levels_ratio": 0.36,
+          "avg_building_area": 888.4908005541228,
+          "max_building_area": 7502.456862046641,
+          "building_area_ratio": 0.1607407504569884
+        },
+        "network": {
+          "node_count": 286,
+          "edge_count": 686,
+          "node_edge_ratio": 2.3986013986013988,
+          "connectivity_ratio": 1.0
+        },
+        "intersections": {
+          "intersection_count": 197,
+          "intersection_density": 475.2017364018132,
+          "avg_degree": 6.060913705583756,
+          "min_degree": 4.0,
+          "max_degree": 8.0
+        },
+        "pedestrian_features": {
+          "pedestrian_count": 298
+        },
+        "census": {
+          "population_density": 5235.003877653612,
+          "children_per_capita": 0.13534542870895805,
+          "elderly_ratio": 0.15262356854414422,
+          "ses_index": 0.32399906553152225,
+          "unemployment_rate": 0.14203204732798974,
+          "poverty_rate": 0.22516666666666665,
+          "car_ownership_rate": 0.3077614623913695,
+          "car_commute_ratio": 0.10066545004568066,
+          "walking_ratio": 0.03650690006659332,
+          "cycling_ratio": 0.024674767949462058,
+          "public_transport_ratio": 0.7264645669559867,
+          "two_wheelers_ratio": 0.018832539670474466,
+          "student_ratio": 0.10420717723982816,
+          "retired_ratio": 0.1696851970676645,
+          "permanent_employment_ratio": 0.8205539773616735,
+          "temporary_employment_ratio": 0.12420941231241636,
+          "median_income": 20520.0
+        },
+        "area_km2": 0.4145607747388869
+      }
+    }
+  ]
+}

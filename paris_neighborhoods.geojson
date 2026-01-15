@@ -7,11 +7,11 @@
         "name": "Paris Rive Gauche",
         "label": "Compliant",
         "verification_status": "verified",
-        "verification_basis": "Listed as a sector under the PLU bioclimatique thematic OAP \"Quartier du quart d’heure\" (Paris – Rive Gauche, 13e).",
-        "verification_by": "Ville de Paris (PLU bioclimatique – OAP)",
+        "verification_basis": "Listed as a sector under the PLU bioclimatique thematic OAP \"Quartier du quart d\u2019heure\" (Paris \u2013 Rive Gauche, 13e).",
+        "verification_by": "Ville de Paris (PLU bioclimatique \u2013 OAP)",
         "verification_source_url": "https://regles-urbanisme.paris.fr/plu-bioclimatique/jsp/site/Portal.jsp?id_document=226&portlet_id=45",
         "boundary_corrected": "2024-12-19",
-        "correction_note": "Longitude extended from 2.364 to 2.384 to match verified eastern extent at 2.3834°E",
+        "correction_note": "Longitude extended from 2.364 to 2.384 to match verified eastern extent at 2.3834\u00b0E",
         "boundary_source": "PLU bioclimatique OAP",
         "boundary_type": "official_polygon",
         "boundary_updated": "2024-12-19"
@@ -402,11 +402,11 @@
         "name": "Clichy-Batignolles",
         "label": "Compliant",
         "verification_status": "verified",
-        "verification_basis": "Paris.fr describes a mixed-use project within Clichy-Batignolles (Stream Building) \"dans l’esprit de la ville du quart d’heure\".",
+        "verification_basis": "Paris.fr describes a mixed-use project within Clichy-Batignolles (Stream Building) \"dans l\u2019esprit de la ville du quart d\u2019heure\".",
         "verification_by": "Ville de Paris (paris.fr)",
         "verification_source_url": "https://www.paris.fr/pages/a-clichy-batignolles-un-concentre-d-innovation-urbaine-dans-un-nouvel-immeuble-25546",
         "boundary_corrected": "2024-12-19",
-        "correction_note": "Longitude shifted from 2.307-2.317 to 2.312-2.322 to better align with 17th arrondissement center at 2.3217°E",
+        "correction_note": "Longitude shifted from 2.307-2.317 to 2.312-2.322 to better align with 17th arrondissement center at 2.3217\u00b0E",
         "boundary_source": "OpenStreetMap",
         "boundary_type": "official_polygon",
         "boundary_updated": "2024-12-19"
@@ -749,11 +749,11 @@
         "name": "Beaugrenelle / 15th Arr.",
         "label": "Compliant",
         "verification_status": "verified",
-        "verification_basis": "Listed as a sector under the PLU bioclimatique thematic OAP \"Quartier du quart d’heure\" (Beaugrenelle – Front de Seine, 15e).",
-        "verification_by": "Ville de Paris (PLU bioclimatique – OAP)",
+        "verification_basis": "Listed as a sector under the PLU bioclimatique thematic OAP \"Quartier du quart d\u2019heure\" (Beaugrenelle \u2013 Front de Seine, 15e).",
+        "verification_by": "Ville de Paris (PLU bioclimatique \u2013 OAP)",
         "verification_source_url": "https://regles-urbanisme.paris.fr/plu-bioclimatique/jsp/site/Portal.jsp?id_document=226&portlet_id=45",
         "boundary_corrected": "2024-12-19",
-        "correction_note": "Latitude shifted north from 48.835-48.845 to 48.840-48.850 to include verified center at 48.8506°N",
+        "correction_note": "Latitude shifted north from 48.835-48.845 to 48.840-48.850 to include verified center at 48.8506\u00b0N",
         "boundary_source": "PLU bioclimatique OAP",
         "boundary_type": "official_polygon",
         "boundary_updated": "2024-12-19"
@@ -901,100 +901,11 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "Saint-Vincent-de-Paul (14e)",
+        "name": "Maine\u2013Montparnasse (6e/14e/15e)",
         "label": "Compliant",
         "verification_status": "verified",
-        "verification_basis": "Identified as OAP n°8 (Saint-Vincent de Paul, XIVe) in the Paris PLU bioclimatique report; this OAP is presented within the PLU choices for OAPs and supports proximity amenities and active mobility consistent with the 'quartier du quart d’heure' (15-minute city) approach.",
-        "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
-        "verification_source_url": "https://data.geopf.fr/annexes/gpu/documents/DU_75056/4a02192762e3f46a75fe0f69f31c2bf2/75056_rapport_6_20241120.pdf",
-        "boundary_source": "PLU bioclimatique OAP",
-        "boundary_type": "official_polygon",
-        "boundary_updated": "2024-12-19"
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              2.3343364877656767,
-              48.83659538225988
-            ],
-            [
-              2.333792649707112,
-              48.83682204074491
-            ],
-            [
-              2.33387829109741,
-              48.83690797753087
-            ],
-            [
-              2.3336290820964076,
-              48.83701247573236
-            ],
-            [
-              2.3333122051174104,
-              48.837145263650335
-            ],
-            [
-              2.331886152160623,
-              48.83774567304536
-            ],
-            [
-              2.3319851302754127,
-              48.837819170906776
-            ],
-            [
-              2.3316929541184077,
-              48.83799441310017
-            ],
-            [
-              2.3319692493393678,
-              48.83819221654998
-            ],
-            [
-              2.3322541460743675,
-              48.83801750867115
-            ],
-            [
-              2.3326241955620275,
-              48.83830222809663
-            ],
-            [
-              2.3332848490324203,
-              48.83879196910496
-            ],
-            [
-              2.3333241469183292,
-              48.83885937986321
-            ],
-            [
-              2.3353272619072816,
-              48.83795949575967
-            ],
-            [
-              2.3352807273167753,
-              48.83791336221822
-            ],
-            [
-              2.335527996236704,
-              48.83780808091765
-            ],
-            [
-              2.3343364877656767,
-              48.83659538225988
-            ]
-          ]
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Maine–Montparnasse (6e/14e/15e)",
-        "label": "Compliant",
-        "verification_status": "verified",
-        "verification_basis": "Identified as OAP n°9 (Maine-Montparnasse, VIe/XIVe/XVe) in the Paris PLU bioclimatique report; it emphasizes reallocating street space and improving walking/cycling connections, consistent with proximity-based planning.",
-        "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
+        "verification_basis": "Identified as OAP n\u00b09 (Maine-Montparnasse, VIe/XIVe/XVe) in the Paris PLU bioclimatique report; it emphasizes reallocating street space and improving walking/cycling connections, consistent with proximity-based planning.",
+        "verification_by": "Ville de Paris (PLU bioclimatique \u2013 Rapport de pr\u00e9sentation)",
         "verification_source_url": "https://data.geopf.fr/annexes/gpu/documents/DU_75056/4a02192762e3f46a75fe0f69f31c2bf2/75056_rapport_6_20241120.pdf",
         "boundary_source": "PLU bioclimatique OAP",
         "boundary_type": "official_polygon",
@@ -1415,11 +1326,11 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "Bartholomé–Brancion (15e)",
+        "name": "Bartholom\u00e9\u2013Brancion (15e)",
         "label": "Compliant",
         "verification_status": "verified",
-        "verification_basis": "Identified as OAP n°10 (Bartholomé-Brancion, XVe) in the Paris PLU bioclimatique report; it focuses on improving the public realm and continuity for active mobility.",
-        "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
+        "verification_basis": "Identified as OAP n\u00b010 (Bartholom\u00e9-Brancion, XVe) in the Paris PLU bioclimatique report; it focuses on improving the public realm and continuity for active mobility.",
+        "verification_by": "Ville de Paris (PLU bioclimatique \u2013 Rapport de pr\u00e9sentation)",
         "verification_source_url": "https://data.geopf.fr/annexes/gpu/documents/DU_75056/4a02192762e3f46a75fe0f69f31c2bf2/75056_rapport_6_20241120.pdf",
         "boundary_source": "PLU bioclimatique OAP",
         "boundary_type": "official_polygon",
@@ -1568,152 +1479,11 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "Paul Bourget (13e)",
+        "name": "Olympiades / Villa d\u2019Este / Place de V\u00e9n\u00e9tie (13e)",
         "label": "Compliant",
         "verification_status": "verified",
-        "verification_basis": "Identified as OAP n°4 (Paul Bourget, XIIIe) in the Paris PLU bioclimatique report; it is included in the OAP choices supporting local quality of life and proximity amenities.",
-        "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
-        "verification_source_url": "https://data.geopf.fr/annexes/gpu/documents/DU_75056/4a02192762e3f46a75fe0f69f31c2bf2/75056_rapport_6_20241120.pdf",
-        "boundary_source": "PLU bioclimatique OAP",
-        "boundary_type": "official_polygon",
-        "boundary_updated": "2024-12-19"
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              2.3569221363217543,
-              48.81780835163582
-            ],
-            [
-              2.3570676625450595,
-              48.81783696110905
-            ],
-            [
-              2.35725928939045,
-              48.81787400529877
-            ],
-            [
-              2.357871276384482,
-              48.817995811287894
-            ],
-            [
-              2.3587463827481456,
-              48.818161176833435
-            ],
-            [
-              2.3590130902372235,
-              48.81823006949385
-            ],
-            [
-              2.3591500582535043,
-              48.81812443472829
-            ],
-            [
-              2.359416566011053,
-              48.818150967252365
-            ],
-            [
-              2.359360546704791,
-              48.818326382855055
-            ],
-            [
-              2.3595484611500472,
-              48.81836667809816
-            ],
-            [
-              2.3596691274575976,
-              48.81801395202303
-            ],
-            [
-              2.359755576050595,
-              48.817736712889634
-            ],
-            [
-              2.360188824719414,
-              48.81639462554848
-            ],
-            [
-              2.3597782451921376,
-              48.81632275978111
-            ],
-            [
-              2.359348782815639,
-              48.816351783124055
-            ],
-            [
-              2.358946113289192,
-              48.81637783671535
-            ],
-            [
-              2.358758615100606,
-              48.81600274549915
-            ],
-            [
-              2.3585141459387255,
-              48.815999868298775
-            ],
-            [
-              2.3587092043003404,
-              48.81639527164945
-            ],
-            [
-              2.3581277163697454,
-              48.816429633197856
-            ],
-            [
-              2.3573971726399505,
-              48.81647956058539
-            ],
-            [
-              2.3569512811841786,
-              48.81652343837047
-            ],
-            [
-              2.356477374492459,
-              48.816595387252114
-            ],
-            [
-              2.356501423713543,
-              48.81672938803048
-            ],
-            [
-              2.3565102253446883,
-              48.81677885018996
-            ],
-            [
-              2.3566250831436273,
-              48.81746860843814
-            ],
-            [
-              2.356651780014624,
-              48.81760895677348
-            ],
-            [
-              2.3566490997954075,
-              48.817642511789316
-            ],
-            [
-              2.356625197713525,
-              48.81775205112789
-            ],
-            [
-              2.3569221363217543,
-              48.81780835163582
-            ]
-          ]
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Olympiades / Villa d’Este / Place de Vénétie (13e)",
-        "label": "Compliant",
-        "verification_status": "verified",
-        "verification_basis": "Identified as OAP n°5 (Olympiades/Villa d’Este–Place de Vénétie, XIIIe) in the Paris PLU bioclimatique report; it fits within the PLU’s proximity-oriented planning framework.",
-        "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
+        "verification_basis": "Identified as OAP n\u00b05 (Olympiades/Villa d\u2019Este\u2013Place de V\u00e9n\u00e9tie, XIIIe) in the Paris PLU bioclimatique report; it fits within the PLU\u2019s proximity-oriented planning framework.",
+        "verification_by": "Ville de Paris (PLU bioclimatique \u2013 Rapport de pr\u00e9sentation)",
         "verification_source_url": "https://data.geopf.fr/annexes/gpu/documents/DU_75056/4a02192762e3f46a75fe0f69f31c2bf2/75056_rapport_6_20241120.pdf",
         "boundary_source": "PLU bioclimatique OAP",
         "boundary_type": "official_polygon",
@@ -1774,11 +1544,11 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "Bédier–Oudiné (13e)",
+        "name": "B\u00e9dier\u2013Oudin\u00e9 (13e)",
         "label": "Compliant",
         "verification_status": "verified",
-        "verification_basis": "Identified as OAP n°7 (Bédier–Oudiné, XIIIe) in the Paris PLU bioclimatique report; it supports upgrading the area with improved connections and local quality-of-life goals.",
-        "verification_by": "Ville de Paris (PLU bioclimatique – Rapport de présentation)",
+        "verification_basis": "Identified as OAP n\u00b07 (B\u00e9dier\u2013Oudin\u00e9, XIIIe) in the Paris PLU bioclimatique report; it supports upgrading the area with improved connections and local quality-of-life goals.",
+        "verification_by": "Ville de Paris (PLU bioclimatique \u2013 Rapport de pr\u00e9sentation)",
         "verification_source_url": "https://data.geopf.fr/annexes/gpu/documents/DU_75056/4a02192762e3f46a75fe0f69f31c2bf2/75056_rapport_6_20241120.pdf",
         "boundary_source": "PLU bioclimatique OAP",
         "boundary_type": "official_polygon",
@@ -2155,7 +1925,7 @@
         "name": "Belleville",
         "label": "Non-Compliant",
         "boundary_corrected": "2024-12-19",
-        "correction_note": "Longitude corrected from 2.366-2.376 to 2.375-2.395 to match verified center at 2.3845°E",
+        "correction_note": "Longitude corrected from 2.366-2.376 to 2.375-2.395 to match verified center at 2.3845\u00b0E",
         "boundary_source": "OpenStreetMap",
         "boundary_type": "official_polygon",
         "boundary_updated": "2024-12-19"
@@ -2498,7 +2268,7 @@
         "name": "Bastille / Oberkampf",
         "label": "Non-Compliant",
         "boundary_corrected": "2024-12-19",
-        "correction_note": "Longitude corrected from 2.363-2.373 to 2.367-2.387 and latitude extended to 48.873 to include Rue Oberkampf center at 2.3763°E, 48.8654°N",
+        "correction_note": "Longitude corrected from 2.363-2.373 to 2.367-2.387 and latitude extended to 48.873 to include Rue Oberkampf center at 2.3763\u00b0E, 48.8654\u00b0N",
         "boundary_source": "OpenStreetMap",
         "boundary_type": "official_polygon",
         "boundary_updated": "2024-12-19"
@@ -6226,7 +5996,7 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "La Défense",
+        "name": "La D\u00e9fense",
         "label": "Non-Compliant",
         "boundary_source": "Approximation based on known boundaries",
         "boundary_type": "approximated_polygon",
