@@ -457,7 +457,7 @@ class OSMExtractor:
                     "building": row.get("building", None),
                     "building:levels": row.get("building:levels", None),
                     "area_m2": row["area_m2"],
-                    "geometry": row.geometry,
+                    "geometry": row.geometry,  # Keep original geometry in WGS84
                     "neighborhood_name": neighborhood_name,
                 }
             )
@@ -559,6 +559,7 @@ class OSMExtractor:
         network_graph: nx.Graph,
         buffered_polygon: Polygon,
         neighborhood_name: str,
+        original_polygon: Optional[Polygon] = None,
     ) -> Tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
         """Extract intersections and pedestrian infrastructure.
 
@@ -613,6 +614,13 @@ class OSMExtractor:
 
         if intersection_nodes:
             intersections_gdf = gpd.GeoDataFrame(intersection_nodes)
+            # Filter intersections to original polygon boundary (not buffered)
+            # This ensures intersection density is calculated correctly
+            if original_polygon is not None:
+                intersections_gdf.set_crs("EPSG:4326", inplace=True)
+                intersections_gdf = intersections_gdf[
+                    intersections_gdf.geometry.within(original_polygon)
+                ].copy()
         else:
             intersections_gdf = gpd.GeoDataFrame(
                 columns=["node_id", "degree", "geometry", "neighborhood_name"]
@@ -800,7 +808,7 @@ class OSMExtractor:
 
                 # Extract walkability features
                 intersections_gdf, pedestrian_gdf = self.extract_walkability_features(
-                    network_graph, buffered_polygon, neighborhood_name
+                    network_graph, buffered_polygon, neighborhood_name, geometry
                 )
                 result["intersections_count"] = len(intersections_gdf)
                 result["pedestrian_features_count"] = len(pedestrian_gdf)

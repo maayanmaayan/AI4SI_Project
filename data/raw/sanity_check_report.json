@@ -5,9 +5,9 @@
     "warnings": 2,
     "failed": 5,
     "total_checks": 56,
-    "passed_checks": 34,
-    "warning_checks": 13,
-    "failed_checks": 9
+    "passed_checks": 32,
+    "warning_checks": 18,
+    "failed_checks": 6
   },
   "neighborhoods": [
     {
@@ -15,17 +15,14 @@
       "status": "fail",
       "issues": [
         "Building levels out of hard bounds (1 - 60)",
-        "Building area out of hard bounds (1 - 100000 m\u00b2)",
-        "Intersection degree out of hard bounds (3 - 10)",
-        "Population density (780/km\u00b2) out of hard bounds (1000 - 60000)"
+        "Building area out of hard bounds (1 - 100000 m\u00b2)"
       ],
       "warnings": [
         "Missing service categories: ['Posts and banks']",
         "High missing levels ratio: 56.50% (threshold: 50.00%)",
-        "Building area ratio (16.23%) outside typical range (30.00% - 90.00%)",
-        "Intersection density (491.59/km\u00b2) outside typical range (10 - 400)",
-        "walking_ratio (0.0341) outside typical range (0.1 - 0.6)",
-        "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+        "Building area ratio (24.66%) outside typical range (30.00% - 90.00%)",
+        "Intersection density (496.54/km\u00b2) outside typical range (10 - 400)",
+        "walking_ratio (0.0341) outside typical range (0.1 - 0.6)"
       ],
       "checks": {
         "file_structure": {
@@ -49,7 +46,7 @@
           ],
           "statistics": {
             "service_count": 112,
-            "service_density": 48.5516878403451
+            "service_density": 73.75666499088477
           }
         },
         "buildings": {
@@ -60,17 +57,17 @@
           ],
           "warnings": [
             "High missing levels ratio: 56.50% (threshold: 50.00%)",
-            "Building area ratio (16.23%) outside typical range (30.00% - 90.00%)"
+            "Building area ratio (24.66%) outside typical range (30.00% - 90.00%)"
           ],
           "statistics": {
             "building_count": 246,
-            "building_density": 106.64031436361513,
+            "building_density": 162.0012463192648,
             "avg_building_levels": 5.897196261682243,
             "max_building_levels": 39.0,
             "missing_levels_ratio": 0.5650406504065041,
             "avg_building_area": 1522.0373401802758,
             "max_building_area": 38466.013082391386,
-            "building_area_ratio": 0.16231054042998527
+            "building_area_ratio": 0.2465719460536635
           }
         },
         "network": {
@@ -85,19 +82,17 @@
           }
         },
         "intersections": {
-          "status": "fail",
-          "issues": [
-            "Intersection degree out of hard bounds (3 - 10)"
-          ],
+          "status": "warn",
+          "issues": [],
           "warnings": [
-            "Intersection density (491.59/km\u00b2) outside typical range (10 - 400)"
+            "Intersection density (496.54/km\u00b2) outside typical range (10 - 400)"
           ],
           "statistics": {
-            "intersection_count": 1134,
-            "intersection_density": 491.58583938349415,
-            "avg_degree": 6.4109347442680775,
+            "intersection_count": 754,
+            "intersection_density": 496.5404053850636,
+            "avg_degree": 6.517241379310345,
             "min_degree": 4.0,
-            "max_degree": 30.0
+            "max_degree": 10.0
           }
         },
         "pedestrian_features": {
@@ -109,22 +104,19 @@
           }
         },
         "census": {
-          "status": "fail",
-          "issues": [
-            "Population density (780/km\u00b2) out of hard bounds (1000 - 60000)"
-          ],
+          "status": "warn",
+          "issues": [],
           "warnings": [
-            "walking_ratio (0.0341) outside typical range (0.1 - 0.6)",
-            "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+            "walking_ratio (0.0341) outside typical range (0.1 - 0.6)"
           ],
           "statistics": {
-            "population_density": 779.7674413491942,
+            "population_density": 12476.279061587107,
             "children_per_capita": 0.13534542870895808,
             "elderly_ratio": 0.15262356854414422,
+            "working_age_ratio": 0.7120310027468977,
             "ses_index": 0.35969418647997714,
             "unemployment_rate": 0.13509503886749002,
             "poverty_rate": 0.18077777777777776,
-            "car_ownership_rate": 0.3346370463078848,
             "car_commute_ratio": 0.10463310890319177,
             "walking_ratio": 0.03409999141101492,
             "cycling_ratio": 0.030260632057504167,
@@ -146,17 +138,17 @@
       "statistics": {
         "services": {
           "service_count": 112,
-          "service_density": 48.5516878403451
+          "service_density": 73.75666499088477
         },
         "buildings": {
           "building_count": 246,
-          "building_density": 106.64031436361513,
+          "building_density": 162.0012463192648,
           "avg_building_levels": 5.897196261682243,
           "max_building_levels": 39.0,
           "missing_levels_ratio": 0.5650406504065041,
           "avg_building_area": 1522.0373401802758,
           "max_building_area": 38466.013082391386,
-          "building_area_ratio": 0.16231054042998527
+          "building_area_ratio": 0.2465719460536635
         },
         "network": {
           "node_count": 1467,
@@ -165,23 +157,23 @@
           "connectivity_ratio": 1.0
         },
         "intersections": {
-          "intersection_count": 1134,
-          "intersection_density": 491.58583938349415,
-          "avg_degree": 6.4109347442680775,
+          "intersection_count": 754,
+          "intersection_density": 496.5404053850636,
+          "avg_degree": 6.517241379310345,
           "min_degree": 4.0,
-          "max_degree": 30.0
+          "max_degree": 10.0
         },
         "pedestrian_features": {
           "pedestrian_count": 917
         },
         "census": {
-          "population_density": 779.7674413491942,
+          "population_density": 12476.279061587107,
           "children_per_capita": 0.13534542870895808,
           "elderly_ratio": 0.15262356854414422,
+          "working_age_ratio": 0.7120310027468977,
           "ses_index": 0.35969418647997714,
           "unemployment_rate": 0.13509503886749002,
           "poverty_rate": 0.18077777777777776,
-          "car_ownership_rate": 0.3346370463078848,
           "car_commute_ratio": 0.10463310890319177,
           "walking_ratio": 0.03409999141101492,
           "cycling_ratio": 0.030260632057504167,
@@ -193,21 +185,20 @@
           "temporary_employment_ratio": 0.10679536338861415,
           "median_income": 22987.0
         },
-        "area_km2": 2.306819906411804
+        "area_km2": 1.5185068361461507
       }
     },
     {
       "neighborhood_name": "Clichy-Batignolles",
       "status": "fail",
       "issues": [
-        "Building area out of hard bounds (1 - 100000 m\u00b2)",
-        "Population density (840/km\u00b2) out of hard bounds (1000 - 60000)"
+        "Building area out of hard bounds (1 - 100000 m\u00b2)"
       ],
       "warnings": [
+        "Service density (302.97/km\u00b2) outside typical range (10 - 300)",
         "Some buildings have > 12 levels (max: 17.0)",
-        "Building area ratio (24.47%) outside typical range (30.00% - 90.00%)",
-        "walking_ratio (0.0414) outside typical range (0.1 - 0.6)",
-        "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+        "Intersection density (435.50/km\u00b2) outside typical range (10 - 400)",
+        "walking_ratio (0.0414) outside typical range (0.1 - 0.6)"
       ],
       "checks": {
         "file_structure": {
@@ -224,12 +215,14 @@
           "files_missing": []
         },
         "services": {
-          "status": "pass",
+          "status": "warn",
           "issues": [],
-          "warnings": [],
+          "warnings": [
+            "Service density (302.97/km\u00b2) outside typical range (10 - 300)"
+          ],
           "statistics": {
             "service_count": 663,
-            "service_density": 199.2147151971215
+            "service_density": 302.972947741217
           }
         },
         "buildings": {
@@ -238,18 +231,17 @@
             "Building area out of hard bounds (1 - 100000 m\u00b2)"
           ],
           "warnings": [
-            "Some buildings have > 12 levels (max: 17.0)",
-            "Building area ratio (24.47%) outside typical range (30.00% - 90.00%)"
+            "Some buildings have > 12 levels (max: 17.0)"
           ],
           "statistics": {
             "building_count": 2224,
-            "building_density": 668.255696226845,
+            "building_density": 1016.3074446100552,
             "avg_building_levels": 5.411728395061728,
             "max_building_levels": 17.0,
             "missing_levels_ratio": 0.2715827338129496,
             "avg_building_area": 366.1837004040073,
             "max_building_area": 19657.036129858927,
-            "building_area_ratio": 0.24470434366040233
+            "building_area_ratio": 0.3721552208154507
           }
         },
         "network": {
@@ -264,13 +256,15 @@
           }
         },
         "intersections": {
-          "status": "pass",
+          "status": "warn",
           "issues": [],
-          "warnings": [],
+          "warnings": [
+            "Intersection density (435.50/km\u00b2) outside typical range (10 - 400)"
+          ],
           "statistics": {
-            "intersection_count": 1269,
-            "intersection_density": 381.30237343159456,
-            "avg_degree": 6.152876280535855,
+            "intersection_count": 953,
+            "intersection_density": 435.4950515797584,
+            "avg_degree": 6.3336831059811125,
             "min_degree": 4.0,
             "max_degree": 10.0
           }
@@ -284,31 +278,28 @@
           }
         },
         "census": {
-          "status": "fail",
-          "issues": [
-            "Population density (840/km\u00b2) out of hard bounds (1000 - 60000)"
-          ],
+          "status": "warn",
+          "issues": [],
           "warnings": [
-            "walking_ratio (0.0414) outside typical range (0.1 - 0.6)",
-            "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+            "walking_ratio (0.0414) outside typical range (0.1 - 0.6)"
           ],
           "statistics": {
-            "population_density": 840.1058465472728,
-            "children_per_capita": 0.13534542870895808,
-            "elderly_ratio": 0.15262356854414422,
-            "ses_index": 0.5429404665999497,
-            "unemployment_rate": 0.11150980979185589,
+            "population_density": 25203.175396418184,
+            "children_per_capita": 0.1353454287089581,
+            "elderly_ratio": 0.15262356854414424,
+            "working_age_ratio": 0.7120310027468977,
+            "ses_index": 0.5429404665999498,
+            "unemployment_rate": 0.11150980979185592,
             "poverty_rate": 0.1563684210526316,
-            "car_ownership_rate": 0.2806601536564545,
-            "car_commute_ratio": 0.11331667787455095,
+            "car_commute_ratio": 0.11331667787455096,
             "walking_ratio": 0.0413663675466217,
-            "cycling_ratio": 0.04105183839517625,
-            "public_transport_ratio": 0.6150795161361097,
-            "two_wheelers_ratio": 0.06264417259288245,
-            "student_ratio": 0.08465080821626032,
-            "retired_ratio": 0.16934178546274403,
-            "permanent_employment_ratio": 0.8578693655418916,
-            "temporary_employment_ratio": 0.09076124281306344,
+            "cycling_ratio": 0.04105183839517626,
+            "public_transport_ratio": 0.6150795161361098,
+            "two_wheelers_ratio": 0.06264417259288246,
+            "student_ratio": 0.08465080821626031,
+            "retired_ratio": 0.16934178546274406,
+            "permanent_employment_ratio": 0.8578693655418917,
+            "temporary_employment_ratio": 0.09076124281306346,
             "median_income": 32550.333333333332
           }
         },
@@ -321,17 +312,17 @@
       "statistics": {
         "services": {
           "service_count": 663,
-          "service_density": 199.2147151971215
+          "service_density": 302.972947741217
         },
         "buildings": {
           "building_count": 2224,
-          "building_density": 668.255696226845,
+          "building_density": 1016.3074446100552,
           "avg_building_levels": 5.411728395061728,
           "max_building_levels": 17.0,
           "missing_levels_ratio": 0.2715827338129496,
           "avg_building_area": 366.1837004040073,
           "max_building_area": 19657.036129858927,
-          "building_area_ratio": 0.24470434366040233
+          "building_area_ratio": 0.3721552208154507
         },
         "network": {
           "node_count": 1463,
@@ -340,9 +331,9 @@
           "connectivity_ratio": 1.0
         },
         "intersections": {
-          "intersection_count": 1269,
-          "intersection_density": 381.30237343159456,
-          "avg_degree": 6.152876280535855,
+          "intersection_count": 953,
+          "intersection_density": 435.4950515797584,
+          "avg_degree": 6.3336831059811125,
           "min_degree": 4.0,
           "max_degree": 10.0
         },
@@ -350,25 +341,25 @@
           "pedestrian_count": 1203
         },
         "census": {
-          "population_density": 840.1058465472728,
-          "children_per_capita": 0.13534542870895808,
-          "elderly_ratio": 0.15262356854414422,
-          "ses_index": 0.5429404665999497,
-          "unemployment_rate": 0.11150980979185589,
+          "population_density": 25203.175396418184,
+          "children_per_capita": 0.1353454287089581,
+          "elderly_ratio": 0.15262356854414424,
+          "working_age_ratio": 0.7120310027468977,
+          "ses_index": 0.5429404665999498,
+          "unemployment_rate": 0.11150980979185592,
           "poverty_rate": 0.1563684210526316,
-          "car_ownership_rate": 0.2806601536564545,
-          "car_commute_ratio": 0.11331667787455095,
+          "car_commute_ratio": 0.11331667787455096,
           "walking_ratio": 0.0413663675466217,
-          "cycling_ratio": 0.04105183839517625,
-          "public_transport_ratio": 0.6150795161361097,
-          "two_wheelers_ratio": 0.06264417259288245,
-          "student_ratio": 0.08465080821626032,
-          "retired_ratio": 0.16934178546274403,
-          "permanent_employment_ratio": 0.8578693655418916,
-          "temporary_employment_ratio": 0.09076124281306344,
+          "cycling_ratio": 0.04105183839517626,
+          "public_transport_ratio": 0.6150795161361098,
+          "two_wheelers_ratio": 0.06264417259288246,
+          "student_ratio": 0.08465080821626031,
+          "retired_ratio": 0.16934178546274406,
+          "permanent_employment_ratio": 0.8578693655418917,
+          "temporary_employment_ratio": 0.09076124281306346,
           "median_income": 32550.333333333332
         },
-        "area_km2": 3.3280674037757016
+        "area_km2": 2.188314187596374
       }
     },
     {
@@ -376,12 +367,11 @@
       "status": "fail",
       "issues": [
         "Building area out of hard bounds (1 - 100000 m\u00b2)",
-        "Intersection density (990.41/km\u00b2) out of hard bounds (20 - 500)"
+        "Intersection density (836.94/km\u00b2) out of hard bounds (20 - 500)"
       ],
       "warnings": [
         "Some buildings have > 12 levels (max: 33.0)",
-        "walking_ratio (0.0372) outside typical range (0.1 - 0.6)",
-        "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+        "walking_ratio (0.0372) outside typical range (0.1 - 0.6)"
       ],
       "checks": {
         "file_structure": {
@@ -403,7 +393,7 @@
           "warnings": [],
           "statistics": {
             "service_count": 53,
-            "service_density": 125.27864627645576
+            "service_density": 190.37789883680804
           }
         },
         "buildings": {
@@ -416,13 +406,13 @@
           ],
           "statistics": {
             "building_count": 160,
-            "building_density": 378.19968687231926,
+            "building_density": 574.7257323375337,
             "avg_building_levels": 7.125984251968504,
             "max_building_levels": 33.0,
             "missing_levels_ratio": 0.20625,
             "avg_building_area": 1124.1667796036677,
             "max_building_area": 37744.17196475739,
-            "building_area_ratio": 0.4251595240383707
+            "building_area_ratio": 0.6460875756772448
           }
         },
         "network": {
@@ -439,14 +429,14 @@
         "intersections": {
           "status": "fail",
           "issues": [
-            "Intersection density (990.41/km\u00b2) out of hard bounds (20 - 500)"
+            "Intersection density (836.94/km\u00b2) out of hard bounds (20 - 500)"
           ],
           "warnings": [],
           "statistics": {
-            "intersection_count": 419,
-            "intersection_density": 990.410429996886,
-            "avg_degree": 6.276849642004773,
-            "min_degree": 4.0,
+            "intersection_count": 233,
+            "intersection_density": 836.9443477165335,
+            "avg_degree": 6.454935622317596,
+            "min_degree": 6.0,
             "max_degree": 10.0
           }
         },
@@ -462,26 +452,25 @@
           "status": "warn",
           "issues": [],
           "warnings": [
-            "walking_ratio (0.0372) outside typical range (0.1 - 0.6)",
-            "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+            "walking_ratio (0.0372) outside typical range (0.1 - 0.6)"
           ],
           "statistics": {
-            "population_density": 5768.296686000033,
-            "children_per_capita": 0.1353454287089581,
+            "population_density": 34609.7801160002,
+            "children_per_capita": 0.13534542870895808,
             "elderly_ratio": 0.15262356854414422,
-            "ses_index": 0.5276772519620041,
-            "unemployment_rate": 0.09571397692587413,
+            "working_age_ratio": 0.7120310027468977,
+            "ses_index": 0.5276772519620042,
+            "unemployment_rate": 0.09571397692587415,
             "poverty_rate": 0.1494,
-            "car_ownership_rate": 0.3202247191011236,
             "car_commute_ratio": 0.15996751792479832,
             "walking_ratio": 0.0372101420086158,
-            "cycling_ratio": 0.03718674961206132,
+            "cycling_ratio": 0.03718674961206133,
             "public_transport_ratio": 0.6447379841243314,
             "two_wheelers_ratio": 0.030540612127167893,
             "student_ratio": 0.10995015954976832,
             "retired_ratio": 0.17487791838343827,
-            "permanent_employment_ratio": 0.8692010103207087,
-            "temporary_employment_ratio": 0.07699961688756993,
+            "permanent_employment_ratio": 0.8692010103207088,
+            "temporary_employment_ratio": 0.07699961688756991,
             "median_income": 28968.333333333332
           }
         },
@@ -494,17 +483,17 @@
       "statistics": {
         "services": {
           "service_count": 53,
-          "service_density": 125.27864627645576
+          "service_density": 190.37789883680804
         },
         "buildings": {
           "building_count": 160,
-          "building_density": 378.19968687231926,
+          "building_density": 574.7257323375337,
           "avg_building_levels": 7.125984251968504,
           "max_building_levels": 33.0,
           "missing_levels_ratio": 0.20625,
           "avg_building_area": 1124.1667796036677,
           "max_building_area": 37744.17196475739,
-          "building_area_ratio": 0.4251595240383707
+          "building_area_ratio": 0.6460875756772448
         },
         "network": {
           "node_count": 504,
@@ -513,50 +502,48 @@
           "connectivity_ratio": 1.0
         },
         "intersections": {
-          "intersection_count": 419,
-          "intersection_density": 990.410429996886,
-          "avg_degree": 6.276849642004773,
-          "min_degree": 4.0,
+          "intersection_count": 233,
+          "intersection_density": 836.9443477165335,
+          "avg_degree": 6.454935622317596,
+          "min_degree": 6.0,
           "max_degree": 10.0
         },
         "pedestrian_features": {
           "pedestrian_count": 341
         },
         "census": {
-          "population_density": 5768.296686000033,
-          "children_per_capita": 0.1353454287089581,
+          "population_density": 34609.7801160002,
+          "children_per_capita": 0.13534542870895808,
           "elderly_ratio": 0.15262356854414422,
-          "ses_index": 0.5276772519620041,
-          "unemployment_rate": 0.09571397692587413,
+          "working_age_ratio": 0.7120310027468977,
+          "ses_index": 0.5276772519620042,
+          "unemployment_rate": 0.09571397692587415,
           "poverty_rate": 0.1494,
-          "car_ownership_rate": 0.3202247191011236,
           "car_commute_ratio": 0.15996751792479832,
           "walking_ratio": 0.0372101420086158,
-          "cycling_ratio": 0.03718674961206132,
+          "cycling_ratio": 0.03718674961206133,
           "public_transport_ratio": 0.6447379841243314,
           "two_wheelers_ratio": 0.030540612127167893,
           "student_ratio": 0.10995015954976832,
           "retired_ratio": 0.17487791838343827,
-          "permanent_employment_ratio": 0.8692010103207087,
-          "temporary_employment_ratio": 0.07699961688756993,
+          "permanent_employment_ratio": 0.8692010103207088,
+          "temporary_employment_ratio": 0.07699961688756991,
           "median_income": 28968.333333333332
         },
-        "area_km2": 0.42305693408470807
+        "area_km2": 0.27839365978837494
       }
     },
     {
       "neighborhood_name": "Maine\u2013Montparnasse (6e/14e/15e)",
       "status": "fail",
       "issues": [
-        "Intersection density (1103.67/km\u00b2) out of hard bounds (20 - 500)",
+        "Intersection density (1431.14/km\u00b2) out of hard bounds (20 - 500)",
         "Intersection degree out of hard bounds (3 - 10)"
       ],
       "warnings": [
+        "Service density (361.72/km\u00b2) outside typical range (10 - 300)",
         "Some buildings have > 12 levels (max: 59.0)",
-        "Building area ratio (25.39%) outside typical range (30.00% - 90.00%)",
-        "Population density (2803/km\u00b2) outside typical range (5000 - 50000)",
-        "walking_ratio (0.0541) outside typical range (0.1 - 0.6)",
-        "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+        "walking_ratio (0.0541) outside typical range (0.1 - 0.6)"
       ],
       "checks": {
         "file_structure": {
@@ -573,30 +560,31 @@
           "files_missing": []
         },
         "services": {
-          "status": "pass",
+          "status": "warn",
           "issues": [],
-          "warnings": [],
+          "warnings": [
+            "Service density (361.72/km\u00b2) outside typical range (10 - 300)"
+          ],
           "statistics": {
             "service_count": 184,
-            "service_density": 238.07153818973097
+            "service_density": 361.7168505458145
           }
         },
         "buildings": {
           "status": "warn",
           "issues": [],
           "warnings": [
-            "Some buildings have > 12 levels (max: 59.0)",
-            "Building area ratio (25.39%) outside typical range (30.00% - 90.00%)"
+            "Some buildings have > 12 levels (max: 59.0)"
           ],
           "statistics": {
             "building_count": 107,
-            "building_density": 138.44377492555006,
+            "building_density": 210.3462120021856,
             "avg_building_levels": 6.630769230769231,
             "max_building_levels": 59.0,
             "missing_levels_ratio": 0.3925233644859813,
             "avg_building_area": 1834.2775024486614,
             "max_building_area": 24950.154555395653,
-            "building_area_ratio": 0.2539443017000026
+            "building_area_ratio": 0.3858333244009057
           }
         },
         "network": {
@@ -604,23 +592,23 @@
           "issues": [],
           "warnings": [],
           "statistics": {
-            "node_count": 1120,
-            "edge_count": 2928,
-            "node_edge_ratio": 2.6142857142857143,
+            "node_count": 1126,
+            "edge_count": 2944,
+            "node_edge_ratio": 2.6145648312611014,
             "connectivity_ratio": 1.0
           }
         },
         "intersections": {
           "status": "fail",
           "issues": [
-            "Intersection density (1103.67/km\u00b2) out of hard bounds (20 - 500)",
+            "Intersection density (1431.14/km\u00b2) out of hard bounds (20 - 500)",
             "Intersection degree out of hard bounds (3 - 10)"
           ],
           "warnings": [],
           "statistics": {
-            "intersection_count": 853,
-            "intersection_density": 1103.6685982382637,
-            "avg_degree": 6.23915592028136,
+            "intersection_count": 728,
+            "intersection_density": 1431.1405825943095,
+            "avg_degree": 6.346153846153846,
             "min_degree": 4.0,
             "max_degree": 14.0
           }
@@ -637,27 +625,25 @@
           "status": "warn",
           "issues": [],
           "warnings": [
-            "Population density (2803/km\u00b2) outside typical range (5000 - 50000)",
-            "walking_ratio (0.0541) outside typical range (0.1 - 0.6)",
-            "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+            "walking_ratio (0.0541) outside typical range (0.1 - 0.6)"
           ],
           "statistics": {
-            "population_density": 2802.986337561046,
-            "children_per_capita": 0.13534542870895805,
-            "elderly_ratio": 0.1526235685441442,
+            "population_density": 42044.7950634157,
+            "children_per_capita": 0.1353454287089581,
+            "elderly_ratio": 0.15262356854414427,
+            "working_age_ratio": 0.7120310027468977,
             "ses_index": 0.5610609223920916,
             "unemployment_rate": 0.0987491325036705,
             "poverty_rate": 0.14933333333333332,
-            "car_ownership_rate": 0.3090599382518897,
-            "car_commute_ratio": 0.11264605213496723,
+            "car_commute_ratio": 0.11264605213496724,
             "walking_ratio": 0.05407175851727312,
             "cycling_ratio": 0.040893921204349405,
-            "public_transport_ratio": 0.6495140147226325,
+            "public_transport_ratio": 0.6495140147226326,
             "two_wheelers_ratio": 0.03484590714357788,
-            "student_ratio": 0.1145143604655141,
-            "retired_ratio": 0.1733944449385081,
+            "student_ratio": 0.11451436046551408,
+            "retired_ratio": 0.17339444493850814,
             "permanent_employment_ratio": 0.841865737852182,
-            "temporary_employment_ratio": 0.10437502183320599,
+            "temporary_employment_ratio": 0.10437502183320597,
             "median_income": 33381.53846153846
           }
         },
@@ -670,28 +656,28 @@
       "statistics": {
         "services": {
           "service_count": 184,
-          "service_density": 238.07153818973097
+          "service_density": 361.7168505458145
         },
         "buildings": {
           "building_count": 107,
-          "building_density": 138.44377492555006,
+          "building_density": 210.3462120021856,
           "avg_building_levels": 6.630769230769231,
           "max_building_levels": 59.0,
           "missing_levels_ratio": 0.3925233644859813,
           "avg_building_area": 1834.2775024486614,
           "max_building_area": 24950.154555395653,
-          "building_area_ratio": 0.2539443017000026
+          "building_area_ratio": 0.3858333244009057
         },
         "network": {
-          "node_count": 1120,
-          "edge_count": 2928,
-          "node_edge_ratio": 2.6142857142857143,
+          "node_count": 1126,
+          "edge_count": 2944,
+          "node_edge_ratio": 2.6145648312611014,
           "connectivity_ratio": 1.0
         },
         "intersections": {
-          "intersection_count": 853,
-          "intersection_density": 1103.6685982382637,
-          "avg_degree": 6.23915592028136,
+          "intersection_count": 728,
+          "intersection_density": 1431.1405825943095,
+          "avg_degree": 6.346153846153846,
           "min_degree": 4.0,
           "max_degree": 14.0
         },
@@ -699,25 +685,25 @@
           "pedestrian_count": 464
         },
         "census": {
-          "population_density": 2802.986337561046,
-          "children_per_capita": 0.13534542870895805,
-          "elderly_ratio": 0.1526235685441442,
+          "population_density": 42044.7950634157,
+          "children_per_capita": 0.1353454287089581,
+          "elderly_ratio": 0.15262356854414427,
+          "working_age_ratio": 0.7120310027468977,
           "ses_index": 0.5610609223920916,
           "unemployment_rate": 0.0987491325036705,
           "poverty_rate": 0.14933333333333332,
-          "car_ownership_rate": 0.3090599382518897,
-          "car_commute_ratio": 0.11264605213496723,
+          "car_commute_ratio": 0.11264605213496724,
           "walking_ratio": 0.05407175851727312,
           "cycling_ratio": 0.040893921204349405,
-          "public_transport_ratio": 0.6495140147226325,
+          "public_transport_ratio": 0.6495140147226326,
           "two_wheelers_ratio": 0.03484590714357788,
-          "student_ratio": 0.1145143604655141,
-          "retired_ratio": 0.1733944449385081,
+          "student_ratio": 0.11451436046551408,
+          "retired_ratio": 0.17339444493850814,
           "permanent_employment_ratio": 0.841865737852182,
-          "temporary_employment_ratio": 0.10437502183320599,
+          "temporary_employment_ratio": 0.10437502183320597,
           "median_income": 33381.53846153846
         },
-        "area_km2": 0.7728769318630659
+        "area_km2": 0.5086851766025062
       }
     },
     {
@@ -726,11 +712,9 @@
       "issues": [],
       "warnings": [
         "Some buildings have > 12 levels (max: 19.0)",
-        "Building area ratio (11.25%) outside typical range (30.00% - 90.00%)",
-        "Intersection density (414.94/km\u00b2) outside typical range (10 - 400)",
-        "Population density (1750/km\u00b2) outside typical range (5000 - 50000)",
-        "walking_ratio (0.0280) outside typical range (0.1 - 0.6)",
-        "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+        "Building area ratio (17.08%) outside typical range (30.00% - 90.00%)",
+        "Intersection density (412.12/km\u00b2) outside typical range (10 - 400)",
+        "walking_ratio (0.0280) outside typical range (0.1 - 0.6)"
       ],
       "checks": {
         "file_structure": {
@@ -752,7 +736,7 @@
           "warnings": [],
           "statistics": {
             "service_count": 78,
-            "service_density": 54.12251321434086
+            "service_density": 82.2139664470628
           }
         },
         "buildings": {
@@ -760,17 +744,17 @@
           "issues": [],
           "warnings": [
             "Some buildings have > 12 levels (max: 19.0)",
-            "Building area ratio (11.25%) outside typical range (30.00% - 90.00%)"
+            "Building area ratio (17.08%) outside typical range (30.00% - 90.00%)"
           ],
           "statistics": {
             "building_count": 305,
-            "building_density": 211.63290423556364,
+            "building_density": 321.4776893122327,
             "avg_building_levels": 5.048128342245989,
             "max_building_levels": 19.0,
             "missing_levels_ratio": 0.38688524590163936,
             "avg_building_area": 531.4181702495805,
             "max_building_area": 5551.568823555648,
-            "building_area_ratio": 0.11246557073346794
+            "building_area_ratio": 0.17083908543036985
           }
         },
         "network": {
@@ -788,12 +772,12 @@
           "status": "warn",
           "issues": [],
           "warnings": [
-            "Intersection density (414.94/km\u00b2) outside typical range (10 - 400)"
+            "Intersection density (412.12/km\u00b2) outside typical range (10 - 400)"
           ],
           "statistics": {
-            "intersection_count": 598,
-            "intersection_density": 414.9392679766133,
-            "avg_degree": 6.096989966555184,
+            "intersection_count": 391,
+            "intersection_density": 412.12385744617376,
+            "avg_degree": 6.3631713554987215,
             "min_degree": 4.0,
             "max_degree": 10.0
           }
@@ -810,26 +794,24 @@
           "status": "warn",
           "issues": [],
           "warnings": [
-            "Population density (1750/km\u00b2) outside typical range (5000 - 50000)",
-            "walking_ratio (0.0280) outside typical range (0.1 - 0.6)",
-            "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+            "walking_ratio (0.0280) outside typical range (0.1 - 0.6)"
           ],
           "statistics": {
-            "population_density": 1750.2736344019186,
-            "children_per_capita": 0.13534542870895808,
+            "population_density": 22753.55724722494,
+            "children_per_capita": 0.1353454287089581,
             "elderly_ratio": 0.15262356854414424,
+            "working_age_ratio": 0.7120310027468977,
             "ses_index": 0.42079617535337493,
-            "unemployment_rate": 0.1289432349898367,
+            "unemployment_rate": 0.12894323498983673,
             "poverty_rate": 0.16225,
-            "car_ownership_rate": 0.3152714932126697,
-            "car_commute_ratio": 0.12199519190073169,
+            "car_commute_ratio": 0.12199519190073167,
             "walking_ratio": 0.02803548258155736,
             "cycling_ratio": 0.03274633910242245,
-            "public_transport_ratio": 0.6891428703251572,
+            "public_transport_ratio": 0.6891428703251571,
             "two_wheelers_ratio": 0.039974283042835936,
             "student_ratio": 0.09681407549427357,
             "retired_ratio": 0.17497349948015437,
-            "permanent_employment_ratio": 0.8546032405004411,
+            "permanent_employment_ratio": 0.8546032405004412,
             "temporary_employment_ratio": 0.09317814682685362,
             "median_income": 25052.5
           }
@@ -843,17 +825,17 @@
       "statistics": {
         "services": {
           "service_count": 78,
-          "service_density": 54.12251321434086
+          "service_density": 82.2139664470628
         },
         "buildings": {
           "building_count": 305,
-          "building_density": 211.63290423556364,
+          "building_density": 321.4776893122327,
           "avg_building_levels": 5.048128342245989,
           "max_building_levels": 19.0,
           "missing_levels_ratio": 0.38688524590163936,
           "avg_building_area": 531.4181702495805,
           "max_building_area": 5551.568823555648,
-          "building_area_ratio": 0.11246557073346794
+          "building_area_ratio": 0.17083908543036985
         },
         "network": {
           "node_count": 711,
@@ -862,9 +844,9 @@
           "connectivity_ratio": 1.0
         },
         "intersections": {
-          "intersection_count": 598,
-          "intersection_density": 414.9392679766133,
-          "avg_degree": 6.096989966555184,
+          "intersection_count": 391,
+          "intersection_density": 412.12385744617376,
+          "avg_degree": 6.3631713554987215,
           "min_degree": 4.0,
           "max_degree": 10.0
         },
@@ -872,38 +854,36 @@
           "pedestrian_count": 609
         },
         "census": {
-          "population_density": 1750.2736344019186,
-          "children_per_capita": 0.13534542870895808,
+          "population_density": 22753.55724722494,
+          "children_per_capita": 0.1353454287089581,
           "elderly_ratio": 0.15262356854414424,
+          "working_age_ratio": 0.7120310027468977,
           "ses_index": 0.42079617535337493,
-          "unemployment_rate": 0.1289432349898367,
+          "unemployment_rate": 0.12894323498983673,
           "poverty_rate": 0.16225,
-          "car_ownership_rate": 0.3152714932126697,
-          "car_commute_ratio": 0.12199519190073169,
+          "car_commute_ratio": 0.12199519190073167,
           "walking_ratio": 0.02803548258155736,
           "cycling_ratio": 0.03274633910242245,
-          "public_transport_ratio": 0.6891428703251572,
+          "public_transport_ratio": 0.6891428703251571,
           "two_wheelers_ratio": 0.039974283042835936,
           "student_ratio": 0.09681407549427357,
           "retired_ratio": 0.17497349948015437,
-          "permanent_employment_ratio": 0.8546032405004411,
+          "permanent_employment_ratio": 0.8546032405004412,
           "temporary_employment_ratio": 0.09317814682685362,
           "median_income": 25052.5
         },
-        "area_km2": 1.4411747601427405
+        "area_km2": 0.9487439101995383
       }
     },
     {
       "neighborhood_name": "Olympiades / Villa d\u2019Este / Place de V\u00e9n\u00e9tie (13e)",
       "status": "fail",
       "issues": [
-        "Intersection density (551.45/km\u00b2) out of hard bounds (20 - 500)"
+        "Buildings GeoDataFrame is empty"
       ],
       "warnings": [
-        "Some buildings have > 12 levels (max: 36.0)",
-        "Building area ratio (25.14%) outside typical range (30.00% - 90.00%)",
-        "walking_ratio (0.0349) outside typical range (0.1 - 0.6)",
-        "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+        "Service density (370.09/km\u00b2) outside typical range (10 - 300)",
+        "walking_ratio (0.0349) outside typical range (0.1 - 0.6)"
       ],
       "checks": {
         "file_structure": {
@@ -920,31 +900,23 @@
           "files_missing": []
         },
         "services": {
-          "status": "pass",
-          "issues": [],
-          "warnings": [],
-          "statistics": {
-            "service_count": 114,
-            "service_density": 243.66331763335413
-          }
-        },
-        "buildings": {
           "status": "warn",
           "issues": [],
           "warnings": [
-            "Some buildings have > 12 levels (max: 36.0)",
-            "Building area ratio (25.14%) outside typical range (30.00% - 90.00%)"
+            "Service density (370.09/km\u00b2) outside typical range (10 - 300)"
           ],
           "statistics": {
-            "building_count": 81,
-            "building_density": 173.12919937106741,
-            "avg_building_levels": 15.208333333333334,
-            "max_building_levels": 36.0,
-            "missing_levels_ratio": 0.4074074074074074,
-            "avg_building_area": 1452.22807526772,
-            "max_building_area": 22563.92683684635,
-            "building_area_ratio": 0.25142308397528657
+            "service_count": 114,
+            "service_density": 370.09318734235944
           }
+        },
+        "buildings": {
+          "status": "fail",
+          "issues": [
+            "Buildings GeoDataFrame is empty"
+          ],
+          "warnings": [],
+          "statistics": {}
         },
         "network": {
           "status": "pass",
@@ -958,16 +930,14 @@
           }
         },
         "intersections": {
-          "status": "fail",
-          "issues": [
-            "Intersection density (551.45/km\u00b2) out of hard bounds (20 - 500)"
-          ],
+          "status": "pass",
+          "issues": [],
           "warnings": [],
           "statistics": {
-            "intersection_count": 258,
-            "intersection_density": 551.4485609596962,
-            "avg_degree": 6.162790697674419,
-            "min_degree": 4.0,
+            "intersection_count": 109,
+            "intersection_density": 353.8610300027823,
+            "avg_degree": 6.4036697247706424,
+            "min_degree": 6.0,
             "max_degree": 10.0
           }
         },
@@ -983,23 +953,22 @@
           "status": "warn",
           "issues": [],
           "warnings": [
-            "walking_ratio (0.0349) outside typical range (0.1 - 0.6)",
-            "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+            "walking_ratio (0.0349) outside typical range (0.1 - 0.6)"
           ],
           "statistics": {
-            "population_density": 5555.064302664976,
+            "population_density": 49995.57872398479,
             "children_per_capita": 0.1353454287089581,
             "elderly_ratio": 0.15262356854414427,
+            "working_age_ratio": 0.7120310027468977,
             "ses_index": 0.34588164276705735,
             "unemployment_rate": 0.14643153159447775,
             "poverty_rate": 0.20644444444444446,
-            "car_ownership_rate": 0.37061960385982734,
             "car_commute_ratio": 0.12004042942530607,
-            "walking_ratio": 0.0349132757816372,
-            "cycling_ratio": 0.03078713260763895,
-            "public_transport_ratio": 0.677764068191528,
+            "walking_ratio": 0.03491327578163721,
+            "cycling_ratio": 0.030787132607638955,
+            "public_transport_ratio": 0.6777640681915279,
             "two_wheelers_ratio": 0.016816145758931925,
-            "student_ratio": 0.0967427160577293,
+            "student_ratio": 0.09674271605772929,
             "retired_ratio": 0.1806794746768732,
             "permanent_employment_ratio": 0.8533290719357223,
             "temporary_employment_ratio": 0.10198077302257885,
@@ -1015,18 +984,9 @@
       "statistics": {
         "services": {
           "service_count": 114,
-          "service_density": 243.66331763335413
+          "service_density": 370.09318734235944
         },
-        "buildings": {
-          "building_count": 81,
-          "building_density": 173.12919937106741,
-          "avg_building_levels": 15.208333333333334,
-          "max_building_levels": 36.0,
-          "missing_levels_ratio": 0.4074074074074074,
-          "avg_building_area": 1452.22807526772,
-          "max_building_area": 22563.92683684635,
-          "building_area_ratio": 0.25142308397528657
-        },
+        "buildings": {},
         "network": {
           "node_count": 355,
           "edge_count": 892,
@@ -1034,35 +994,35 @@
           "connectivity_ratio": 1.0
         },
         "intersections": {
-          "intersection_count": 258,
-          "intersection_density": 551.4485609596962,
-          "avg_degree": 6.162790697674419,
-          "min_degree": 4.0,
+          "intersection_count": 109,
+          "intersection_density": 353.8610300027823,
+          "avg_degree": 6.4036697247706424,
+          "min_degree": 6.0,
           "max_degree": 10.0
         },
         "pedestrian_features": {
           "pedestrian_count": 238
         },
         "census": {
-          "population_density": 5555.064302664976,
+          "population_density": 49995.57872398479,
           "children_per_capita": 0.1353454287089581,
           "elderly_ratio": 0.15262356854414427,
+          "working_age_ratio": 0.7120310027468977,
           "ses_index": 0.34588164276705735,
           "unemployment_rate": 0.14643153159447775,
           "poverty_rate": 0.20644444444444446,
-          "car_ownership_rate": 0.37061960385982734,
           "car_commute_ratio": 0.12004042942530607,
-          "walking_ratio": 0.0349132757816372,
-          "cycling_ratio": 0.03078713260763895,
-          "public_transport_ratio": 0.677764068191528,
+          "walking_ratio": 0.03491327578163721,
+          "cycling_ratio": 0.030787132607638955,
+          "public_transport_ratio": 0.6777640681915279,
           "two_wheelers_ratio": 0.016816145758931925,
-          "student_ratio": 0.0967427160577293,
+          "student_ratio": 0.09674271605772929,
           "retired_ratio": 0.1806794746768732,
           "permanent_employment_ratio": 0.8533290719357223,
           "temporary_employment_ratio": 0.10198077302257885,
           "median_income": 20615.555555555555
         },
-        "area_km2": 0.4678586875827508
+        "area_km2": 0.3080305282532608
       }
     },
     {
@@ -1072,10 +1032,8 @@
       "warnings": [
         "Missing service categories: ['Entertainment']",
         "Some buildings have > 12 levels (max: 20.0)",
-        "Building area ratio (16.07%) outside typical range (30.00% - 90.00%)",
-        "Intersection density (475.20/km\u00b2) outside typical range (10 - 400)",
-        "walking_ratio (0.0365) outside typical range (0.1 - 0.6)",
-        "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+        "Building area ratio (24.41%) outside typical range (30.00% - 90.00%)",
+        "walking_ratio (0.0365) outside typical range (0.1 - 0.6)"
       ],
       "checks": {
         "file_structure": {
@@ -1099,7 +1057,7 @@
           ],
           "statistics": {
             "service_count": 36,
-            "service_density": 86.83889599220952
+            "service_density": 131.89442637316824
           }
         },
         "buildings": {
@@ -1107,17 +1065,17 @@
           "issues": [],
           "warnings": [
             "Some buildings have > 12 levels (max: 20.0)",
-            "Building area ratio (16.07%) outside typical range (30.00% - 90.00%)"
+            "Building area ratio (24.41%) outside typical range (30.00% - 90.00%)"
           ],
           "statistics": {
             "building_count": 75,
-            "building_density": 180.9143666504365,
+            "building_density": 274.78005494410047,
             "avg_building_levels": 5.020833333333333,
             "max_building_levels": 20.0,
             "missing_levels_ratio": 0.36,
             "avg_building_area": 888.4908005541228,
             "max_building_area": 7502.456862046641,
-            "building_area_ratio": 0.1607407504569884
+            "building_area_ratio": 0.24413955099358967
           }
         },
         "network": {
@@ -1132,15 +1090,13 @@
           }
         },
         "intersections": {
-          "status": "warn",
+          "status": "pass",
           "issues": [],
-          "warnings": [
-            "Intersection density (475.20/km\u00b2) outside typical range (10 - 400)"
-          ],
+          "warnings": [],
           "statistics": {
-            "intersection_count": 197,
-            "intersection_density": 475.2017364018132,
-            "avg_degree": 6.060913705583756,
+            "intersection_count": 85,
+            "intersection_density": 311.4173956033139,
+            "avg_degree": 6.564705882352941,
             "min_degree": 4.0,
             "max_degree": 8.0
           }
@@ -1157,17 +1113,16 @@
           "status": "warn",
           "issues": [],
           "warnings": [
-            "walking_ratio (0.0365) outside typical range (0.1 - 0.6)",
-            "Age ratio sum (0.2880) outside expected range (0.8 - 1.2)"
+            "walking_ratio (0.0365) outside typical range (0.1 - 0.6)"
           ],
           "statistics": {
-            "population_density": 5235.003877653612,
+            "population_density": 41880.0310212289,
             "children_per_capita": 0.13534542870895805,
             "elderly_ratio": 0.15262356854414422,
+            "working_age_ratio": 0.7120310027468978,
             "ses_index": 0.32399906553152225,
             "unemployment_rate": 0.14203204732798974,
             "poverty_rate": 0.22516666666666665,
-            "car_ownership_rate": 0.3077614623913695,
             "car_commute_ratio": 0.10066545004568066,
             "walking_ratio": 0.03650690006659332,
             "cycling_ratio": 0.024674767949462058,
@@ -1189,17 +1144,17 @@
       "statistics": {
         "services": {
           "service_count": 36,
-          "service_density": 86.83889599220952
+          "service_density": 131.89442637316824
         },
         "buildings": {
           "building_count": 75,
-          "building_density": 180.9143666504365,
+          "building_density": 274.78005494410047,
           "avg_building_levels": 5.020833333333333,
           "max_building_levels": 20.0,
           "missing_levels_ratio": 0.36,
           "avg_building_area": 888.4908005541228,
           "max_building_area": 7502.456862046641,
-          "building_area_ratio": 0.1607407504569884
+          "building_area_ratio": 0.24413955099358967
         },
         "network": {
           "node_count": 286,
@@ -1208,9 +1163,9 @@
           "connectivity_ratio": 1.0
         },
         "intersections": {
-          "intersection_count": 197,
-          "intersection_density": 475.2017364018132,
-          "avg_degree": 6.060913705583756,
+          "intersection_count": 85,
+          "intersection_density": 311.4173956033139,
+          "avg_degree": 6.564705882352941,
           "min_degree": 4.0,
           "max_degree": 8.0
         },
@@ -1218,13 +1173,13 @@
           "pedestrian_count": 298
         },
         "census": {
-          "population_density": 5235.003877653612,
+          "population_density": 41880.0310212289,
           "children_per_capita": 0.13534542870895805,
           "elderly_ratio": 0.15262356854414422,
+          "working_age_ratio": 0.7120310027468978,
           "ses_index": 0.32399906553152225,
           "unemployment_rate": 0.14203204732798974,
           "poverty_rate": 0.22516666666666665,
-          "car_ownership_rate": 0.3077614623913695,
           "car_commute_ratio": 0.10066545004568066,
           "walking_ratio": 0.03650690006659332,
           "cycling_ratio": 0.024674767949462058,
@@ -1236,7 +1191,7 @@
           "temporary_employment_ratio": 0.12420941231241636,
           "median_income": 20520.0
         },
-        "area_km2": 0.4145607747388869
+        "area_km2": 0.2729455746533624
       }
     }
   ]

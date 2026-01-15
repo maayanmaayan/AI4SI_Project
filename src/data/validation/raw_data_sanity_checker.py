@@ -1139,6 +1139,7 @@ class RawDataSanityChecker:
                                    self.CHILDREN_PER_CAPITA_WARN_LOW, self.CHILDREN_PER_CAPITA_WARN_HIGH),
             "elderly_ratio": (self.ELDERLY_RATIO_HARD_MIN, self.ELDERLY_RATIO_HARD_MAX,
                              self.ELDERLY_RATIO_WARN_LOW, self.ELDERLY_RATIO_WARN_HIGH),
+            "working_age_ratio": (0.0, 1.0, 0.6, 0.8),  # Working age (15-64) typically 60-80% of population
             "ses_index": (self.SES_INDEX_HARD_MIN, self.SES_INDEX_HARD_MAX,
                          self.SES_INDEX_WARN_LOW, self.SES_INDEX_WARN_HIGH),
             "unemployment_rate": (self.UNEMPLOYMENT_RATE_HARD_MIN, self.UNEMPLOYMENT_RATE_HARD_MAX,
@@ -1362,18 +1363,22 @@ class RawDataSanityChecker:
         return result
 
     def _calculate_neighborhood_area(self, geometry: Polygon) -> float:
-        """Calculate neighborhood area in km².
-
+        """Calculate neighborhood area in km² using approximate conversion.
+        
+        Uses the same approximate method as OSM extractor for consistency:
+        area_m2 = geometry.area * (111320.0 ** 2)
+        
         Args:
-            geometry: Neighborhood geometry (Polygon).
+            geometry: Neighborhood geometry (Polygon) in WGS84 (EPSG:4326).
 
         Returns:
             Area in km².
         """
-        # Convert to metric CRS for accurate area calculation
-        gdf = gpd.GeoDataFrame([1], geometry=[geometry], crs="EPSG:4326")
-        gdf_metric = gdf.to_crs("EPSG:3857")  # Web Mercator (meters)
-        area_m2 = gdf_metric.geometry.area.iloc[0]
+        # Use approximate conversion to match OSM extractor method
+        # At Paris latitude, 1 degree ≈ 111,320 meters
+        # So 1 degree² ≈ (111,320)² m²
+        DEGREES_TO_METERS = 111320.0
+        area_m2 = geometry.area * (DEGREES_TO_METERS ** 2)
         area_km2 = area_m2 / 1_000_000
         return area_km2
 

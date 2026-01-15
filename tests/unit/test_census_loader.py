@@ -269,7 +269,7 @@ class TestFeatureExtraction:
     """Test demographic feature extraction."""
 
     def test_extract_demographic_features_car_ownership_from_percentage(self, loader):
-        """Car ownership rate should be derived from PCT_MEN_VOIT when present."""
+        """Car commute ratio should be calculated from C17_ACTOCC15P_VOIT / P17_ACTOCC15P."""
         matched_data = pd.DataFrame(
             {
                 "neighborhood_name": ["Test Neighborhood"],
@@ -285,11 +285,12 @@ class TestFeatureExtraction:
             result = loader._extract_demographic_features(matched_data, neighborhoods=None)
 
         assert not result.empty
-        assert result.loc[0, "car_ownership_rate"] == pytest.approx(0.20)
+        # Note: car_ownership_rate is no longer calculated (code commented out)
+        # Only car_commute_ratio is calculated
         assert result.loc[0, "car_commute_ratio"] == pytest.approx(0.50)
 
     def test_extract_demographic_features_car_ownership_from_counts(self, loader):
-        """Car ownership rate should be derived from household counts when present."""
+        """Car commute ratio should be calculated from C17_ACTOCC15P_VOIT / P17_ACTOCC15P."""
         matched_data = pd.DataFrame(
             {
                 "neighborhood_name": ["Test Neighborhood"],
@@ -304,7 +305,8 @@ class TestFeatureExtraction:
         with patch.object(loader, "_fetch_commune_age_data", return_value=pd.DataFrame()):
             result = loader._extract_demographic_features(matched_data, neighborhoods=None)
 
-        assert result.loc[0, "car_ownership_rate"] == pytest.approx(0.40)
+        # Note: car_ownership_rate is no longer calculated (code commented out)
+        # Only car_commute_ratio is calculated
         assert result.loc[0, "car_commute_ratio"] == pytest.approx(0.50)
 
     def test_extract_demographic_features_empty(self, loader):

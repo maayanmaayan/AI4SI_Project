@@ -696,9 +696,42 @@ class CensusLoader:
         for col in census_cols:
             matched[col] = pd.to_numeric(matched[col], errors="coerce")
 
-        # Aggregate using mean (can be improved with area-weighted aggregation)
+        # Aggregate IRIS data per neighborhood
+        # IMPORTANT: Count columns (P17_*, C17_*) should be SUMMED, not averaged
+        # Ratio/rate columns (MED_*, DEC_*, DISP_*) should be averaged
         if census_cols:
-            aggregated = matched.groupby("name")[census_cols].mean().reset_index()
+            # Separate count columns (should be summed) from ratio columns (should be averaged)
+            count_cols = [
+                col
+                for col in census_cols
+                if (
+                    col.startswith("P17_")
+                    or col.startswith("C17_")
+                    or "MEN" in col
+                    or "VOIT" in col
+                )
+                and "MED" not in col
+                and "DEC" not in col
+                and "DISP" not in col
+            ]
+            ratio_cols = [
+                col
+                for col in census_cols
+                if col not in count_cols
+            ]
+
+            # Aggregate counts by sum, ratios by mean
+            # Get unique neighborhood names
+            aggregated = pd.DataFrame({"name": matched["name"].unique()})
+            
+            if count_cols:
+                count_agg = matched.groupby("name")[count_cols].sum().reset_index()
+                aggregated = aggregated.merge(count_agg, on="name", how="left")
+            
+            if ratio_cols:
+                ratio_agg = matched.groupby("name")[ratio_cols].mean().reset_index()
+                aggregated = aggregated.merge(ratio_agg, on="name", how="left")
+            
             aggregated.rename(columns={"name": "neighborhood_name"}, inplace=True)
         else:
             logger.warning("No census columns found for aggregation")
@@ -957,93 +990,93 @@ class CensusLoader:
         else:
             features_df["ses_index"] = None
 
-        # 3. Car Ownership Rate (from RP_LOGEMENT)
-        # RP_LOGEMENT data is aggregated by IRIS and should have:
-        # - car_ownership_rate (pre-calculated from aggregation)
-        # - P17_MEN (total households)
-        # - C17_MEN_VOIT (households with car)
-        # - C17_MEN_VOIT1 (households with 1 car)
-        # - C17_MEN_VOIT2P (households with 2+ cars)
+        # # 3. Car Ownership Rate (from RP_LOGEMENT)
+        # # RP_LOGEMENT data is aggregated by IRIS and should have:
+        # # - car_ownership_rate (pre-calculated from aggregation)
+        # # - P17_MEN (total households)
+        # # - C17_MEN_VOIT (households with car)
+        # # - C17_MEN_VOIT1 (households with 1 car)
+        # # - C17_MEN_VOIT2P (households with 2+ cars)
         
-        # First, check if car_ownership_rate is already calculated (from aggregation)
-        if "car_ownership_rate" in matched_data.columns:
-            features_df["car_ownership_rate"] = pd.to_numeric(matched_data["car_ownership_rate"], errors="coerce").fillna(0)
-        elif "P17_MEN" in matched_data.columns and "C17_MEN_VOIT" in matched_data.columns:
-            # Calculate from aggregated counts
-            total_households = pd.to_numeric(matched_data["P17_MEN"], errors="coerce").fillna(0)
-            households_with_car = pd.to_numeric(matched_data["C17_MEN_VOIT"], errors="coerce").fillna(0)
-            features_df["car_ownership_rate"] = (
-                (households_with_car / total_households) if total_households.sum() > 0 else 0
-            ).fillna(0)
-        elif "P17_MEN" in matched_data.columns and ("C17_MEN_VOIT1" in matched_data.columns or "C17_MEN_VOIT2P" in matched_data.columns):
-            # Calculate from 1 car + 2+ cars counts
-            total_households = pd.to_numeric(matched_data["P17_MEN"], errors="coerce").fillna(0)
-            households_with_car = pd.Series(0, index=matched_data.index)
-            if "C17_MEN_VOIT1" in matched_data.columns:
-                households_with_car += pd.to_numeric(matched_data["C17_MEN_VOIT1"], errors="coerce").fillna(0)
-            if "C17_MEN_VOIT2P" in matched_data.columns:
-                households_with_car += pd.to_numeric(matched_data["C17_MEN_VOIT2P"], errors="coerce").fillna(0)
-            features_df["car_ownership_rate"] = (
-                (households_with_car / total_households) if total_households.sum() > 0 else 0
-            ).fillna(0)
-        else:
-            # Try legacy column names (for backward compatibility)
-            men_voit_cols = [
-                col
-                for col in matched_data.columns
-                if ("MEN" in col and "VOIT" in col) or "PCT_MEN_VOIT" in col or "NB_MEN_VOIT" in col
-            ]
-            men_total_cols = [
-                col
-                for col in matched_data.columns
-                if col == "P17_MEN" or col == "P17_LOG" or (col.startswith("P17_") and "MEN" in col and "VOIT" not in col and "LOG" not in col)
-            ]
+        # # First, check if car_ownership_rate is already calculated (from aggregation)
+        # if "car_ownership_rate" in matched_data.columns:
+        #     features_df["car_ownership_rate"] = pd.to_numeric(matched_data["car_ownership_rate"], errors="coerce").fillna(0)
+        # elif "P17_MEN" in matched_data.columns and "C17_MEN_VOIT" in matched_data.columns:
+        #     # Calculate from aggregated counts
+        #     total_households = pd.to_numeric(matched_data["P17_MEN"], errors="coerce").fillna(0)
+        #     households_with_car = pd.to_numeric(matched_data["C17_MEN_VOIT"], errors="coerce").fillna(0)
+        #     features_df["car_ownership_rate"] = (
+        #         (households_with_car / total_households) if total_households.sum() > 0 else 0
+        #     ).fillna(0)
+        # elif "P17_MEN" in matched_data.columns and ("C17_MEN_VOIT1" in matched_data.columns or "C17_MEN_VOIT2P" in matched_data.columns):
+        #     # Calculate from 1 car + 2+ cars counts
+        #     total_households = pd.to_numeric(matched_data["P17_MEN"], errors="coerce").fillna(0)
+        #     households_with_car = pd.Series(0, index=matched_data.index)
+        #     if "C17_MEN_VOIT1" in matched_data.columns:
+        #         households_with_car += pd.to_numeric(matched_data["C17_MEN_VOIT1"], errors="coerce").fillna(0)
+        #     if "C17_MEN_VOIT2P" in matched_data.columns:
+        #         households_with_car += pd.to_numeric(matched_data["C17_MEN_VOIT2P"], errors="coerce").fillna(0)
+        #     features_df["car_ownership_rate"] = (
+        #         (households_with_car / total_households) if total_households.sum() > 0 else 0
+        #     ).fillna(0)
+        # else:
+        #     # Try legacy column names (for backward compatibility)
+        #     men_voit_cols = [
+        #         col
+        #         for col in matched_data.columns
+        #         if ("MEN" in col and "VOIT" in col) or "PCT_MEN_VOIT" in col or "NB_MEN_VOIT" in col
+        #     ]
+        #     men_total_cols = [
+        #         col
+        #         for col in matched_data.columns
+        #         if col == "P17_MEN" or col == "P17_LOG" or (col.startswith("P17_") and "MEN" in col and "VOIT" not in col and "LOG" not in col)
+        #     ]
             
-            if men_voit_cols and men_total_cols:
-                # Try to find percentage directly first
-                pct_col = None
-                for col in ["PCT_MEN_VOIT", "PCT_MEN_VOIT1", "P17_MEN_VOIT"]:
-                    if col in matched_data.columns:
-                        pct_col = col
-                        break
+        #     if men_voit_cols and men_total_cols:
+        #         # Try to find percentage directly first
+        #         pct_col = None
+        #         for col in ["PCT_MEN_VOIT", "PCT_MEN_VOIT1", "P17_MEN_VOIT"]:
+        #             if col in matched_data.columns:
+        #                 pct_col = col
+        #                 break
                 
-                if pct_col:
-                    # Use percentage directly (already a ratio)
-                    pct_values = pd.to_numeric(matched_data[pct_col], errors="coerce")
-                    features_df["car_ownership_rate"] = (pct_values / 100).fillna(0)  # Convert percentage to ratio
-                else:
-                    # Calculate from counts: households with car / total households
-                    men_total_col = "P17_MEN" if "P17_MEN" in matched_data.columns else men_total_cols[0]
+        #         if pct_col:
+        #             # Use percentage directly (already a ratio)
+        #             pct_values = pd.to_numeric(matched_data[pct_col], errors="coerce")
+        #             features_df["car_ownership_rate"] = (pct_values / 100).fillna(0)  # Convert percentage to ratio
+        #         else:
+        #             # Calculate from counts: households with car / total households
+        #             men_total_col = "P17_MEN" if "P17_MEN" in matched_data.columns else men_total_cols[0]
                     
-                    # Find households with car (try different variable names)
-                    households_with_car = pd.Series(0, index=matched_data.index)
+        #             # Find households with car (try different variable names)
+        #             households_with_car = pd.Series(0, index=matched_data.index)
                     
-                    # Try C17_MEN_VOIT1 (1 car) + C17_MEN_VOIT2P (2+ cars)
-                    voit1_cols = [c for c in men_voit_cols if "VOIT1" in c or ("1" in c and "VOIT" in c)]
-                    voit2p_cols = [c for c in men_voit_cols if "VOIT2" in c or "2P" in c or ("2" in c and "VOIT" in c and "1" not in c)]
+        #             # Try C17_MEN_VOIT1 (1 car) + C17_MEN_VOIT2P (2+ cars)
+        #             voit1_cols = [c for c in men_voit_cols if "VOIT1" in c or ("1" in c and "VOIT" in c)]
+        #             voit2p_cols = [c for c in men_voit_cols if "VOIT2" in c or "2P" in c or ("2" in c and "VOIT" in c and "1" not in c)]
                     
-                    if voit1_cols:
-                        households_with_car += pd.to_numeric(matched_data[voit1_cols[0]], errors="coerce").fillna(0)
-                    if voit2p_cols:
-                        households_with_car += pd.to_numeric(matched_data[voit2p_cols[0]], errors="coerce").fillna(0)
+        #             if voit1_cols:
+        #                 households_with_car += pd.to_numeric(matched_data[voit1_cols[0]], errors="coerce").fillna(0)
+        #             if voit2p_cols:
+        #                 households_with_car += pd.to_numeric(matched_data[voit2p_cols[0]], errors="coerce").fillna(0)
                     
-                    # If no specific counts, try NB_MEN_VOIT (total households with car)
-                    if households_with_car.sum() == 0:
-                        nb_voit_cols = [c for c in men_voit_cols if "NB_MEN_VOIT" in c or ("NB" in c and "VOIT" in c)]
-                        if nb_voit_cols:
-                            households_with_car = pd.to_numeric(matched_data[nb_voit_cols[0]], errors="coerce").fillna(0)
+        #             # If no specific counts, try NB_MEN_VOIT (total households with car)
+        #             if households_with_car.sum() == 0:
+        #                 nb_voit_cols = [c for c in men_voit_cols if "NB_MEN_VOIT" in c or ("NB" in c and "VOIT" in c)]
+        #                 if nb_voit_cols:
+        #                     households_with_car = pd.to_numeric(matched_data[nb_voit_cols[0]], errors="coerce").fillna(0)
                     
-                    if men_total_col and men_total_col in matched_data.columns and households_with_car.sum() > 0:
-                        total_households = pd.to_numeric(matched_data[men_total_col], errors="coerce").fillna(0)
+        #             if men_total_col and men_total_col in matched_data.columns and households_with_car.sum() > 0:
+        #                 total_households = pd.to_numeric(matched_data[men_total_col], errors="coerce").fillna(0)
                         
-                        # Calculate car ownership rate
-                        features_df["car_ownership_rate"] = (
-                            (households_with_car / total_households) if total_households.sum() > 0 else 0
-                        ).fillna(0)
-                    else:
-                        features_df["car_ownership_rate"] = None
-            else:
-                features_df["car_ownership_rate"] = None
+        #                 # Calculate car ownership rate
+        #                 features_df["car_ownership_rate"] = (
+        #                     (households_with_car / total_households) if total_households.sum() > 0 else 0
+        #                 ).fillna(0)
+        #             else:
+        #                 features_df["car_ownership_rate"] = None
+        #     else:
+        #         features_df["car_ownership_rate"] = None
 
         # 3b. Car Commute Ratio (from RP_ACTRES_IRIS)
         # Use C17_ACTOCC15P_VOIT (private car commuters among active workers 15+) / P17_ACTOCC15P (total active workers 15+)
@@ -1123,11 +1156,18 @@ class CensusLoader:
             features_df["elderly_ratio"] = (
                 estimated_elderly / estimated_total_pop
             ).fillna(0)
+            
+            # Calculate working_age_ratio per neighborhood
+            # working_age_ratio = working_age_population / total_population
+            features_df["working_age_ratio"] = (
+                working_age_per_neighborhood / estimated_total_pop
+            ).fillna(0)
         else:
             # Fallback: set to None if total population cannot be estimated
             logger.warning("Could not estimate total population, age ratios set to None")
             features_df["children_per_capita"] = None
             features_df["elderly_ratio"] = None
+            features_df["working_age_ratio"] = None
 
         # 7. Unemployment rate
         # P17_CHOM1564 (unemployed 15-64) / P17_ACT1564 (active 15-64)
