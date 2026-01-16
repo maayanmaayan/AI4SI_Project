@@ -567,6 +567,7 @@ class CensusLoader:
             return pd.DataFrame()
 
         # Merge IRIS data with boundaries on IRIS code
+        # This creates a GeoDataFrame with IRIS geometries (needed for area calculation)
         iris_gdf = iris_boundaries.merge(
             iris_data,
             left_on=boundary_code_col,
@@ -585,6 +586,11 @@ class CensusLoader:
         elif neighborhoods.crs != iris_gdf.crs:
             logger.info(f"Converting IRIS CRS from {iris_gdf.crs} to {neighborhoods.crs}")
             iris_gdf = iris_gdf.to_crs(neighborhoods.crs)
+        
+        # Calculate IRIS area for population density calculation
+        # Convert to metric CRS for accurate area calculation
+        iris_gdf_metric = iris_gdf.to_crs("EPSG:3857")
+        iris_gdf["iris_area_m2"] = iris_gdf_metric.geometry.area
 
         # Perform spatial join
         matched = gpd.sjoin(
@@ -692,54 +698,30 @@ class CensusLoader:
             and col not in ["name", "index_right", "geometry"]
         ]
 
+        # IMPORTANT: Keep IRIS-level data (DO NOT aggregate to neighborhood level)
+        # Each IRIS unit should have its own row with demographic features
+        # This allows grid cells to be matched to their specific IRIS unit(s)
+        
         # Convert census columns to numeric (they come as strings from Excel)
-        for col in census_cols:
-            matched[col] = pd.to_numeric(matched[col], errors="coerce")
-
-        # Aggregate IRIS data per neighborhood
-        # IMPORTANT: Count columns (P17_*, C17_*) should be SUMMED, not averaged
-        # Ratio/rate columns (MED_*, DEC_*, DISP_*) should be averaged
         if census_cols:
-            # Separate count columns (should be summed) from ratio columns (should be averaged)
-            count_cols = [
-                col
-                for col in census_cols
-                if (
-                    col.startswith("P17_")
-                    or col.startswith("C17_")
-                    or "MEN" in col
-                    or "VOIT" in col
-                )
-                and "MED" not in col
-                and "DEC" not in col
-                and "DISP" not in col
-            ]
-            ratio_cols = [
-                col
-                for col in census_cols
-                if col not in count_cols
-            ]
-
-            # Aggregate counts by sum, ratios by mean
-            # Get unique neighborhood names
-            aggregated = pd.DataFrame({"name": matched["name"].unique()})
-            
-            if count_cols:
-                count_agg = matched.groupby("name")[count_cols].sum().reset_index()
-                aggregated = aggregated.merge(count_agg, on="name", how="left")
-            
-            if ratio_cols:
-                ratio_agg = matched.groupby("name")[ratio_cols].mean().reset_index()
-                aggregated = aggregated.merge(ratio_agg, on="name", how="left")
-            
-            aggregated.rename(columns={"name": "neighborhood_name"}, inplace=True)
-        else:
-            logger.warning("No census columns found for aggregation")
-            aggregated = matched[["name"]].drop_duplicates()
-            aggregated.rename(columns={"name": "neighborhood_name"}, inplace=True)
-
-        logger.info(f"Matched IRIS data to {len(aggregated)} neighborhoods")
-        return aggregated
+            for col in census_cols:
+                matched[col] = pd.to_numeric(matched[col], errors="coerce")
+        
+        # Keep IRIS-level data with neighborhood name for reference
+        # Each row represents one IRIS unit with its demographic data
+        iris_level_data = matched.copy()
+        
+        # Rename 'name' column to 'neighborhood_name' for consistency
+        if "name" in iris_level_data.columns:
+            iris_level_data.rename(columns={"name": "neighborhood_name"}, inplace=True)
+        
+        # Ensure IRIS code column is preserved for matching points to IRIS units
+        # This will be used by feature_engineer to match grid cells to IRIS units
+        # The IRIS code column should be one of: IRIS, CODE_IRIS, DCOMIRIS, or the boundary_code_col
+        # It's already in the matched DataFrame from the merge operation
+        
+        logger.info(f"Matched IRIS data: {len(iris_level_data)} IRIS units across neighborhoods")
+        return iris_level_data
 
     def _extract_demographic_features(
         self,
@@ -791,7 +773,15 @@ class CensusLoader:
             logger.warning("Empty matched data, cannot extract features")
             return pd.DataFrame()
 
-        features_df = matched_data[["neighborhood_name"]].copy()
+        # Start with neighborhood_name and IRIS code column(s) - preserve IRIS codes for point matching
+        # Identify IRIS code column (needed for FeatureEngineer to match grid cells to IRIS units)
+        iris_code_cols_to_keep = []
+        for col in ["IRIS", "CODE_IRIS", "DCOMIRIS", "CODEGEO"]:
+            if col in matched_data.columns:
+                iris_code_cols_to_keep.append(col)
+        
+        base_cols = ["neighborhood_name"] + iris_code_cols_to_keep
+        features_df = matched_data[base_cols].copy()
 
         # Map RP_ACTRES_IRIS variable names to our features
         # Population-related variables (P17_POP*)
@@ -907,37 +897,41 @@ class CensusLoader:
                         working_age_ratio = working_age_paris_total / total_pop_commune
                         estimated_total_pop = working_age_pop / working_age_ratio
                         
-                        # Calculate area from neighborhood geometry
-                        neighborhoods_with_area = neighborhoods.copy()
-                        # Convert geometry to area in m² (assuming CRS is EPSG:4326)
-                        if neighborhoods_with_area.crs == "EPSG:4326":
-                            # Convert to metric CRS for area calculation
-                            neighborhoods_with_area = neighborhoods_with_area.to_crs("EPSG:3857")
-                        neighborhoods_with_area["area_m2"] = neighborhoods_with_area.geometry.area
-                        
-                        # Merge to get area per neighborhood
-                        # Create a mapping from neighborhood name to area
-                        area_map = dict(
-                            zip(
-                                neighborhoods_with_area["name"],
-                                neighborhoods_with_area["area_m2"],
-                            )
-                        )
-                        
-                        # Map area to each neighborhood
-                        features_df["area_m2"] = features_df["neighborhood_name"].map(area_map)
-                        
-                        if features_df["area_m2"].notna().any():
-                            # Calculate density per km²
+                        # Calculate population density using IRIS area (not neighborhood area)
+                        # IRIS-level data: each row is one IRIS unit with its own area
+                        if "iris_area_m2" in matched_data.columns:
+                            # Use IRIS area directly (already calculated in _match_iris_to_neighborhoods)
                             features_df["population_density"] = (
-                                estimated_total_pop / (features_df["area_m2"] / 1_000_000)
+                                estimated_total_pop / (matched_data["iris_area_m2"] / 1_000_000)
                             )
-                            # Drop temporary area column
-                            features_df.drop(columns=["area_m2"], inplace=True)
                         else:
-                            features_df["population_density"] = None
-                            if "area_m2" in features_df.columns:
-                                features_df.drop(columns=["area_m2"], inplace=True)
+                            # Fallback: calculate area from geometry if available
+                            if "geometry" in matched_data.columns:
+                                matched_metric = gpd.GeoDataFrame(matched_data, crs=matched_data.crs).to_crs("EPSG:3857")
+                                iris_areas = matched_metric.geometry.area
+                                features_df["population_density"] = (
+                                    estimated_total_pop / (iris_areas / 1_000_000)
+                                )
+                            else:
+                                # Last resort: use neighborhood area (less accurate)
+                                neighborhoods_with_area = neighborhoods.copy()
+                                if neighborhoods_with_area.crs == "EPSG:4326":
+                                    neighborhoods_with_area = neighborhoods_with_area.to_crs("EPSG:3857")
+                                neighborhoods_with_area["area_m2"] = neighborhoods_with_area.geometry.area
+                                area_map = dict(
+                                    zip(
+                                        neighborhoods_with_area["name"],
+                                        neighborhoods_with_area["area_m2"],
+                                    )
+                                )
+                                features_df["area_m2"] = features_df["neighborhood_name"].map(area_map)
+                                if features_df["area_m2"].notna().any():
+                                    features_df["population_density"] = (
+                                        estimated_total_pop / (features_df["area_m2"] / 1_000_000)
+                                    )
+                                    features_df.drop(columns=["area_m2"], inplace=True)
+                                else:
+                                    features_df["population_density"] = None
                     else:
                         features_df["population_density"] = None
                 else:
@@ -990,93 +984,93 @@ class CensusLoader:
         else:
             features_df["ses_index"] = None
 
-        # # 3. Car Ownership Rate (from RP_LOGEMENT)
-        # # RP_LOGEMENT data is aggregated by IRIS and should have:
-        # # - car_ownership_rate (pre-calculated from aggregation)
-        # # - P17_MEN (total households)
-        # # - C17_MEN_VOIT (households with car)
-        # # - C17_MEN_VOIT1 (households with 1 car)
-        # # - C17_MEN_VOIT2P (households with 2+ cars)
+        # 3. Car Ownership Rate (from RP_LOGEMENT)
+        # RP_LOGEMENT data is aggregated by IRIS and should have:
+        # - car_ownership_rate (pre-calculated from aggregation)
+        # - P17_MEN (total households)
+        # - C17_MEN_VOIT (households with car)
+        # - C17_MEN_VOIT1 (households with 1 car)
+        # - C17_MEN_VOIT2P (households with 2+ cars)
         
-        # # First, check if car_ownership_rate is already calculated (from aggregation)
-        # if "car_ownership_rate" in matched_data.columns:
-        #     features_df["car_ownership_rate"] = pd.to_numeric(matched_data["car_ownership_rate"], errors="coerce").fillna(0)
-        # elif "P17_MEN" in matched_data.columns and "C17_MEN_VOIT" in matched_data.columns:
-        #     # Calculate from aggregated counts
-        #     total_households = pd.to_numeric(matched_data["P17_MEN"], errors="coerce").fillna(0)
-        #     households_with_car = pd.to_numeric(matched_data["C17_MEN_VOIT"], errors="coerce").fillna(0)
-        #     features_df["car_ownership_rate"] = (
-        #         (households_with_car / total_households) if total_households.sum() > 0 else 0
-        #     ).fillna(0)
-        # elif "P17_MEN" in matched_data.columns and ("C17_MEN_VOIT1" in matched_data.columns or "C17_MEN_VOIT2P" in matched_data.columns):
-        #     # Calculate from 1 car + 2+ cars counts
-        #     total_households = pd.to_numeric(matched_data["P17_MEN"], errors="coerce").fillna(0)
-        #     households_with_car = pd.Series(0, index=matched_data.index)
-        #     if "C17_MEN_VOIT1" in matched_data.columns:
-        #         households_with_car += pd.to_numeric(matched_data["C17_MEN_VOIT1"], errors="coerce").fillna(0)
-        #     if "C17_MEN_VOIT2P" in matched_data.columns:
-        #         households_with_car += pd.to_numeric(matched_data["C17_MEN_VOIT2P"], errors="coerce").fillna(0)
-        #     features_df["car_ownership_rate"] = (
-        #         (households_with_car / total_households) if total_households.sum() > 0 else 0
-        #     ).fillna(0)
-        # else:
-        #     # Try legacy column names (for backward compatibility)
-        #     men_voit_cols = [
-        #         col
-        #         for col in matched_data.columns
-        #         if ("MEN" in col and "VOIT" in col) or "PCT_MEN_VOIT" in col or "NB_MEN_VOIT" in col
-        #     ]
-        #     men_total_cols = [
-        #         col
-        #         for col in matched_data.columns
-        #         if col == "P17_MEN" or col == "P17_LOG" or (col.startswith("P17_") and "MEN" in col and "VOIT" not in col and "LOG" not in col)
-        #     ]
+        # First, check if car_ownership_rate is already calculated (from aggregation)
+        if "car_ownership_rate" in matched_data.columns:
+            features_df["car_ownership_rate"] = pd.to_numeric(matched_data["car_ownership_rate"], errors="coerce").fillna(0)
+        elif "P17_MEN" in matched_data.columns and "C17_MEN_VOIT" in matched_data.columns:
+            # Calculate from aggregated counts
+            total_households = pd.to_numeric(matched_data["P17_MEN"], errors="coerce").fillna(0)
+            households_with_car = pd.to_numeric(matched_data["C17_MEN_VOIT"], errors="coerce").fillna(0)
+            features_df["car_ownership_rate"] = (
+                (households_with_car / total_households) if total_households.sum() > 0 else 0
+            ).fillna(0)
+        elif "P17_MEN" in matched_data.columns and ("C17_MEN_VOIT1" in matched_data.columns or "C17_MEN_VOIT2P" in matched_data.columns):
+            # Calculate from 1 car + 2+ cars counts
+            total_households = pd.to_numeric(matched_data["P17_MEN"], errors="coerce").fillna(0)
+            households_with_car = pd.Series(0, index=matched_data.index)
+            if "C17_MEN_VOIT1" in matched_data.columns:
+                households_with_car += pd.to_numeric(matched_data["C17_MEN_VOIT1"], errors="coerce").fillna(0)
+            if "C17_MEN_VOIT2P" in matched_data.columns:
+                households_with_car += pd.to_numeric(matched_data["C17_MEN_VOIT2P"], errors="coerce").fillna(0)
+            features_df["car_ownership_rate"] = (
+                (households_with_car / total_households) if total_households.sum() > 0 else 0
+            ).fillna(0)
+        else:
+            # Try legacy column names (for backward compatibility)
+            men_voit_cols = [
+                col
+                for col in matched_data.columns
+                if ("MEN" in col and "VOIT" in col) or "PCT_MEN_VOIT" in col or "NB_MEN_VOIT" in col
+            ]
+            men_total_cols = [
+                col
+                for col in matched_data.columns
+                if col == "P17_MEN" or col == "P17_LOG" or (col.startswith("P17_") and "MEN" in col and "VOIT" not in col and "LOG" not in col)
+            ]
             
-        #     if men_voit_cols and men_total_cols:
-        #         # Try to find percentage directly first
-        #         pct_col = None
-        #         for col in ["PCT_MEN_VOIT", "PCT_MEN_VOIT1", "P17_MEN_VOIT"]:
-        #             if col in matched_data.columns:
-        #                 pct_col = col
-        #                 break
+            if men_voit_cols and men_total_cols:
+                # Try to find percentage directly first
+                pct_col = None
+                for col in ["PCT_MEN_VOIT", "PCT_MEN_VOIT1", "P17_MEN_VOIT"]:
+                    if col in matched_data.columns:
+                        pct_col = col
+                        break
                 
-        #         if pct_col:
-        #             # Use percentage directly (already a ratio)
-        #             pct_values = pd.to_numeric(matched_data[pct_col], errors="coerce")
-        #             features_df["car_ownership_rate"] = (pct_values / 100).fillna(0)  # Convert percentage to ratio
-        #         else:
-        #             # Calculate from counts: households with car / total households
-        #             men_total_col = "P17_MEN" if "P17_MEN" in matched_data.columns else men_total_cols[0]
+                if pct_col:
+                    # Use percentage directly (already a ratio)
+                    pct_values = pd.to_numeric(matched_data[pct_col], errors="coerce")
+                    features_df["car_ownership_rate"] = (pct_values / 100).fillna(0)  # Convert percentage to ratio
+                else:
+                    # Calculate from counts: households with car / total households
+                    men_total_col = "P17_MEN" if "P17_MEN" in matched_data.columns else men_total_cols[0]
                     
-        #             # Find households with car (try different variable names)
-        #             households_with_car = pd.Series(0, index=matched_data.index)
+                    # Find households with car (try different variable names)
+                    households_with_car = pd.Series(0, index=matched_data.index)
                     
-        #             # Try C17_MEN_VOIT1 (1 car) + C17_MEN_VOIT2P (2+ cars)
-        #             voit1_cols = [c for c in men_voit_cols if "VOIT1" in c or ("1" in c and "VOIT" in c)]
-        #             voit2p_cols = [c for c in men_voit_cols if "VOIT2" in c or "2P" in c or ("2" in c and "VOIT" in c and "1" not in c)]
+                    # Try C17_MEN_VOIT1 (1 car) + C17_MEN_VOIT2P (2+ cars)
+                    voit1_cols = [c for c in men_voit_cols if "VOIT1" in c or ("1" in c and "VOIT" in c)]
+                    voit2p_cols = [c for c in men_voit_cols if "VOIT2" in c or "2P" in c or ("2" in c and "VOIT" in c and "1" not in c)]
                     
-        #             if voit1_cols:
-        #                 households_with_car += pd.to_numeric(matched_data[voit1_cols[0]], errors="coerce").fillna(0)
-        #             if voit2p_cols:
-        #                 households_with_car += pd.to_numeric(matched_data[voit2p_cols[0]], errors="coerce").fillna(0)
+                    if voit1_cols:
+                        households_with_car += pd.to_numeric(matched_data[voit1_cols[0]], errors="coerce").fillna(0)
+                    if voit2p_cols:
+                        households_with_car += pd.to_numeric(matched_data[voit2p_cols[0]], errors="coerce").fillna(0)
                     
-        #             # If no specific counts, try NB_MEN_VOIT (total households with car)
-        #             if households_with_car.sum() == 0:
-        #                 nb_voit_cols = [c for c in men_voit_cols if "NB_MEN_VOIT" in c or ("NB" in c and "VOIT" in c)]
-        #                 if nb_voit_cols:
-        #                     households_with_car = pd.to_numeric(matched_data[nb_voit_cols[0]], errors="coerce").fillna(0)
+                    # If no specific counts, try NB_MEN_VOIT (total households with car)
+                    if households_with_car.sum() == 0:
+                        nb_voit_cols = [c for c in men_voit_cols if "NB_MEN_VOIT" in c or ("NB" in c and "VOIT" in c)]
+                        if nb_voit_cols:
+                            households_with_car = pd.to_numeric(matched_data[nb_voit_cols[0]], errors="coerce").fillna(0)
                     
-        #             if men_total_col and men_total_col in matched_data.columns and households_with_car.sum() > 0:
-        #                 total_households = pd.to_numeric(matched_data[men_total_col], errors="coerce").fillna(0)
+                    if men_total_col and men_total_col in matched_data.columns and households_with_car.sum() > 0:
+                        total_households = pd.to_numeric(matched_data[men_total_col], errors="coerce").fillna(0)
                         
-        #                 # Calculate car ownership rate
-        #                 features_df["car_ownership_rate"] = (
-        #                     (households_with_car / total_households) if total_households.sum() > 0 else 0
-        #                 ).fillna(0)
-        #             else:
-        #                 features_df["car_ownership_rate"] = None
-        #     else:
-        #         features_df["car_ownership_rate"] = None
+                        # Calculate car ownership rate
+                        features_df["car_ownership_rate"] = (
+                            (households_with_car / total_households) if total_households.sum() > 0 else 0
+                        ).fillna(0)
+                    else:
+                        features_df["car_ownership_rate"] = None
+            else:
+                features_df["car_ownership_rate"] = None
 
         # 3b. Car Commute Ratio (from RP_ACTRES_IRIS)
         # Use C17_ACTOCC15P_VOIT (private car commuters among active workers 15+) / P17_ACTOCC15P (total active workers 15+)
@@ -1358,7 +1352,7 @@ class CensusLoader:
             features_df["poverty_rate"] = None
 
         logger.info(
-            f"Extracted demographic features for {len(features_df)} neighborhoods"
+            f"Extracted demographic features for {len(features_df)} IRIS units"
         )
         return features_df
 
@@ -1482,12 +1476,13 @@ class CensusLoader:
                 if matched_data.empty:
                     raise ValueError("No IRIS data matched to neighborhoods")
 
-                # Filter to current neighborhood
-                neighborhood_data = matched_data[
+                # Filter to IRIS units that intersect the current neighborhood
+                # Keep IRIS-level data (one row per IRIS unit, not aggregated)
+                neighborhood_iris_data = matched_data[
                     matched_data["neighborhood_name"] == neighborhood_name
                 ]
 
-                if neighborhood_data.empty:
+                if neighborhood_iris_data.empty:
                     raise ValueError(f"No IRIS data matched to {neighborhood_name}")
 
                 # Fetch commune age data and Paris-wide IRIS data once (shared across all neighborhoods)
@@ -1495,19 +1490,24 @@ class CensusLoader:
                 commune_age_data = self._fetch_commune_age_data()
                 iris_data_all = self._fetch_iris_data()  # Get all Paris IRIS data for ratio calculations
 
-                # Extract demographic features (pass neighborhoods for area calculation)
+                # Extract demographic features at IRIS level (not aggregated to neighborhood)
+                # This preserves spatial granularity - each IRIS unit keeps its own features
                 # Pass pre-fetched commune_age_data and iris_data_all to avoid redundant calls
                 features_df = self._extract_demographic_features(
-                    neighborhood_data,
+                    neighborhood_iris_data,
                     neighborhoods,
                     commune_age_data=commune_age_data,
                     iris_data_all=iris_data_all,
                 )
-                result["features_count"] = (
-                    len(features_df.columns) - 1
-                )  # Exclude neighborhood_name
+                
+                # Count features (excluding IRIS code and neighborhood_name columns)
+                feature_cols = [col for col in features_df.columns 
+                               if col not in ["neighborhood_name", "IRIS", "CODE_IRIS", "DCOMIRIS", "CODEGEO"]]
+                result["features_count"] = len(feature_cols)
+                result["iris_units_count"] = len(features_df)  # Number of IRIS units in this neighborhood
 
-                # Save census data
+                # Save IRIS-level census data (one row per IRIS unit, not aggregated)
+                # This allows grid cells to be matched to their specific IRIS unit(s)
                 census_path = output_dir / "census_data.parquet"
                 save_dataframe(features_df, str(census_path), format="parquet")
 

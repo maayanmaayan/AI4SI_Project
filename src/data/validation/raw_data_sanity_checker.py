@@ -1079,58 +1079,95 @@ class RawDataSanityChecker:
             result["issues"].append(f"No data found for neighborhood: {neighborhood_name}")
             return result
 
-        # Get first row (should be only one per neighborhood)
-        row = neighborhood_data.iloc[0]
+        # Check for IRIS code columns (IRIS-level data)
+        iris_code_cols = [col for col in neighborhood_data.columns 
+                         if col in ["IRIS", "CODE_IRIS", "DCOMIRIS", "CODEGEO"]]
+        
+        if iris_code_cols:
+            result["statistics"]["iris_units_count"] = len(neighborhood_data)
+            result["statistics"]["iris_code_column"] = iris_code_cols[0]
+            # Validate all IRIS units (not just first row)
+            # We'll check each IRIS unit and aggregate statistics
+        else:
+            # Legacy format: single row per neighborhood (aggregated data)
+            result["warnings"].append("No IRIS code columns found - data appears to be aggregated (legacy format)")
+        
+        # For validation, we'll check all rows (IRIS units) and report aggregate statistics
+        # Use first row for single-value checks, but validate all rows
 
-        # Check for NaN/Inf values
-        numeric_cols = census_df.select_dtypes(include=[np.number]).columns
+        # Check for NaN/Inf values across all IRIS units
+        numeric_cols = neighborhood_data.select_dtypes(include=[np.number]).columns
         for col in numeric_cols:
-            if col in row.index:
-                value = row[col]
-                if pd.isna(value) or np.isinf(value):
-                    result["warnings"].append(f"NaN/Inf value in column: {col}")
+            if col not in ["IRIS", "CODE_IRIS", "DCOMIRIS", "CODEGEO"]:  # Skip IRIS code columns
+                nan_count = neighborhood_data[col].isna().sum()
+                inf_count = np.isinf(neighborhood_data[col]).sum() if col in neighborhood_data.columns else 0
+                if nan_count > 0:
+                    result["warnings"].append(
+                        f"NaN values in column '{col}': {nan_count}/{len(neighborhood_data)} IRIS units"
+                    )
+                if inf_count > 0:
+                    result["status"] = "fail"
+                    result["issues"].append(
+                        f"Inf values in column '{col}': {inf_count}/{len(neighborhood_data)} IRIS units"
+                    )
 
-        # Check missing values per column
+        # Check missing values per column (across all IRIS units)
         missing_ratios = {}
-        for col in census_df.columns:
-            if col != "neighborhood_name":
-                missing_count = census_df[col].isna().sum()
-                missing_ratio = missing_count / len(census_df)
+        for col in neighborhood_data.columns:
+            if col not in ["neighborhood_name", "IRIS", "CODE_IRIS", "DCOMIRIS", "CODEGEO"]:
+                missing_count = neighborhood_data[col].isna().sum()
+                missing_ratio = missing_count / len(neighborhood_data)
                 missing_ratios[col] = missing_ratio
 
                 if missing_ratio > self.MISSING_VALUES_HARD_THRESHOLD:
                     result["status"] = "fail"
                     result["issues"].append(
                         f"Column '{col}' has {missing_ratio:.2%} missing values "
-                        f"(threshold: {self.MISSING_VALUES_HARD_THRESHOLD:.2%})"
+                        f"({missing_count}/{len(neighborhood_data)} IRIS units, "
+                        f"threshold: {self.MISSING_VALUES_HARD_THRESHOLD:.2%})"
                     )
                 elif missing_ratio > self.MISSING_VALUES_WARN_THRESHOLD:
                     result["warnings"].append(
                         f"Column '{col}' has {missing_ratio:.2%} missing values "
-                        f"(threshold: {self.MISSING_VALUES_WARN_THRESHOLD:.2%})"
+                        f"({missing_count}/{len(neighborhood_data)} IRIS units, "
+                        f"threshold: {self.MISSING_VALUES_WARN_THRESHOLD:.2%})"
                     )
 
-        # Validate population density
-        if "population_density" in row.index:
-            pop_density = row["population_density"]
-            if pd.notna(pop_density):
-                result["statistics"]["population_density"] = float(pop_density)
-                if (
-                    pop_density < self.POPULATION_DENSITY_HARD_MIN
-                    or pop_density > self.POPULATION_DENSITY_HARD_MAX
-                ):
+        # Validate population density (check all IRIS units)
+        if "population_density" in neighborhood_data.columns:
+            pop_densities = neighborhood_data["population_density"].dropna()
+            if len(pop_densities) > 0:
+                # Store aggregate statistics
+                result["statistics"]["population_density"] = {
+                    "mean": float(pop_densities.mean()),
+                    "min": float(pop_densities.min()),
+                    "max": float(pop_densities.max()),
+                    "count": len(pop_densities)
+                }
+                
+                # Check each IRIS unit
+                out_of_bounds = pop_densities[
+                    (pop_densities < self.POPULATION_DENSITY_HARD_MIN) |
+                    (pop_densities > self.POPULATION_DENSITY_HARD_MAX)
+                ]
+                if len(out_of_bounds) > 0:
                     result["status"] = "fail"
                     result["issues"].append(
-                        f"Population density ({pop_density:.0f}/km²) out of hard bounds "
-                        f"({self.POPULATION_DENSITY_HARD_MIN} - {self.POPULATION_DENSITY_HARD_MAX})"
+                        f"Population density out of hard bounds for {len(out_of_bounds)}/{len(pop_densities)} IRIS units "
+                        f"(range: {out_of_bounds.min():.0f} - {out_of_bounds.max():.0f}/km², "
+                        f"expected: {self.POPULATION_DENSITY_HARD_MIN} - {self.POPULATION_DENSITY_HARD_MAX})"
                     )
-                elif (
-                    pop_density < self.POPULATION_DENSITY_WARN_LOW
-                    or pop_density > self.POPULATION_DENSITY_WARN_HIGH
-                ):
+                
+                # Check warning bounds
+                outside_typical = pop_densities[
+                    (pop_densities < self.POPULATION_DENSITY_WARN_LOW) |
+                    (pop_densities > self.POPULATION_DENSITY_WARN_HIGH)
+                ]
+                if len(outside_typical) > 0:
                     result["warnings"].append(
-                        f"Population density ({pop_density:.0f}/km²) outside typical range "
-                        f"({self.POPULATION_DENSITY_WARN_LOW} - {self.POPULATION_DENSITY_WARN_HIGH})"
+                        f"Population density outside typical range for {len(outside_typical)}/{len(pop_densities)} IRIS units "
+                        f"(range: {outside_typical.min():.0f} - {outside_typical.max():.0f}/km², "
+                        f"typical: {self.POPULATION_DENSITY_WARN_LOW} - {self.POPULATION_DENSITY_WARN_HIGH})"
                     )
 
         # Validate demographic ratios
@@ -1168,103 +1205,168 @@ class RawDataSanityChecker:
                                           self.TEMPORARY_EMPLOYMENT_RATIO_WARN_LOW, self.TEMPORARY_EMPLOYMENT_RATIO_WARN_HIGH),
         }
 
+        # Validate ratio features (check all IRIS units)
         for feature_name, (hard_min, hard_max, warn_low, warn_high) in ratio_features.items():
-            if feature_name in row.index:
-                value = row[feature_name]
-                if pd.notna(value):
+            if feature_name in neighborhood_data.columns:
+                values = neighborhood_data[feature_name].dropna()
+                if len(values) > 0:
                     # Convert poverty_rate from percentage to ratio (divide by 100)
                     if feature_name == "poverty_rate":
-                        value = value / 100.0
+                        values = values / 100.0
                     
-                    result["statistics"][feature_name] = float(value)
+                    # Store aggregate statistics
+                    result["statistics"][feature_name] = {
+                        "mean": float(values.mean()),
+                        "min": float(values.min()),
+                        "max": float(values.max()),
+                        "count": len(values)
+                    }
 
                     # Check for negative values
-                    if value < 0:
-                        result["status"] = "fail"
-                        result["issues"].append(f"{feature_name} is negative: {value}")
-
-                    # Check hard bounds
-                    if value < hard_min or value > hard_max:
+                    negative_count = (values < 0).sum()
+                    if negative_count > 0:
                         result["status"] = "fail"
                         result["issues"].append(
-                            f"{feature_name} ({value:.4f}) out of hard bounds "
-                            f"({hard_min} - {hard_max})"
-                        )
-                    elif value < warn_low or value > warn_high:
-                        result["warnings"].append(
-                            f"{feature_name} ({value:.4f}) outside typical range "
-                            f"({warn_low} - {warn_high})"
+                            f"{feature_name} is negative for {negative_count}/{len(values)} IRIS units "
+                            f"(min: {values.min():.4f})"
                         )
 
-        # Validate median income
-        if "median_income" in row.index:
-            income = row["median_income"]
-            if pd.notna(income):
-                result["statistics"]["median_income"] = float(income)
-                if income < self.MEDIAN_INCOME_HARD_MIN or income > self.MEDIAN_INCOME_HARD_MAX:
+                    # Check hard bounds
+                    out_of_bounds = values[(values < hard_min) | (values > hard_max)]
+                    if len(out_of_bounds) > 0:
+                        result["status"] = "fail"
+                        result["issues"].append(
+                            f"{feature_name} out of hard bounds for {len(out_of_bounds)}/{len(values)} IRIS units "
+                            f"(range: {out_of_bounds.min():.4f} - {out_of_bounds.max():.4f}, "
+                            f"expected: {hard_min} - {hard_max})"
+                        )
+                    
+                    # Check warning bounds
+                    outside_typical = values[(values < warn_low) | (values > warn_high)]
+                    if len(outside_typical) > 0:
+                        result["warnings"].append(
+                            f"{feature_name} outside typical range for {len(outside_typical)}/{len(values)} IRIS units "
+                            f"(range: {outside_typical.min():.4f} - {outside_typical.max():.4f}, "
+                            f"typical: {warn_low} - {warn_high})"
+                        )
+
+        # Validate median income (check all IRIS units)
+        if "median_income" in neighborhood_data.columns:
+            incomes = neighborhood_data["median_income"].dropna()
+            if len(incomes) > 0:
+                result["statistics"]["median_income"] = {
+                    "mean": float(incomes.mean()),
+                    "min": float(incomes.min()),
+                    "max": float(incomes.max()),
+                    "count": len(incomes)
+                }
+                
+                out_of_bounds = incomes[
+                    (incomes < self.MEDIAN_INCOME_HARD_MIN) |
+                    (incomes > self.MEDIAN_INCOME_HARD_MAX)
+                ]
+                if len(out_of_bounds) > 0:
                     result["status"] = "fail"
                     result["issues"].append(
-                        f"Median income ({income:.0f} €/year) out of hard bounds "
-                        f"({self.MEDIAN_INCOME_HARD_MIN} - {self.MEDIAN_INCOME_HARD_MAX})"
+                        f"Median income out of hard bounds for {len(out_of_bounds)}/{len(incomes)} IRIS units "
+                        f"(range: {out_of_bounds.min():.0f} - {out_of_bounds.max():.0f} €/year, "
+                        f"expected: {self.MEDIAN_INCOME_HARD_MIN} - {self.MEDIAN_INCOME_HARD_MAX})"
                     )
-                elif income < self.MEDIAN_INCOME_WARN_LOW or income > self.MEDIAN_INCOME_WARN_HIGH:
+                
+                outside_typical = incomes[
+                    (incomes < self.MEDIAN_INCOME_WARN_LOW) |
+                    (incomes > self.MEDIAN_INCOME_WARN_HIGH)
+                ]
+                if len(outside_typical) > 0:
                     result["warnings"].append(
-                        f"Median income ({income:.0f} €/year) outside typical range "
-                        f"({self.MEDIAN_INCOME_WARN_LOW} - {self.MEDIAN_INCOME_WARN_HIGH})"
+                        f"Median income outside typical range for {len(outside_typical)}/{len(incomes)} IRIS units "
+                        f"(range: {outside_typical.min():.0f} - {outside_typical.max():.0f} €/year, "
+                        f"typical: {self.MEDIAN_INCOME_WARN_LOW} - {self.MEDIAN_INCOME_WARN_HIGH})"
                     )
 
-        # Check age ratio sum
-        if all(col in row.index for col in ["children_per_capita", "elderly_ratio"]):
-            children = row.get("children_per_capita", 0) if pd.notna(row.get("children_per_capita")) else 0
-            elderly = row.get("elderly_ratio", 0) if pd.notna(row.get("elderly_ratio")) else 0
-            working_age = row.get("working_age_ratio", 0) if pd.notna(row.get("working_age_ratio")) else 0
-            age_sum = children + elderly + working_age
-
-            if age_sum < self.AGE_RATIO_SUM_HARD_MIN or age_sum > self.AGE_RATIO_SUM_HARD_MAX:
+        # Check age ratio sum (check all IRIS units)
+        if all(col in neighborhood_data.columns for col in ["children_per_capita", "elderly_ratio", "working_age_ratio"]):
+            children = neighborhood_data["children_per_capita"].fillna(0)
+            elderly = neighborhood_data["elderly_ratio"].fillna(0)
+            working_age = neighborhood_data["working_age_ratio"].fillna(0)
+            age_sums = children + elderly + working_age
+            
+            out_of_bounds = age_sums[
+                (age_sums < self.AGE_RATIO_SUM_HARD_MIN) |
+                (age_sums > self.AGE_RATIO_SUM_HARD_MAX)
+            ]
+            if len(out_of_bounds) > 0:
                 result["warnings"].append(
-                    f"Age ratio sum ({age_sum:.4f}) outside expected range "
-                    f"({self.AGE_RATIO_SUM_HARD_MIN} - {self.AGE_RATIO_SUM_HARD_MAX})"
+                    f"Age ratio sum outside expected range for {len(out_of_bounds)}/{len(age_sums)} IRIS units "
+                    f"(range: {out_of_bounds.min():.4f} - {out_of_bounds.max():.4f}, "
+                    f"expected: {self.AGE_RATIO_SUM_HARD_MIN} - {self.AGE_RATIO_SUM_HARD_MAX})"
                 )
-            elif age_sum < self.AGE_RATIO_SUM_WARN_MIN or age_sum > self.AGE_RATIO_SUM_WARN_MAX:
+            
+            outside_typical = age_sums[
+                (age_sums < self.AGE_RATIO_SUM_WARN_MIN) |
+                (age_sums > self.AGE_RATIO_SUM_WARN_MAX)
+            ]
+            if len(outside_typical) > 0:
                 result["warnings"].append(
-                    f"Age ratio sum ({age_sum:.4f}) may be inconsistent "
-                    f"(expected ~1.0, got {age_sum:.4f})"
+                    f"Age ratio sum may be inconsistent for {len(outside_typical)}/{len(age_sums)} IRIS units "
+                    f"(range: {outside_typical.min():.4f} - {outside_typical.max():.4f}, expected ~1.0)"
                 )
 
-        # Check mode share sum
+        # Check mode share sum (check all IRIS units)
         mode_share_cols = ["walking_ratio", "cycling_ratio", "public_transport_ratio",
                           "two_wheelers_ratio", "car_commute_ratio"]
-        if all(col in row.index for col in mode_share_cols):
-            mode_sum = sum(
-                row.get(col, 0) if pd.notna(row.get(col)) else 0
+        if all(col in neighborhood_data.columns for col in mode_share_cols):
+            mode_sums = sum(
+                neighborhood_data[col].fillna(0)
                 for col in mode_share_cols
             )
-            if mode_sum < self.MODE_SHARE_SUM_HARD_MIN or mode_sum > self.MODE_SHARE_SUM_HARD_MAX:
+            
+            out_of_bounds = mode_sums[
+                (mode_sums < self.MODE_SHARE_SUM_HARD_MIN) |
+                (mode_sums > self.MODE_SHARE_SUM_HARD_MAX)
+            ]
+            if len(out_of_bounds) > 0:
                 result["warnings"].append(
-                    f"Mode share sum ({mode_sum:.4f}) outside expected range "
-                    f"({self.MODE_SHARE_SUM_HARD_MIN} - {self.MODE_SHARE_SUM_HARD_MAX})"
+                    f"Mode share sum outside expected range for {len(out_of_bounds)}/{len(mode_sums)} IRIS units "
+                    f"(range: {out_of_bounds.min():.4f} - {out_of_bounds.max():.4f}, "
+                    f"expected: {self.MODE_SHARE_SUM_HARD_MIN} - {self.MODE_SHARE_SUM_HARD_MAX})"
                 )
-            elif mode_sum < self.MODE_SHARE_SUM_WARN_MIN or mode_sum > self.MODE_SHARE_SUM_WARN_MAX:
+            
+            outside_typical = mode_sums[
+                (mode_sums < self.MODE_SHARE_SUM_WARN_MIN) |
+                (mode_sums > self.MODE_SHARE_SUM_WARN_MAX)
+            ]
+            if len(outside_typical) > 0:
                 result["warnings"].append(
-                    f"Mode share sum ({mode_sum:.4f}) may be inconsistent "
-                    f"(expected ~1.0, got {mode_sum:.4f})"
+                    f"Mode share sum may be inconsistent for {len(outside_typical)}/{len(mode_sums)} IRIS units "
+                    f"(range: {outside_typical.min():.4f} - {outside_typical.max():.4f}, expected ~1.0)"
                 )
 
-        # Check employment ratio sum
-        if all(col in row.index for col in ["permanent_employment_ratio", "temporary_employment_ratio"]):
-            perm = row.get("permanent_employment_ratio", 0) if pd.notna(row.get("permanent_employment_ratio")) else 0
-            temp = row.get("temporary_employment_ratio", 0) if pd.notna(row.get("temporary_employment_ratio")) else 0
-            emp_sum = perm + temp
-
-            if emp_sum < self.EMPLOYMENT_RATIO_SUM_HARD_MIN or emp_sum > self.EMPLOYMENT_RATIO_SUM_HARD_MAX:
+        # Check employment ratio sum (check all IRIS units)
+        if all(col in neighborhood_data.columns for col in ["permanent_employment_ratio", "temporary_employment_ratio"]):
+            perm = neighborhood_data["permanent_employment_ratio"].fillna(0)
+            temp = neighborhood_data["temporary_employment_ratio"].fillna(0)
+            emp_sums = perm + temp
+            
+            out_of_bounds = emp_sums[
+                (emp_sums < self.EMPLOYMENT_RATIO_SUM_HARD_MIN) |
+                (emp_sums > self.EMPLOYMENT_RATIO_SUM_HARD_MAX)
+            ]
+            if len(out_of_bounds) > 0:
                 result["warnings"].append(
-                    f"Employment ratio sum ({emp_sum:.4f}) outside expected range "
-                    f"({self.EMPLOYMENT_RATIO_SUM_HARD_MIN} - {self.EMPLOYMENT_RATIO_SUM_HARD_MAX})"
+                    f"Employment ratio sum outside expected range for {len(out_of_bounds)}/{len(emp_sums)} IRIS units "
+                    f"(range: {out_of_bounds.min():.4f} - {out_of_bounds.max():.4f}, "
+                    f"expected: {self.EMPLOYMENT_RATIO_SUM_HARD_MIN} - {self.EMPLOYMENT_RATIO_SUM_HARD_MAX})"
                 )
-            elif emp_sum < self.EMPLOYMENT_RATIO_SUM_WARN_MIN or emp_sum > self.EMPLOYMENT_RATIO_SUM_WARN_MAX:
+            
+            outside_typical = emp_sums[
+                (emp_sums < self.EMPLOYMENT_RATIO_SUM_WARN_MIN) |
+                (emp_sums > self.EMPLOYMENT_RATIO_SUM_WARN_MAX)
+            ]
+            if len(outside_typical) > 0:
                 result["warnings"].append(
-                    f"Employment ratio sum ({emp_sum:.4f}) may be inconsistent "
-                    f"(expected ~1.0, got {emp_sum:.4f})"
+                    f"Employment ratio sum may be inconsistent for {len(outside_typical)}/{len(emp_sums)} IRIS units "
+                    f"(range: {outside_typical.min():.4f} - {outside_typical.max():.4f}, expected ~1.0)"
                 )
 
         # Update status if warnings exist
@@ -1492,7 +1594,12 @@ class RawDataSanityChecker:
             result["statistics"]["census"] = census_result.get("statistics", {})
 
             # Extract values for cross-source consistency
-            population_density = census_result.get("statistics", {}).get("population_density")
+            # population_density is now a dict with mean/min/max, extract mean for consistency checks
+            pop_density_stats = census_result.get("statistics", {}).get("population_density")
+            if isinstance(pop_density_stats, dict):
+                population_density = pop_density_stats.get("mean")
+            else:
+                population_density = pop_density_stats  # Legacy format (single value)
             census_area_km2 = area_km2  # Use same area for now
 
         # Cross-source consistency checks

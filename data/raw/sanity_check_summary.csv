@@ -1,8 +1,8 @@
 neighborhood_name,status,issue_count,warning_count
-Paris Rive Gauche,fail,2,5
-Clichy-Batignolles,fail,1,4
-Beaugrenelle / 15th Arr.,fail,2,2
-Maine–Montparnasse (6e/14e/15e),fail,2,3
-Bartholomé–Brancion (15e),warn,0,4
-Olympiades / Villa d’Este / Place de Vénétie (13e),fail,1,2
-Bédier–Oudiné (13e),warn,0,4
+Paris Rive Gauche,fail,5,29
+Clichy-Batignolles,fail,2,9
+Beaugrenelle / 15th Arr.,fail,2,4
+Maine–Montparnasse (6e/14e/15e),fail,4,26
+Bartholomé–Brancion (15e),fail,1,17
+Olympiades / Villa d’Este / Place de Vénétie (13e),fail,1,4
+Bédier–Oudiné (13e),fail,2,18

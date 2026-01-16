@@ -2,12 +2,12 @@
   "summary": {
     "total_neighborhoods": 7,
     "passed": 0,
-    "warnings": 2,
-    "failed": 5,
+    "warnings": 0,
+    "failed": 7,
     "total_checks": 56,
     "passed_checks": 32,
-    "warning_checks": 18,
-    "failed_checks": 6
+    "warning_checks": 13,
+    "failed_checks": 11
   },
   "neighborhoods": [
     {
@@ -15,14 +15,41 @@
       "status": "fail",
       "issues": [
         "Building levels out of hard bounds (1 - 60)",
-        "Building area out of hard bounds (1 - 100000 m\u00b2)"
+        "Building area out of hard bounds (1 - 100000 m\u00b2)",
+        "Column 'median_income' has 37.50% missing values (6/16 IRIS units, threshold: 20.00%)",
+        "Column 'poverty_rate' has 43.75% missing values (7/16 IRIS units, threshold: 20.00%)",
+        "Population density out of hard bounds for 6/16 IRIS units (range: 0 - 997/km\u00b2, expected: 1000 - 60000)"
       ],
       "warnings": [
         "Missing service categories: ['Posts and banks']",
         "High missing levels ratio: 56.50% (threshold: 50.00%)",
         "Building area ratio (24.66%) outside typical range (30.00% - 90.00%)",
         "Intersection density (496.54/km\u00b2) outside typical range (10 - 400)",
-        "walking_ratio (0.0341) outside typical range (0.1 - 0.6)"
+        "NaN values in column 'median_income': 6/16 IRIS units",
+        "NaN values in column 'poverty_rate': 7/16 IRIS units",
+        "Population density outside typical range for 8/16 IRIS units (range: 0 - 4683/km\u00b2, typical: 5000 - 50000)",
+        "children_per_capita outside typical range for 4/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.08 - 0.2)",
+        "elderly_ratio outside typical range for 4/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.1 - 0.25)",
+        "working_age_ratio outside typical range for 4/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.6 - 0.8)",
+        "ses_index outside typical range for 5/16 IRIS units (range: 0.0000 - 0.0588, typical: 0.1 - 0.8)",
+        "unemployment_rate outside typical range for 5/16 IRIS units (range: 0.0000 - 0.3676, typical: 0.01 - 0.3)",
+        "car_ownership_rate outside typical range for 6/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.1 - 0.6)",
+        "car_commute_ratio outside typical range for 5/16 IRIS units (range: 0.0000 - 0.0233, typical: 0.05 - 0.5)",
+        "walking_ratio outside typical range for 16/16 IRIS units (range: 0.0000 - 0.0706, typical: 0.1 - 0.6)",
+        "cycling_ratio outside typical range for 5/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.1)",
+        "public_transport_ratio outside typical range for 6/16 IRIS units (range: 0.0000 - 0.9535, typical: 0.3 - 0.75)",
+        "two_wheelers_ratio outside typical range for 6/16 IRIS units (range: 0.0000 - 0.0048, typical: 0.01 - 0.1)",
+        "student_ratio outside typical range for 4/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.25)",
+        "retired_ratio outside typical range for 4/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.35)",
+        "permanent_employment_ratio outside typical range for 5/16 IRIS units (range: 0.0000 - 0.6190, typical: 0.7 - 0.95)",
+        "temporary_employment_ratio outside typical range for 4/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.5)",
+        "Median income outside typical range for 1/10 IRIS units (range: 14850 - 14850 \u20ac/year, typical: 15000 - 70000)",
+        "Age ratio sum outside expected range for 4/16 IRIS units (range: 0.0000 - 0.0000, expected: 0.8 - 1.2)",
+        "Age ratio sum may be inconsistent for 4/16 IRIS units (range: 0.0000 - 0.0000, expected ~1.0)",
+        "Mode share sum outside expected range for 5/16 IRIS units (range: 0.0000 - 0.7910, expected: 0.8 - 1.2)",
+        "Mode share sum may be inconsistent for 4/16 IRIS units (range: 0.0000 - 0.0000, expected ~1.0)",
+        "Employment ratio sum outside expected range for 5/16 IRIS units (range: 0.0000 - 0.7857, expected: 0.8 - 1.2)",
+        "Employment ratio sum may be inconsistent for 4/16 IRIS units (range: 0.0000 - 0.0000, expected ~1.0)"
       ],
       "checks": {
         "file_structure": {
@@ -104,29 +131,150 @@
           }
         },
         "census": {
-          "status": "warn",
-          "issues": [],
+          "status": "fail",
+          "issues": [
+            "Column 'median_income' has 37.50% missing values (6/16 IRIS units, threshold: 20.00%)",
+            "Column 'poverty_rate' has 43.75% missing values (7/16 IRIS units, threshold: 20.00%)",
+            "Population density out of hard bounds for 6/16 IRIS units (range: 0 - 997/km\u00b2, expected: 1000 - 60000)"
+          ],
           "warnings": [
-            "walking_ratio (0.0341) outside typical range (0.1 - 0.6)"
+            "NaN values in column 'median_income': 6/16 IRIS units",
+            "NaN values in column 'poverty_rate': 7/16 IRIS units",
+            "Population density outside typical range for 8/16 IRIS units (range: 0 - 4683/km\u00b2, typical: 5000 - 50000)",
+            "children_per_capita outside typical range for 4/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.08 - 0.2)",
+            "elderly_ratio outside typical range for 4/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.1 - 0.25)",
+            "working_age_ratio outside typical range for 4/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.6 - 0.8)",
+            "ses_index outside typical range for 5/16 IRIS units (range: 0.0000 - 0.0588, typical: 0.1 - 0.8)",
+            "unemployment_rate outside typical range for 5/16 IRIS units (range: 0.0000 - 0.3676, typical: 0.01 - 0.3)",
+            "car_ownership_rate outside typical range for 6/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.1 - 0.6)",
+            "car_commute_ratio outside typical range for 5/16 IRIS units (range: 0.0000 - 0.0233, typical: 0.05 - 0.5)",
+            "walking_ratio outside typical range for 16/16 IRIS units (range: 0.0000 - 0.0706, typical: 0.1 - 0.6)",
+            "cycling_ratio outside typical range for 5/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.1)",
+            "public_transport_ratio outside typical range for 6/16 IRIS units (range: 0.0000 - 0.9535, typical: 0.3 - 0.75)",
+            "two_wheelers_ratio outside typical range for 6/16 IRIS units (range: 0.0000 - 0.0048, typical: 0.01 - 0.1)",
+            "student_ratio outside typical range for 4/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.25)",
+            "retired_ratio outside typical range for 4/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.35)",
+            "permanent_employment_ratio outside typical range for 5/16 IRIS units (range: 0.0000 - 0.6190, typical: 0.7 - 0.95)",
+            "temporary_employment_ratio outside typical range for 4/16 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.5)",
+            "Median income outside typical range for 1/10 IRIS units (range: 14850 - 14850 \u20ac/year, typical: 15000 - 70000)",
+            "Age ratio sum outside expected range for 4/16 IRIS units (range: 0.0000 - 0.0000, expected: 0.8 - 1.2)",
+            "Age ratio sum may be inconsistent for 4/16 IRIS units (range: 0.0000 - 0.0000, expected ~1.0)",
+            "Mode share sum outside expected range for 5/16 IRIS units (range: 0.0000 - 0.7910, expected: 0.8 - 1.2)",
+            "Mode share sum may be inconsistent for 4/16 IRIS units (range: 0.0000 - 0.0000, expected ~1.0)",
+            "Employment ratio sum outside expected range for 5/16 IRIS units (range: 0.0000 - 0.7857, expected: 0.8 - 1.2)",
+            "Employment ratio sum may be inconsistent for 4/16 IRIS units (range: 0.0000 - 0.0000, expected ~1.0)"
           ],
           "statistics": {
-            "population_density": 12476.279061587107,
-            "children_per_capita": 0.13534542870895808,
-            "elderly_ratio": 0.15262356854414422,
-            "working_age_ratio": 0.7120310027468977,
-            "ses_index": 0.35969418647997714,
-            "unemployment_rate": 0.13509503886749002,
-            "poverty_rate": 0.18077777777777776,
-            "car_commute_ratio": 0.10463310890319177,
-            "walking_ratio": 0.03409999141101492,
-            "cycling_ratio": 0.030260632057504167,
-            "public_transport_ratio": 0.7052520407054432,
-            "two_wheelers_ratio": 0.02571320080455962,
-            "student_ratio": 0.09923265840300063,
-            "retired_ratio": 0.1722118408868956,
-            "permanent_employment_ratio": 0.8250852583126127,
-            "temporary_employment_ratio": 0.10679536338861415,
-            "median_income": 22987.0
+            "iris_units_count": 16,
+            "iris_code_column": "IRIS",
+            "population_density": {
+              "mean": 8548.02384575378,
+              "min": 0.0,
+              "max": 28640.87163903814,
+              "count": 16
+            },
+            "children_per_capita": {
+              "mean": 0.10150907153171858,
+              "min": 0.0,
+              "max": 0.1353454287089581,
+              "count": 16
+            },
+            "elderly_ratio": {
+              "mean": 0.11446767640810818,
+              "min": 0.0,
+              "max": 0.1526235685441443,
+              "count": 16
+            },
+            "working_age_ratio": {
+              "mean": 0.5340232520601733,
+              "min": 0.0,
+              "max": 0.7120310027468978,
+              "count": 16
+            },
+            "ses_index": {
+              "mean": 0.2316929508189445,
+              "min": 0.0,
+              "max": 0.5360048364519191,
+              "count": 16
+            },
+            "unemployment_rate": {
+              "mean": 0.11909705716603881,
+              "min": 0.0,
+              "max": 0.36764705882353005,
+              "count": 16
+            },
+            "poverty_rate": {
+              "mean": 0.18077777777777781,
+              "min": 0.111,
+              "max": 0.34,
+              "count": 9
+            },
+            "car_ownership_rate": {
+              "mean": 0.21244814548217228,
+              "min": 0.0,
+              "max": 0.5992647058823529,
+              "count": 16
+            },
+            "car_commute_ratio": {
+              "mean": 0.07545129378005289,
+              "min": 0.0,
+              "max": 0.13746113509174412,
+              "count": 16
+            },
+            "walking_ratio": {
+              "mean": 0.025722149301192838,
+              "min": 0.0,
+              "max": 0.07064952116523314,
+              "count": 16
+            },
+            "cycling_ratio": {
+              "mean": 0.02113221643239393,
+              "min": 0.0,
+              "max": 0.057757808903396816,
+              "count": 16
+            },
+            "public_transport_ratio": {
+              "mean": 0.5401785943814059,
+              "min": 0.0,
+              "max": 0.9534883720930233,
+              "count": 16
+            },
+            "two_wheelers_ratio": {
+              "mean": 0.01797908305531022,
+              "min": 0.0,
+              "max": 0.06356723646010842,
+              "count": 16
+            },
+            "student_ratio": {
+              "mean": 0.08175839981550671,
+              "min": 0.0,
+              "max": 0.17422035173594186,
+              "count": 16
+            },
+            "retired_ratio": {
+              "mean": 0.1284261748784408,
+              "min": 0.0,
+              "max": 0.18772604931888848,
+              "count": 16
+            },
+            "permanent_employment_ratio": {
+              "mean": 0.6054101003439729,
+              "min": 0.0,
+              "max": 0.8707536514002693,
+              "count": 16
+            },
+            "temporary_employment_ratio": {
+              "mean": 0.08354020319260982,
+              "min": 0.0,
+              "max": 0.16666666666666666,
+              "count": 16
+            },
+            "median_income": {
+              "mean": 22987.0,
+              "min": 14850.0,
+              "max": 28560.0,
+              "count": 10
+            }
           }
         },
         "cross_source_consistency": {
@@ -167,23 +315,116 @@
           "pedestrian_count": 917
         },
         "census": {
-          "population_density": 12476.279061587107,
-          "children_per_capita": 0.13534542870895808,
-          "elderly_ratio": 0.15262356854414422,
-          "working_age_ratio": 0.7120310027468977,
-          "ses_index": 0.35969418647997714,
-          "unemployment_rate": 0.13509503886749002,
-          "poverty_rate": 0.18077777777777776,
-          "car_commute_ratio": 0.10463310890319177,
-          "walking_ratio": 0.03409999141101492,
-          "cycling_ratio": 0.030260632057504167,
-          "public_transport_ratio": 0.7052520407054432,
-          "two_wheelers_ratio": 0.02571320080455962,
-          "student_ratio": 0.09923265840300063,
-          "retired_ratio": 0.1722118408868956,
-          "permanent_employment_ratio": 0.8250852583126127,
-          "temporary_employment_ratio": 0.10679536338861415,
-          "median_income": 22987.0
+          "iris_units_count": 16,
+          "iris_code_column": "IRIS",
+          "population_density": {
+            "mean": 8548.02384575378,
+            "min": 0.0,
+            "max": 28640.87163903814,
+            "count": 16
+          },
+          "children_per_capita": {
+            "mean": 0.10150907153171858,
+            "min": 0.0,
+            "max": 0.1353454287089581,
+            "count": 16
+          },
+          "elderly_ratio": {
+            "mean": 0.11446767640810818,
+            "min": 0.0,
+            "max": 0.1526235685441443,
+            "count": 16
+          },
+          "working_age_ratio": {
+            "mean": 0.5340232520601733,
+            "min": 0.0,
+            "max": 0.7120310027468978,
+            "count": 16
+          },
+          "ses_index": {
+            "mean": 0.2316929508189445,
+            "min": 0.0,
+            "max": 0.5360048364519191,
+            "count": 16
+          },
+          "unemployment_rate": {
+            "mean": 0.11909705716603881,
+            "min": 0.0,
+            "max": 0.36764705882353005,
+            "count": 16
+          },
+          "poverty_rate": {
+            "mean": 0.18077777777777781,
+            "min": 0.111,
+            "max": 0.34,
+            "count": 9
+          },
+          "car_ownership_rate": {
+            "mean": 0.21244814548217228,
+            "min": 0.0,
+            "max": 0.5992647058823529,
+            "count": 16
+          },
+          "car_commute_ratio": {
+            "mean": 0.07545129378005289,
+            "min": 0.0,
+            "max": 0.13746113509174412,
+            "count": 16
+          },
+          "walking_ratio": {
+            "mean": 0.025722149301192838,
+            "min": 0.0,
+            "max": 0.07064952116523314,
+            "count": 16
+          },
+          "cycling_ratio": {
+            "mean": 0.02113221643239393,
+            "min": 0.0,
+            "max": 0.057757808903396816,
+            "count": 16
+          },
+          "public_transport_ratio": {
+            "mean": 0.5401785943814059,
+            "min": 0.0,
+            "max": 0.9534883720930233,
+            "count": 16
+          },
+          "two_wheelers_ratio": {
+            "mean": 0.01797908305531022,
+            "min": 0.0,
+            "max": 0.06356723646010842,
+            "count": 16
+          },
+          "student_ratio": {
+            "mean": 0.08175839981550671,
+            "min": 0.0,
+            "max": 0.17422035173594186,
+            "count": 16
+          },
+          "retired_ratio": {
+            "mean": 0.1284261748784408,
+            "min": 0.0,
+            "max": 0.18772604931888848,
+            "count": 16
+          },
+          "permanent_employment_ratio": {
+            "mean": 0.6054101003439729,
+            "min": 0.0,
+            "max": 0.8707536514002693,
+            "count": 16
+          },
+          "temporary_employment_ratio": {
+            "mean": 0.08354020319260982,
+            "min": 0.0,
+            "max": 0.16666666666666666,
+            "count": 16
+          },
+          "median_income": {
+            "mean": 22987.0,
+            "min": 14850.0,
+            "max": 28560.0,
+            "count": 10
+          }
         },
         "area_km2": 1.5185068361461507
       }
@@ -192,13 +433,19 @@
       "neighborhood_name": "Clichy-Batignolles",
       "status": "fail",
       "issues": [
-        "Building area out of hard bounds (1 - 100000 m\u00b2)"
+        "Building area out of hard bounds (1 - 100000 m\u00b2)",
+        "Column 'poverty_rate' has 36.67% missing values (11/30 IRIS units, threshold: 20.00%)"
       ],
       "warnings": [
         "Service density (302.97/km\u00b2) outside typical range (10 - 300)",
         "Some buildings have > 12 levels (max: 17.0)",
         "Intersection density (435.50/km\u00b2) outside typical range (10 - 400)",
-        "walking_ratio (0.0414) outside typical range (0.1 - 0.6)"
+        "NaN values in column 'poverty_rate': 11/30 IRIS units",
+        "Population density outside typical range for 3/30 IRIS units (range: 1853 - 4966/km\u00b2, typical: 5000 - 50000)",
+        "walking_ratio outside typical range for 30/30 IRIS units (range: 0.0226 - 0.0721, typical: 0.1 - 0.6)",
+        "student_ratio outside typical range for 3/30 IRIS units (range: 0.0457 - 0.0498, typical: 0.05 - 0.25)",
+        "Median income outside typical range for 1/30 IRIS units (range: 14800 - 14800 \u20ac/year, typical: 15000 - 70000)",
+        "Mode share sum outside expected range for 1/30 IRIS units (range: 0.7928 - 0.7928, expected: 0.8 - 1.2)"
       ],
       "checks": {
         "file_structure": {
@@ -278,29 +525,129 @@
           }
         },
         "census": {
-          "status": "warn",
-          "issues": [],
+          "status": "fail",
+          "issues": [
+            "Column 'poverty_rate' has 36.67% missing values (11/30 IRIS units, threshold: 20.00%)"
+          ],
           "warnings": [
-            "walking_ratio (0.0414) outside typical range (0.1 - 0.6)"
+            "NaN values in column 'poverty_rate': 11/30 IRIS units",
+            "Population density outside typical range for 3/30 IRIS units (range: 1853 - 4966/km\u00b2, typical: 5000 - 50000)",
+            "walking_ratio outside typical range for 30/30 IRIS units (range: 0.0226 - 0.0721, typical: 0.1 - 0.6)",
+            "student_ratio outside typical range for 3/30 IRIS units (range: 0.0457 - 0.0498, typical: 0.05 - 0.25)",
+            "Median income outside typical range for 1/30 IRIS units (range: 14800 - 14800 \u20ac/year, typical: 15000 - 70000)",
+            "Mode share sum outside expected range for 1/30 IRIS units (range: 0.7928 - 0.7928, expected: 0.8 - 1.2)"
           ],
           "statistics": {
-            "population_density": 25203.175396418184,
-            "children_per_capita": 0.1353454287089581,
-            "elderly_ratio": 0.15262356854414424,
-            "working_age_ratio": 0.7120310027468977,
-            "ses_index": 0.5429404665999498,
-            "unemployment_rate": 0.11150980979185592,
-            "poverty_rate": 0.1563684210526316,
-            "car_commute_ratio": 0.11331667787455096,
-            "walking_ratio": 0.0413663675466217,
-            "cycling_ratio": 0.04105183839517626,
-            "public_transport_ratio": 0.6150795161361098,
-            "two_wheelers_ratio": 0.06264417259288246,
-            "student_ratio": 0.08465080821626031,
-            "retired_ratio": 0.16934178546274406,
-            "permanent_employment_ratio": 0.8578693655418917,
-            "temporary_employment_ratio": 0.09076124281306346,
-            "median_income": 32550.333333333332
+            "iris_units_count": 30,
+            "iris_code_column": "IRIS",
+            "population_density": {
+              "mean": 17842.06014341216,
+              "min": 1852.755976928889,
+              "max": 28804.345053815017,
+              "count": 30
+            },
+            "children_per_capita": {
+              "mean": 0.1353454287089581,
+              "min": 0.13534542870895805,
+              "max": 0.13534542870895813,
+              "count": 30
+            },
+            "elderly_ratio": {
+              "mean": 0.15262356854414427,
+              "min": 0.15262356854414422,
+              "max": 0.15262356854414427,
+              "count": 30
+            },
+            "working_age_ratio": {
+              "mean": 0.7120310027468977,
+              "min": 0.7120310027468976,
+              "max": 0.7120310027468977,
+              "count": 30
+            },
+            "ses_index": {
+              "mean": 0.5355615472798652,
+              "min": 0.11159845625695988,
+              "max": 0.6874299330168906,
+              "count": 30
+            },
+            "unemployment_rate": {
+              "mean": 0.11417337314851243,
+              "min": 0.04564821578180588,
+              "max": 0.24160236794155263,
+              "count": 30
+            },
+            "poverty_rate": {
+              "mean": 0.15636842105263157,
+              "min": 0.07400000000000001,
+              "max": 0.359,
+              "count": 19
+            },
+            "car_ownership_rate": {
+              "mean": 0.28355085637296085,
+              "min": 0.15191256830601094,
+              "max": 0.4432348367029549,
+              "count": 30
+            },
+            "car_commute_ratio": {
+              "mean": 0.11540061199626026,
+              "min": 0.05472226333444856,
+              "max": 0.20757981554474222,
+              "count": 30
+            },
+            "walking_ratio": {
+              "mean": 0.04117263524894165,
+              "min": 0.022632952579203523,
+              "max": 0.07205350417382599,
+              "count": 30
+            },
+            "cycling_ratio": {
+              "mean": 0.0406730545405009,
+              "min": 0.018588033023899095,
+              "max": 0.06526674030026822,
+              "count": 30
+            },
+            "public_transport_ratio": {
+              "mean": 0.6141480092226558,
+              "min": 0.4636425473272033,
+              "max": 0.7322853603835039,
+              "count": 30
+            },
+            "two_wheelers_ratio": {
+              "mean": 0.061766999461744396,
+              "min": 0.021542154277446678,
+              "max": 0.09707028430300281,
+              "count": 30
+            },
+            "student_ratio": {
+              "mean": 0.08411447903908247,
+              "min": 0.04567964902973304,
+              "max": 0.14564734682403666,
+              "count": 30
+            },
+            "retired_ratio": {
+              "mean": 0.16911464585328057,
+              "min": 0.16125188005504537,
+              "max": 0.1858073400119727,
+              "count": 30
+            },
+            "permanent_employment_ratio": {
+              "mean": 0.8581888556295001,
+              "min": 0.7593812527847531,
+              "max": 0.9133798914976541,
+              "count": 30
+            },
+            "temporary_employment_ratio": {
+              "mean": 0.09061258889722265,
+              "min": 0.05205594852125923,
+              "max": 0.13866274337285076,
+              "count": 30
+            },
+            "median_income": {
+              "mean": 32550.333333333332,
+              "min": 14800.0,
+              "max": 48480.0,
+              "count": 30
+            }
           }
         },
         "cross_source_consistency": {
@@ -341,23 +688,116 @@
           "pedestrian_count": 1203
         },
         "census": {
-          "population_density": 25203.175396418184,
-          "children_per_capita": 0.1353454287089581,
-          "elderly_ratio": 0.15262356854414424,
-          "working_age_ratio": 0.7120310027468977,
-          "ses_index": 0.5429404665999498,
-          "unemployment_rate": 0.11150980979185592,
-          "poverty_rate": 0.1563684210526316,
-          "car_commute_ratio": 0.11331667787455096,
-          "walking_ratio": 0.0413663675466217,
-          "cycling_ratio": 0.04105183839517626,
-          "public_transport_ratio": 0.6150795161361098,
-          "two_wheelers_ratio": 0.06264417259288246,
-          "student_ratio": 0.08465080821626031,
-          "retired_ratio": 0.16934178546274406,
-          "permanent_employment_ratio": 0.8578693655418917,
-          "temporary_employment_ratio": 0.09076124281306346,
-          "median_income": 32550.333333333332
+          "iris_units_count": 30,
+          "iris_code_column": "IRIS",
+          "population_density": {
+            "mean": 17842.06014341216,
+            "min": 1852.755976928889,
+            "max": 28804.345053815017,
+            "count": 30
+          },
+          "children_per_capita": {
+            "mean": 0.1353454287089581,
+            "min": 0.13534542870895805,
+            "max": 0.13534542870895813,
+            "count": 30
+          },
+          "elderly_ratio": {
+            "mean": 0.15262356854414427,
+            "min": 0.15262356854414422,
+            "max": 0.15262356854414427,
+            "count": 30
+          },
+          "working_age_ratio": {
+            "mean": 0.7120310027468977,
+            "min": 0.7120310027468976,
+            "max": 0.7120310027468977,
+            "count": 30
+          },
+          "ses_index": {
+            "mean": 0.5355615472798652,
+            "min": 0.11159845625695988,
+            "max": 0.6874299330168906,
+            "count": 30
+          },
+          "unemployment_rate": {
+            "mean": 0.11417337314851243,
+            "min": 0.04564821578180588,
+            "max": 0.24160236794155263,
+            "count": 30
+          },
+          "poverty_rate": {
+            "mean": 0.15636842105263157,
+            "min": 0.07400000000000001,
+            "max": 0.359,
+            "count": 19
+          },
+          "car_ownership_rate": {
+            "mean": 0.28355085637296085,
+            "min": 0.15191256830601094,
+            "max": 0.4432348367029549,
+            "count": 30
+          },
+          "car_commute_ratio": {
+            "mean": 0.11540061199626026,
+            "min": 0.05472226333444856,
+            "max": 0.20757981554474222,
+            "count": 30
+          },
+          "walking_ratio": {
+            "mean": 0.04117263524894165,
+            "min": 0.022632952579203523,
+            "max": 0.07205350417382599,
+            "count": 30
+          },
+          "cycling_ratio": {
+            "mean": 0.0406730545405009,
+            "min": 0.018588033023899095,
+            "max": 0.06526674030026822,
+            "count": 30
+          },
+          "public_transport_ratio": {
+            "mean": 0.6141480092226558,
+            "min": 0.4636425473272033,
+            "max": 0.7322853603835039,
+            "count": 30
+          },
+          "two_wheelers_ratio": {
+            "mean": 0.061766999461744396,
+            "min": 0.021542154277446678,
+            "max": 0.09707028430300281,
+            "count": 30
+          },
+          "student_ratio": {
+            "mean": 0.08411447903908247,
+            "min": 0.04567964902973304,
+            "max": 0.14564734682403666,
+            "count": 30
+          },
+          "retired_ratio": {
+            "mean": 0.16911464585328057,
+            "min": 0.16125188005504537,
+            "max": 0.1858073400119727,
+            "count": 30
+          },
+          "permanent_employment_ratio": {
+            "mean": 0.8581888556295001,
+            "min": 0.7593812527847531,
+            "max": 0.9133798914976541,
+            "count": 30
+          },
+          "temporary_employment_ratio": {
+            "mean": 0.09061258889722265,
+            "min": 0.05205594852125923,
+            "max": 0.13866274337285076,
+            "count": 30
+          },
+          "median_income": {
+            "mean": 32550.333333333332,
+            "min": 14800.0,
+            "max": 48480.0,
+            "count": 30
+          }
         },
         "area_km2": 2.188314187596374
       }
@@ -371,7 +811,9 @@
       ],
       "warnings": [
         "Some buildings have > 12 levels (max: 33.0)",
-        "walking_ratio (0.0372) outside typical range (0.1 - 0.6)"
+        "NaN values in column 'poverty_rate': 1/6 IRIS units",
+        "walking_ratio outside typical range for 6/6 IRIS units (range: 0.0214 - 0.0541, typical: 0.1 - 0.6)",
+        "temporary_employment_ratio outside typical range for 1/6 IRIS units (range: 0.0397 - 0.0397, typical: 0.05 - 0.5)"
       ],
       "checks": {
         "file_structure": {
@@ -452,26 +894,121 @@
           "status": "warn",
           "issues": [],
           "warnings": [
-            "walking_ratio (0.0372) outside typical range (0.1 - 0.6)"
+            "NaN values in column 'poverty_rate': 1/6 IRIS units",
+            "walking_ratio outside typical range for 6/6 IRIS units (range: 0.0214 - 0.0541, typical: 0.1 - 0.6)",
+            "temporary_employment_ratio outside typical range for 1/6 IRIS units (range: 0.0397 - 0.0397, typical: 0.05 - 0.5)"
           ],
           "statistics": {
-            "population_density": 34609.7801160002,
-            "children_per_capita": 0.13534542870895808,
-            "elderly_ratio": 0.15262356854414422,
-            "working_age_ratio": 0.7120310027468977,
-            "ses_index": 0.5276772519620042,
-            "unemployment_rate": 0.09571397692587415,
-            "poverty_rate": 0.1494,
-            "car_commute_ratio": 0.15996751792479832,
-            "walking_ratio": 0.0372101420086158,
-            "cycling_ratio": 0.03718674961206133,
-            "public_transport_ratio": 0.6447379841243314,
-            "two_wheelers_ratio": 0.030540612127167893,
-            "student_ratio": 0.10995015954976832,
-            "retired_ratio": 0.17487791838343827,
-            "permanent_employment_ratio": 0.8692010103207088,
-            "temporary_employment_ratio": 0.07699961688756991,
-            "median_income": 28968.333333333332
+            "iris_units_count": 6,
+            "iris_code_column": "IRIS",
+            "population_density": {
+              "mean": 15506.324364468679,
+              "min": 9733.149477693212,
+              "max": 22118.94440169502,
+              "count": 6
+            },
+            "children_per_capita": {
+              "mean": 0.13534542870895808,
+              "min": 0.13534542870895805,
+              "max": 0.13534542870895813,
+              "count": 6
+            },
+            "elderly_ratio": {
+              "mean": 0.15262356854414427,
+              "min": 0.15262356854414422,
+              "max": 0.15262356854414427,
+              "count": 6
+            },
+            "working_age_ratio": {
+              "mean": 0.7120310027468976,
+              "min": 0.7120310027468976,
+              "max": 0.7120310027468977,
+              "count": 6
+            },
+            "ses_index": {
+              "mean": 0.5304179055294861,
+              "min": 0.36279203918497877,
+              "max": 0.597211321311856,
+              "count": 6
+            },
+            "unemployment_rate": {
+              "mean": 0.09581595292733565,
+              "min": 0.06121191561005698,
+              "max": 0.12863370226013882,
+              "count": 6
+            },
+            "poverty_rate": {
+              "mean": 0.14940000000000003,
+              "min": 0.127,
+              "max": 0.17,
+              "count": 5
+            },
+            "car_ownership_rate": {
+              "mean": 0.3220952827542221,
+              "min": 0.2599388379204893,
+              "max": 0.36612702366127026,
+              "count": 6
+            },
+            "car_commute_ratio": {
+              "mean": 0.15829781991810085,
+              "min": 0.08760772116537353,
+              "max": 0.23471978477170335,
+              "count": 6
+            },
+            "walking_ratio": {
+              "mean": 0.03808762286175282,
+              "min": 0.021361293426405484,
+              "max": 0.05410173677756167,
+              "count": 6
+            },
+            "cycling_ratio": {
+              "mean": 0.03662183203031388,
+              "min": 0.022740287052014956,
+              "max": 0.06076292452868949,
+              "count": 6
+            },
+            "public_transport_ratio": {
+              "mean": 0.6460252671114085,
+              "min": 0.5852338920030797,
+              "max": 0.7361978950296307,
+              "count": 6
+            },
+            "two_wheelers_ratio": {
+              "mean": 0.03080635610336235,
+              "min": 0.021826479921600375,
+              "max": 0.03943151682206405,
+              "count": 6
+            },
+            "student_ratio": {
+              "mean": 0.10912323300176613,
+              "min": 0.08092018061009155,
+              "max": 0.15625050794745876,
+              "count": 6
+            },
+            "retired_ratio": {
+              "mean": 0.174314256457507,
+              "min": 0.16441949370162554,
+              "max": 0.18232353647585792,
+              "count": 6
+            },
+            "permanent_employment_ratio": {
+              "mean": 0.868630349278094,
+              "min": 0.8485152940674897,
+              "max": 0.9071066257249175,
+              "count": 6
+            },
+            "temporary_employment_ratio": {
+              "mean": 0.07806549173447003,
+              "min": 0.03974103344072825,
+              "max": 0.10138773932518787,
+              "count": 6
+            },
+            "median_income": {
+              "mean": 28968.333333333332,
+              "min": 22650.0,
+              "max": 35180.0,
+              "count": 6
+            }
           }
         },
         "cross_source_consistency": {
@@ -512,23 +1049,116 @@
           "pedestrian_count": 341
         },
         "census": {
-          "population_density": 34609.7801160002,
-          "children_per_capita": 0.13534542870895808,
-          "elderly_ratio": 0.15262356854414422,
-          "working_age_ratio": 0.7120310027468977,
-          "ses_index": 0.5276772519620042,
-          "unemployment_rate": 0.09571397692587415,
-          "poverty_rate": 0.1494,
-          "car_commute_ratio": 0.15996751792479832,
-          "walking_ratio": 0.0372101420086158,
-          "cycling_ratio": 0.03718674961206133,
-          "public_transport_ratio": 0.6447379841243314,
-          "two_wheelers_ratio": 0.030540612127167893,
-          "student_ratio": 0.10995015954976832,
-          "retired_ratio": 0.17487791838343827,
-          "permanent_employment_ratio": 0.8692010103207088,
-          "temporary_employment_ratio": 0.07699961688756991,
-          "median_income": 28968.333333333332
+          "iris_units_count": 6,
+          "iris_code_column": "IRIS",
+          "population_density": {
+            "mean": 15506.324364468679,
+            "min": 9733.149477693212,
+            "max": 22118.94440169502,
+            "count": 6
+          },
+          "children_per_capita": {
+            "mean": 0.13534542870895808,
+            "min": 0.13534542870895805,
+            "max": 0.13534542870895813,
+            "count": 6
+          },
+          "elderly_ratio": {
+            "mean": 0.15262356854414427,
+            "min": 0.15262356854414422,
+            "max": 0.15262356854414427,
+            "count": 6
+          },
+          "working_age_ratio": {
+            "mean": 0.7120310027468976,
+            "min": 0.7120310027468976,
+            "max": 0.7120310027468977,
+            "count": 6
+          },
+          "ses_index": {
+            "mean": 0.5304179055294861,
+            "min": 0.36279203918497877,
+            "max": 0.597211321311856,
+            "count": 6
+          },
+          "unemployment_rate": {
+            "mean": 0.09581595292733565,
+            "min": 0.06121191561005698,
+            "max": 0.12863370226013882,
+            "count": 6
+          },
+          "poverty_rate": {
+            "mean": 0.14940000000000003,
+            "min": 0.127,
+            "max": 0.17,
+            "count": 5
+          },
+          "car_ownership_rate": {
+            "mean": 0.3220952827542221,
+            "min": 0.2599388379204893,
+            "max": 0.36612702366127026,
+            "count": 6
+          },
+          "car_commute_ratio": {
+            "mean": 0.15829781991810085,
+            "min": 0.08760772116537353,
+            "max": 0.23471978477170335,
+            "count": 6
+          },
+          "walking_ratio": {
+            "mean": 0.03808762286175282,
+            "min": 0.021361293426405484,
+            "max": 0.05410173677756167,
+            "count": 6
+          },
+          "cycling_ratio": {
+            "mean": 0.03662183203031388,
+            "min": 0.022740287052014956,
+            "max": 0.06076292452868949,
+            "count": 6
+          },
+          "public_transport_ratio": {
+            "mean": 0.6460252671114085,
+            "min": 0.5852338920030797,
+            "max": 0.7361978950296307,
+            "count": 6
+          },
+          "two_wheelers_ratio": {
+            "mean": 0.03080635610336235,
+            "min": 0.021826479921600375,
+            "max": 0.03943151682206405,
+            "count": 6
+          },
+          "student_ratio": {
+            "mean": 0.10912323300176613,
+            "min": 0.08092018061009155,
+            "max": 0.15625050794745876,
+            "count": 6
+          },
+          "retired_ratio": {
+            "mean": 0.174314256457507,
+            "min": 0.16441949370162554,
+            "max": 0.18232353647585792,
+            "count": 6
+          },
+          "permanent_employment_ratio": {
+            "mean": 0.868630349278094,
+            "min": 0.8485152940674897,
+            "max": 0.9071066257249175,
+            "count": 6
+          },
+          "temporary_employment_ratio": {
+            "mean": 0.07806549173447003,
+            "min": 0.03974103344072825,
+            "max": 0.10138773932518787,
+            "count": 6
+          },
+          "median_income": {
+            "mean": 28968.333333333332,
+            "min": 22650.0,
+            "max": 35180.0,
+            "count": 6
+          }
         },
         "area_km2": 0.27839365978837494
       }
@@ -538,12 +1168,37 @@
       "status": "fail",
       "issues": [
         "Intersection density (1431.14/km\u00b2) out of hard bounds (20 - 500)",
-        "Intersection degree out of hard bounds (3 - 10)"
+        "Intersection degree out of hard bounds (3 - 10)",
+        "Column 'poverty_rate' has 60.00% missing values (9/15 IRIS units, threshold: 20.00%)",
+        "Population density out of hard bounds for 1/15 IRIS units (range: 0 - 0/km\u00b2, expected: 1000 - 60000)"
       ],
       "warnings": [
         "Service density (361.72/km\u00b2) outside typical range (10 - 300)",
         "Some buildings have > 12 levels (max: 59.0)",
-        "walking_ratio (0.0541) outside typical range (0.1 - 0.6)"
+        "NaN values in column 'median_income': 2/15 IRIS units",
+        "NaN values in column 'poverty_rate': 9/15 IRIS units",
+        "Population density outside typical range for 3/15 IRIS units (range: 0 - 3961/km\u00b2, typical: 5000 - 50000)",
+        "children_per_capita outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.08 - 0.2)",
+        "elderly_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.1 - 0.25)",
+        "working_age_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.6 - 0.8)",
+        "ses_index outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.1 - 0.8)",
+        "unemployment_rate outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.3)",
+        "car_ownership_rate outside typical range for 2/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.1 - 0.6)",
+        "car_commute_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.5)",
+        "walking_ratio outside typical range for 13/15 IRIS units (range: 0.0000 - 0.0733, typical: 0.1 - 0.6)",
+        "cycling_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.1)",
+        "public_transport_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.3 - 0.75)",
+        "two_wheelers_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.1)",
+        "student_ratio outside typical range for 2/15 IRIS units (range: 0.0000 - 0.2924, typical: 0.05 - 0.25)",
+        "retired_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.35)",
+        "permanent_employment_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.7 - 0.95)",
+        "temporary_employment_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.5)",
+        "Age ratio sum outside expected range for 1/15 IRIS units (range: 0.0000 - 0.0000, expected: 0.8 - 1.2)",
+        "Age ratio sum may be inconsistent for 1/15 IRIS units (range: 0.0000 - 0.0000, expected ~1.0)",
+        "Mode share sum outside expected range for 1/15 IRIS units (range: 0.0000 - 0.0000, expected: 0.8 - 1.2)",
+        "Mode share sum may be inconsistent for 1/15 IRIS units (range: 0.0000 - 0.0000, expected ~1.0)",
+        "Employment ratio sum outside expected range for 1/15 IRIS units (range: 0.0000 - 0.0000, expected: 0.8 - 1.2)",
+        "Employment ratio sum may be inconsistent for 1/15 IRIS units (range: 0.0000 - 0.0000, expected ~1.0)"
       ],
       "checks": {
         "file_structure": {
@@ -622,29 +1277,148 @@
           }
         },
         "census": {
-          "status": "warn",
-          "issues": [],
+          "status": "fail",
+          "issues": [
+            "Column 'poverty_rate' has 60.00% missing values (9/15 IRIS units, threshold: 20.00%)",
+            "Population density out of hard bounds for 1/15 IRIS units (range: 0 - 0/km\u00b2, expected: 1000 - 60000)"
+          ],
           "warnings": [
-            "walking_ratio (0.0541) outside typical range (0.1 - 0.6)"
+            "NaN values in column 'median_income': 2/15 IRIS units",
+            "NaN values in column 'poverty_rate': 9/15 IRIS units",
+            "Population density outside typical range for 3/15 IRIS units (range: 0 - 3961/km\u00b2, typical: 5000 - 50000)",
+            "children_per_capita outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.08 - 0.2)",
+            "elderly_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.1 - 0.25)",
+            "working_age_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.6 - 0.8)",
+            "ses_index outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.1 - 0.8)",
+            "unemployment_rate outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.3)",
+            "car_ownership_rate outside typical range for 2/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.1 - 0.6)",
+            "car_commute_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.5)",
+            "walking_ratio outside typical range for 13/15 IRIS units (range: 0.0000 - 0.0733, typical: 0.1 - 0.6)",
+            "cycling_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.1)",
+            "public_transport_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.3 - 0.75)",
+            "two_wheelers_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.1)",
+            "student_ratio outside typical range for 2/15 IRIS units (range: 0.0000 - 0.2924, typical: 0.05 - 0.25)",
+            "retired_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.35)",
+            "permanent_employment_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.7 - 0.95)",
+            "temporary_employment_ratio outside typical range for 1/15 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.5)",
+            "Age ratio sum outside expected range for 1/15 IRIS units (range: 0.0000 - 0.0000, expected: 0.8 - 1.2)",
+            "Age ratio sum may be inconsistent for 1/15 IRIS units (range: 0.0000 - 0.0000, expected ~1.0)",
+            "Mode share sum outside expected range for 1/15 IRIS units (range: 0.0000 - 0.0000, expected: 0.8 - 1.2)",
+            "Mode share sum may be inconsistent for 1/15 IRIS units (range: 0.0000 - 0.0000, expected ~1.0)",
+            "Employment ratio sum outside expected range for 1/15 IRIS units (range: 0.0000 - 0.0000, expected: 0.8 - 1.2)",
+            "Employment ratio sum may be inconsistent for 1/15 IRIS units (range: 0.0000 - 0.0000, expected ~1.0)"
           ],
           "statistics": {
-            "population_density": 42044.7950634157,
-            "children_per_capita": 0.1353454287089581,
-            "elderly_ratio": 0.15262356854414427,
-            "working_age_ratio": 0.7120310027468977,
-            "ses_index": 0.5610609223920916,
-            "unemployment_rate": 0.0987491325036705,
-            "poverty_rate": 0.14933333333333332,
-            "car_commute_ratio": 0.11264605213496724,
-            "walking_ratio": 0.05407175851727312,
-            "cycling_ratio": 0.040893921204349405,
-            "public_transport_ratio": 0.6495140147226326,
-            "two_wheelers_ratio": 0.03484590714357788,
-            "student_ratio": 0.11451436046551408,
-            "retired_ratio": 0.17339444493850814,
-            "permanent_employment_ratio": 0.841865737852182,
-            "temporary_employment_ratio": 0.10437502183320597,
-            "median_income": 33381.53846153846
+            "iris_units_count": 15,
+            "iris_code_column": "IRIS",
+            "population_density": {
+              "mean": 10033.83503100077,
+              "min": 0.0,
+              "max": 17193.398143514703,
+              "count": 15
+            },
+            "children_per_capita": {
+              "mean": 0.1263224001283609,
+              "min": 0.0,
+              "max": 0.1353454287089581,
+              "count": 15
+            },
+            "elderly_ratio": {
+              "mean": 0.14244866397453462,
+              "min": 0.0,
+              "max": 0.15262356854414427,
+              "count": 15
+            },
+            "working_age_ratio": {
+              "mean": 0.6645622692304377,
+              "min": 0.0,
+              "max": 0.7120310027468978,
+              "count": 15
+            },
+            "ses_index": {
+              "mean": 0.5338966929715574,
+              "min": 0.0,
+              "max": 0.7351638737211299,
+              "count": 15
+            },
+            "unemployment_rate": {
+              "mean": 0.08984706285566718,
+              "min": 0.0,
+              "max": 0.13553720912937572,
+              "count": 15
+            },
+            "poverty_rate": {
+              "mean": 0.14933333333333332,
+              "min": 0.073,
+              "max": 0.33899999999999997,
+              "count": 6
+            },
+            "car_ownership_rate": {
+              "mean": 0.2599114099341605,
+              "min": 0.0,
+              "max": 0.39202407825432656,
+              "count": 15
+            },
+            "car_commute_ratio": {
+              "mean": 0.10043789114560843,
+              "min": 0.0,
+              "max": 0.19470072939175534,
+              "count": 15
+            },
+            "walking_ratio": {
+              "mean": 0.052302859720854154,
+              "min": 0.0,
+              "max": 0.11206720214097231,
+              "count": 15
+            },
+            "cycling_ratio": {
+              "mean": 0.03842287835421893,
+              "min": 0.0,
+              "max": 0.05776895445053081,
+              "count": 15
+            },
+            "public_transport_ratio": {
+              "mean": 0.6089323516664099,
+              "min": 0.0,
+              "max": 0.7227383632286329,
+              "count": 15
+            },
+            "two_wheelers_ratio": {
+              "mean": 0.033335788015150455,
+              "min": 0.0,
+              "max": 0.07640626650297663,
+              "count": 15
+            },
+            "student_ratio": {
+              "mean": 0.1016820548601348,
+              "min": 0.0,
+              "max": 0.2924287649390768,
+              "count": 15
+            },
+            "retired_ratio": {
+              "mean": 0.16161173418414268,
+              "min": 0.0,
+              "max": 0.18683648309630746,
+              "count": 15
+            },
+            "permanent_employment_ratio": {
+              "mean": 0.7873204533096918,
+              "min": 0.0,
+              "max": 0.8987013264283211,
+              "count": 15
+            },
+            "temporary_employment_ratio": {
+              "mean": 0.09626481270166035,
+              "min": 0.0,
+              "max": 0.16087708445683965,
+              "count": 15
+            },
+            "median_income": {
+              "mean": 33381.53846153846,
+              "min": 16500.0,
+              "max": 44270.0,
+              "count": 13
+            }
           }
         },
         "cross_source_consistency": {
@@ -685,36 +1459,144 @@
           "pedestrian_count": 464
         },
         "census": {
-          "population_density": 42044.7950634157,
-          "children_per_capita": 0.1353454287089581,
-          "elderly_ratio": 0.15262356854414427,
-          "working_age_ratio": 0.7120310027468977,
-          "ses_index": 0.5610609223920916,
-          "unemployment_rate": 0.0987491325036705,
-          "poverty_rate": 0.14933333333333332,
-          "car_commute_ratio": 0.11264605213496724,
-          "walking_ratio": 0.05407175851727312,
-          "cycling_ratio": 0.040893921204349405,
-          "public_transport_ratio": 0.6495140147226326,
-          "two_wheelers_ratio": 0.03484590714357788,
-          "student_ratio": 0.11451436046551408,
-          "retired_ratio": 0.17339444493850814,
-          "permanent_employment_ratio": 0.841865737852182,
-          "temporary_employment_ratio": 0.10437502183320597,
-          "median_income": 33381.53846153846
+          "iris_units_count": 15,
+          "iris_code_column": "IRIS",
+          "population_density": {
+            "mean": 10033.83503100077,
+            "min": 0.0,
+            "max": 17193.398143514703,
+            "count": 15
+          },
+          "children_per_capita": {
+            "mean": 0.1263224001283609,
+            "min": 0.0,
+            "max": 0.1353454287089581,
+            "count": 15
+          },
+          "elderly_ratio": {
+            "mean": 0.14244866397453462,
+            "min": 0.0,
+            "max": 0.15262356854414427,
+            "count": 15
+          },
+          "working_age_ratio": {
+            "mean": 0.6645622692304377,
+            "min": 0.0,
+            "max": 0.7120310027468978,
+            "count": 15
+          },
+          "ses_index": {
+            "mean": 0.5338966929715574,
+            "min": 0.0,
+            "max": 0.7351638737211299,
+            "count": 15
+          },
+          "unemployment_rate": {
+            "mean": 0.08984706285566718,
+            "min": 0.0,
+            "max": 0.13553720912937572,
+            "count": 15
+          },
+          "poverty_rate": {
+            "mean": 0.14933333333333332,
+            "min": 0.073,
+            "max": 0.33899999999999997,
+            "count": 6
+          },
+          "car_ownership_rate": {
+            "mean": 0.2599114099341605,
+            "min": 0.0,
+            "max": 0.39202407825432656,
+            "count": 15
+          },
+          "car_commute_ratio": {
+            "mean": 0.10043789114560843,
+            "min": 0.0,
+            "max": 0.19470072939175534,
+            "count": 15
+          },
+          "walking_ratio": {
+            "mean": 0.052302859720854154,
+            "min": 0.0,
+            "max": 0.11206720214097231,
+            "count": 15
+          },
+          "cycling_ratio": {
+            "mean": 0.03842287835421893,
+            "min": 0.0,
+            "max": 0.05776895445053081,
+            "count": 15
+          },
+          "public_transport_ratio": {
+            "mean": 0.6089323516664099,
+            "min": 0.0,
+            "max": 0.7227383632286329,
+            "count": 15
+          },
+          "two_wheelers_ratio": {
+            "mean": 0.033335788015150455,
+            "min": 0.0,
+            "max": 0.07640626650297663,
+            "count": 15
+          },
+          "student_ratio": {
+            "mean": 0.1016820548601348,
+            "min": 0.0,
+            "max": 0.2924287649390768,
+            "count": 15
+          },
+          "retired_ratio": {
+            "mean": 0.16161173418414268,
+            "min": 0.0,
+            "max": 0.18683648309630746,
+            "count": 15
+          },
+          "permanent_employment_ratio": {
+            "mean": 0.7873204533096918,
+            "min": 0.0,
+            "max": 0.8987013264283211,
+            "count": 15
+          },
+          "temporary_employment_ratio": {
+            "mean": 0.09626481270166035,
+            "min": 0.0,
+            "max": 0.16087708445683965,
+            "count": 15
+          },
+          "median_income": {
+            "mean": 33381.53846153846,
+            "min": 16500.0,
+            "max": 44270.0,
+            "count": 13
+          }
         },
         "area_km2": 0.5086851766025062
       }
     },
     {
       "neighborhood_name": "Bartholom\u00e9\u2013Brancion (15e)",
-      "status": "warn",
-      "issues": [],
+      "status": "fail",
+      "issues": [
+        "Population density out of hard bounds for 1/13 IRIS units (range: 5 - 5/km\u00b2, expected: 1000 - 60000)"
+      ],
       "warnings": [
         "Some buildings have > 12 levels (max: 19.0)",
         "Building area ratio (17.08%) outside typical range (30.00% - 90.00%)",
         "Intersection density (412.12/km\u00b2) outside typical range (10 - 400)",
-        "walking_ratio (0.0280) outside typical range (0.1 - 0.6)"
+        "NaN values in column 'median_income': 1/13 IRIS units",
+        "NaN values in column 'poverty_rate': 1/13 IRIS units",
+        "Population density outside typical range for 3/13 IRIS units (range: 5 - 4935/km\u00b2, typical: 5000 - 50000)",
+        "ses_index outside typical range for 1/13 IRIS units (range: 1.0000 - 1.0000, typical: 0.1 - 0.8)",
+        "unemployment_rate outside typical range for 1/13 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.3)",
+        "car_ownership_rate outside typical range for 1/13 IRIS units (range: 0.0000 - 0.0000, typical: 0.1 - 0.6)",
+        "car_commute_ratio outside typical range for 1/13 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.5)",
+        "walking_ratio outside typical range for 13/13 IRIS units (range: 0.0000 - 0.0347, typical: 0.1 - 0.6)",
+        "cycling_ratio outside typical range for 1/13 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.1)",
+        "public_transport_ratio outside typical range for 3/13 IRIS units (range: 0.7568 - 1.0000, typical: 0.3 - 0.75)",
+        "two_wheelers_ratio outside typical range for 1/13 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.1)",
+        "student_ratio outside typical range for 1/13 IRIS units (range: 0.3560 - 0.3560, typical: 0.05 - 0.25)",
+        "permanent_employment_ratio outside typical range for 1/13 IRIS units (range: 1.0000 - 1.0000, typical: 0.7 - 0.95)",
+        "temporary_employment_ratio outside typical range for 1/13 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.5)"
       ],
       "checks": {
         "file_structure": {
@@ -791,29 +1673,137 @@
           }
         },
         "census": {
-          "status": "warn",
-          "issues": [],
+          "status": "fail",
+          "issues": [
+            "Population density out of hard bounds for 1/13 IRIS units (range: 5 - 5/km\u00b2, expected: 1000 - 60000)"
+          ],
           "warnings": [
-            "walking_ratio (0.0280) outside typical range (0.1 - 0.6)"
+            "NaN values in column 'median_income': 1/13 IRIS units",
+            "NaN values in column 'poverty_rate': 1/13 IRIS units",
+            "Population density outside typical range for 3/13 IRIS units (range: 5 - 4935/km\u00b2, typical: 5000 - 50000)",
+            "ses_index outside typical range for 1/13 IRIS units (range: 1.0000 - 1.0000, typical: 0.1 - 0.8)",
+            "unemployment_rate outside typical range for 1/13 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.3)",
+            "car_ownership_rate outside typical range for 1/13 IRIS units (range: 0.0000 - 0.0000, typical: 0.1 - 0.6)",
+            "car_commute_ratio outside typical range for 1/13 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.5)",
+            "walking_ratio outside typical range for 13/13 IRIS units (range: 0.0000 - 0.0347, typical: 0.1 - 0.6)",
+            "cycling_ratio outside typical range for 1/13 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.1)",
+            "public_transport_ratio outside typical range for 3/13 IRIS units (range: 0.7568 - 1.0000, typical: 0.3 - 0.75)",
+            "two_wheelers_ratio outside typical range for 1/13 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.1)",
+            "student_ratio outside typical range for 1/13 IRIS units (range: 0.3560 - 0.3560, typical: 0.05 - 0.25)",
+            "permanent_employment_ratio outside typical range for 1/13 IRIS units (range: 1.0000 - 1.0000, typical: 0.7 - 0.95)",
+            "temporary_employment_ratio outside typical range for 1/13 IRIS units (range: 0.0000 - 0.0000, typical: 0.05 - 0.5)"
           ],
           "statistics": {
-            "population_density": 22753.55724722494,
-            "children_per_capita": 0.1353454287089581,
-            "elderly_ratio": 0.15262356854414424,
-            "working_age_ratio": 0.7120310027468977,
-            "ses_index": 0.42079617535337493,
-            "unemployment_rate": 0.12894323498983673,
-            "poverty_rate": 0.16225,
-            "car_commute_ratio": 0.12199519190073167,
-            "walking_ratio": 0.02803548258155736,
-            "cycling_ratio": 0.03274633910242245,
-            "public_transport_ratio": 0.6891428703251571,
-            "two_wheelers_ratio": 0.039974283042835936,
-            "student_ratio": 0.09681407549427357,
-            "retired_ratio": 0.17497349948015437,
-            "permanent_employment_ratio": 0.8546032405004412,
-            "temporary_employment_ratio": 0.09317814682685362,
-            "median_income": 25052.5
+            "iris_units_count": 13,
+            "iris_code_column": "IRIS",
+            "population_density": {
+              "mean": 12476.401045210594,
+              "min": 4.5785988581807535,
+              "max": 22721.287533972987,
+              "count": 13
+            },
+            "children_per_capita": {
+              "mean": 0.13534542870895813,
+              "min": 0.13534542870895805,
+              "max": 0.1353454287089581,
+              "count": 13
+            },
+            "elderly_ratio": {
+              "mean": 0.15262356854414424,
+              "min": 0.15262356854414422,
+              "max": 0.15262356854414427,
+              "count": 13
+            },
+            "working_age_ratio": {
+              "mean": 0.7120310027468976,
+              "min": 0.7120310027468976,
+              "max": 0.7120310027468977,
+              "count": 13
+            },
+            "ses_index": {
+              "mean": 0.4539995719591603,
+              "min": 0.11812148270387984,
+              "max": 1.0,
+              "count": 13
+            },
+            "unemployment_rate": {
+              "mean": 0.12510764376027325,
+              "min": 0.0,
+              "max": 0.22452970458496774,
+              "count": 13
+            },
+            "poverty_rate": {
+              "mean": 0.16225,
+              "min": 0.08800000000000001,
+              "max": 0.294,
+              "count": 12
+            },
+            "car_ownership_rate": {
+              "mean": 0.291552065170747,
+              "min": 0.0,
+              "max": 0.4073394495412844,
+              "count": 13
+            },
+            "car_commute_ratio": {
+              "mean": 0.10788974410420536,
+              "min": 0.0,
+              "max": 0.15955586835361094,
+              "count": 13
+            },
+            "walking_ratio": {
+              "mean": 0.025046895183299993,
+              "min": 0.0,
+              "max": 0.0346989290783079,
+              "count": 13
+            },
+            "cycling_ratio": {
+              "mean": 0.02946681181854032,
+              "min": 0.0,
+              "max": 0.041668398720688525,
+              "count": 13
+            },
+            "public_transport_ratio": {
+              "mean": 0.720721220483547,
+              "min": 0.6471669456779032,
+              "max": 1.0,
+              "count": 13
+            },
+            "two_wheelers_ratio": {
+              "mean": 0.03657149413694097,
+              "min": 0.0,
+              "max": 0.06236186912869523,
+              "count": 13
+            },
+            "student_ratio": {
+              "mean": 0.11541428727109485,
+              "min": 0.066648533927274,
+              "max": 0.35601550137344884,
+              "count": 13
+            },
+            "retired_ratio": {
+              "mean": 0.17329141454705296,
+              "min": 0.15262356854414427,
+              "max": 0.1875567695798638,
+              "count": 13
+            },
+            "permanent_employment_ratio": {
+              "mean": 0.8666547242194288,
+              "min": 0.814830848094558,
+              "max": 1.0,
+              "count": 13
+            },
+            "temporary_employment_ratio": {
+              "mean": 0.08632387784907106,
+              "min": 0.0,
+              "max": 0.12301964688169219,
+              "count": 13
+            },
+            "median_income": {
+              "mean": 25052.5,
+              "min": 15650.0,
+              "max": 33930.0,
+              "count": 12
+            }
           }
         },
         "cross_source_consistency": {
@@ -854,23 +1844,116 @@
           "pedestrian_count": 609
         },
         "census": {
-          "population_density": 22753.55724722494,
-          "children_per_capita": 0.1353454287089581,
-          "elderly_ratio": 0.15262356854414424,
-          "working_age_ratio": 0.7120310027468977,
-          "ses_index": 0.42079617535337493,
-          "unemployment_rate": 0.12894323498983673,
-          "poverty_rate": 0.16225,
-          "car_commute_ratio": 0.12199519190073167,
-          "walking_ratio": 0.02803548258155736,
-          "cycling_ratio": 0.03274633910242245,
-          "public_transport_ratio": 0.6891428703251571,
-          "two_wheelers_ratio": 0.039974283042835936,
-          "student_ratio": 0.09681407549427357,
-          "retired_ratio": 0.17497349948015437,
-          "permanent_employment_ratio": 0.8546032405004412,
-          "temporary_employment_ratio": 0.09317814682685362,
-          "median_income": 25052.5
+          "iris_units_count": 13,
+          "iris_code_column": "IRIS",
+          "population_density": {
+            "mean": 12476.401045210594,
+            "min": 4.5785988581807535,
+            "max": 22721.287533972987,
+            "count": 13
+          },
+          "children_per_capita": {
+            "mean": 0.13534542870895813,
+            "min": 0.13534542870895805,
+            "max": 0.1353454287089581,
+            "count": 13
+          },
+          "elderly_ratio": {
+            "mean": 0.15262356854414424,
+            "min": 0.15262356854414422,
+            "max": 0.15262356854414427,
+            "count": 13
+          },
+          "working_age_ratio": {
+            "mean": 0.7120310027468976,
+            "min": 0.7120310027468976,
+            "max": 0.7120310027468977,
+            "count": 13
+          },
+          "ses_index": {
+            "mean": 0.4539995719591603,
+            "min": 0.11812148270387984,
+            "max": 1.0,
+            "count": 13
+          },
+          "unemployment_rate": {
+            "mean": 0.12510764376027325,
+            "min": 0.0,
+            "max": 0.22452970458496774,
+            "count": 13
+          },
+          "poverty_rate": {
+            "mean": 0.16225,
+            "min": 0.08800000000000001,
+            "max": 0.294,
+            "count": 12
+          },
+          "car_ownership_rate": {
+            "mean": 0.291552065170747,
+            "min": 0.0,
+            "max": 0.4073394495412844,
+            "count": 13
+          },
+          "car_commute_ratio": {
+            "mean": 0.10788974410420536,
+            "min": 0.0,
+            "max": 0.15955586835361094,
+            "count": 13
+          },
+          "walking_ratio": {
+            "mean": 0.025046895183299993,
+            "min": 0.0,
+            "max": 0.0346989290783079,
+            "count": 13
+          },
+          "cycling_ratio": {
+            "mean": 0.02946681181854032,
+            "min": 0.0,
+            "max": 0.041668398720688525,
+            "count": 13
+          },
+          "public_transport_ratio": {
+            "mean": 0.720721220483547,
+            "min": 0.6471669456779032,
+            "max": 1.0,
+            "count": 13
+          },
+          "two_wheelers_ratio": {
+            "mean": 0.03657149413694097,
+            "min": 0.0,
+            "max": 0.06236186912869523,
+            "count": 13
+          },
+          "student_ratio": {
+            "mean": 0.11541428727109485,
+            "min": 0.066648533927274,
+            "max": 0.35601550137344884,
+            "count": 13
+          },
+          "retired_ratio": {
+            "mean": 0.17329141454705296,
+            "min": 0.15262356854414427,
+            "max": 0.1875567695798638,
+            "count": 13
+          },
+          "permanent_employment_ratio": {
+            "mean": 0.8666547242194288,
+            "min": 0.814830848094558,
+            "max": 1.0,
+            "count": 13
+          },
+          "temporary_employment_ratio": {
+            "mean": 0.08632387784907106,
+            "min": 0.0,
+            "max": 0.12301964688169219,
+            "count": 13
+          },
+          "median_income": {
+            "mean": 25052.5,
+            "min": 15650.0,
+            "max": 33930.0,
+            "count": 12
+          }
         },
         "area_km2": 0.9487439101995383
       }
@@ -883,7 +1966,9 @@
       ],
       "warnings": [
         "Service density (370.09/km\u00b2) outside typical range (10 - 300)",
-        "walking_ratio (0.0349) outside typical range (0.1 - 0.6)"
+        "Population density outside typical range for 1/9 IRIS units (range: 56127 - 56127/km\u00b2, typical: 5000 - 50000)",
+        "walking_ratio outside typical range for 9/9 IRIS units (range: 0.0237 - 0.0567, typical: 0.1 - 0.6)",
+        "public_transport_ratio outside typical range for 1/9 IRIS units (range: 0.7675 - 0.7675, typical: 0.3 - 0.75)"
       ],
       "checks": {
         "file_structure": {
@@ -953,26 +2038,121 @@
           "status": "warn",
           "issues": [],
           "warnings": [
-            "walking_ratio (0.0349) outside typical range (0.1 - 0.6)"
+            "Population density outside typical range for 1/9 IRIS units (range: 56127 - 56127/km\u00b2, typical: 5000 - 50000)",
+            "walking_ratio outside typical range for 9/9 IRIS units (range: 0.0237 - 0.0567, typical: 0.1 - 0.6)",
+            "public_transport_ratio outside typical range for 1/9 IRIS units (range: 0.7675 - 0.7675, typical: 0.3 - 0.75)"
           ],
           "statistics": {
-            "population_density": 49995.57872398479,
-            "children_per_capita": 0.1353454287089581,
-            "elderly_ratio": 0.15262356854414427,
-            "working_age_ratio": 0.7120310027468977,
-            "ses_index": 0.34588164276705735,
-            "unemployment_rate": 0.14643153159447775,
-            "poverty_rate": 0.20644444444444446,
-            "car_commute_ratio": 0.12004042942530607,
-            "walking_ratio": 0.03491327578163721,
-            "cycling_ratio": 0.030787132607638955,
-            "public_transport_ratio": 0.6777640681915279,
-            "two_wheelers_ratio": 0.016816145758931925,
-            "student_ratio": 0.09674271605772929,
-            "retired_ratio": 0.1806794746768732,
-            "permanent_employment_ratio": 0.8533290719357223,
-            "temporary_employment_ratio": 0.10198077302257885,
-            "median_income": 20615.555555555555
+            "iris_units_count": 9,
+            "iris_code_column": "IRIS",
+            "population_density": {
+              "mean": 23114.78442932572,
+              "min": 10273.559079465806,
+              "max": 56126.54504591357,
+              "count": 9
+            },
+            "children_per_capita": {
+              "mean": 0.1353454287089581,
+              "min": 0.13534542870895808,
+              "max": 0.1353454287089581,
+              "count": 9
+            },
+            "elderly_ratio": {
+              "mean": 0.15262356854414422,
+              "min": 0.15262356854414422,
+              "max": 0.15262356854414424,
+              "count": 9
+            },
+            "working_age_ratio": {
+              "mean": 0.7120310027468977,
+              "min": 0.7120310027468977,
+              "max": 0.7120310027468977,
+              "count": 9
+            },
+            "ses_index": {
+              "mean": 0.3468165790955172,
+              "min": 0.23857024106400707,
+              "max": 0.5380875222393149,
+              "count": 9
+            },
+            "unemployment_rate": {
+              "mean": 0.14598768383449143,
+              "min": 0.10414068367896516,
+              "max": 0.1897921266741165,
+              "count": 9
+            },
+            "poverty_rate": {
+              "mean": 0.20644444444444446,
+              "min": 0.11699999999999999,
+              "max": 0.342,
+              "count": 9
+            },
+            "car_ownership_rate": {
+              "mean": 0.3535084438812939,
+              "min": 0.17633928571428573,
+              "max": 0.41330166270783847,
+              "count": 9
+            },
+            "car_commute_ratio": {
+              "mean": 0.11802338850269768,
+              "min": 0.0855001545537003,
+              "max": 0.14560201303125533,
+              "count": 9
+            },
+            "walking_ratio": {
+              "mean": 0.03649221533948525,
+              "min": 0.02369666030760447,
+              "max": 0.05671222641605071,
+              "count": 9
+            },
+            "cycling_ratio": {
+              "mean": 0.031179093548242512,
+              "min": 0.014354066985645859,
+              "max": 0.04773976763664626,
+              "count": 9
+            },
+            "public_transport_ratio": {
+              "mean": 0.6773874825722022,
+              "min": 0.6200956937799017,
+              "max": 0.7675179509831556,
+              "count": 9
+            },
+            "two_wheelers_ratio": {
+              "mean": 0.015933430070398144,
+              "min": 0.0101144031105905,
+              "max": 0.024260275311723804,
+              "count": 9
+            },
+            "student_ratio": {
+              "mean": 0.098195359491604,
+              "min": 0.06347634176231697,
+              "max": 0.1343350996561931,
+              "count": 9
+            },
+            "retired_ratio": {
+              "mean": 0.18000122161896664,
+              "min": 0.16168125161557048,
+              "max": 0.20827548841880675,
+              "count": 9
+            },
+            "permanent_employment_ratio": {
+              "mean": 0.8523710967792286,
+              "min": 0.8113414489081361,
+              "max": 0.8811293818062779,
+              "count": 9
+            },
+            "temporary_employment_ratio": {
+              "mean": 0.10326246331055085,
+              "min": 0.07085139860621258,
+              "max": 0.134132472098151,
+              "count": 9
+            },
+            "median_income": {
+              "mean": 20615.555555555555,
+              "min": 15370.0,
+              "max": 25960.0,
+              "count": 9
+            }
           }
         },
         "cross_source_consistency": {
@@ -1004,36 +2184,146 @@
           "pedestrian_count": 238
         },
         "census": {
-          "population_density": 49995.57872398479,
-          "children_per_capita": 0.1353454287089581,
-          "elderly_ratio": 0.15262356854414427,
-          "working_age_ratio": 0.7120310027468977,
-          "ses_index": 0.34588164276705735,
-          "unemployment_rate": 0.14643153159447775,
-          "poverty_rate": 0.20644444444444446,
-          "car_commute_ratio": 0.12004042942530607,
-          "walking_ratio": 0.03491327578163721,
-          "cycling_ratio": 0.030787132607638955,
-          "public_transport_ratio": 0.6777640681915279,
-          "two_wheelers_ratio": 0.016816145758931925,
-          "student_ratio": 0.09674271605772929,
-          "retired_ratio": 0.1806794746768732,
-          "permanent_employment_ratio": 0.8533290719357223,
-          "temporary_employment_ratio": 0.10198077302257885,
-          "median_income": 20615.555555555555
+          "iris_units_count": 9,
+          "iris_code_column": "IRIS",
+          "population_density": {
+            "mean": 23114.78442932572,
+            "min": 10273.559079465806,
+            "max": 56126.54504591357,
+            "count": 9
+          },
+          "children_per_capita": {
+            "mean": 0.1353454287089581,
+            "min": 0.13534542870895808,
+            "max": 0.1353454287089581,
+            "count": 9
+          },
+          "elderly_ratio": {
+            "mean": 0.15262356854414422,
+            "min": 0.15262356854414422,
+            "max": 0.15262356854414424,
+            "count": 9
+          },
+          "working_age_ratio": {
+            "mean": 0.7120310027468977,
+            "min": 0.7120310027468977,
+            "max": 0.7120310027468977,
+            "count": 9
+          },
+          "ses_index": {
+            "mean": 0.3468165790955172,
+            "min": 0.23857024106400707,
+            "max": 0.5380875222393149,
+            "count": 9
+          },
+          "unemployment_rate": {
+            "mean": 0.14598768383449143,
+            "min": 0.10414068367896516,
+            "max": 0.1897921266741165,
+            "count": 9
+          },
+          "poverty_rate": {
+            "mean": 0.20644444444444446,
+            "min": 0.11699999999999999,
+            "max": 0.342,
+            "count": 9
+          },
+          "car_ownership_rate": {
+            "mean": 0.3535084438812939,
+            "min": 0.17633928571428573,
+            "max": 0.41330166270783847,
+            "count": 9
+          },
+          "car_commute_ratio": {
+            "mean": 0.11802338850269768,
+            "min": 0.0855001545537003,
+            "max": 0.14560201303125533,
+            "count": 9
+          },
+          "walking_ratio": {
+            "mean": 0.03649221533948525,
+            "min": 0.02369666030760447,
+            "max": 0.05671222641605071,
+            "count": 9
+          },
+          "cycling_ratio": {
+            "mean": 0.031179093548242512,
+            "min": 0.014354066985645859,
+            "max": 0.04773976763664626,
+            "count": 9
+          },
+          "public_transport_ratio": {
+            "mean": 0.6773874825722022,
+            "min": 0.6200956937799017,
+            "max": 0.7675179509831556,
+            "count": 9
+          },
+          "two_wheelers_ratio": {
+            "mean": 0.015933430070398144,
+            "min": 0.0101144031105905,
+            "max": 0.024260275311723804,
+            "count": 9
+          },
+          "student_ratio": {
+            "mean": 0.098195359491604,
+            "min": 0.06347634176231697,
+            "max": 0.1343350996561931,
+            "count": 9
+          },
+          "retired_ratio": {
+            "mean": 0.18000122161896664,
+            "min": 0.16168125161557048,
+            "max": 0.20827548841880675,
+            "count": 9
+          },
+          "permanent_employment_ratio": {
+            "mean": 0.8523710967792286,
+            "min": 0.8113414489081361,
+            "max": 0.8811293818062779,
+            "count": 9
+          },
+          "temporary_employment_ratio": {
+            "mean": 0.10326246331055085,
+            "min": 0.07085139860621258,
+            "max": 0.134132472098151,
+            "count": 9
+          },
+          "median_income": {
+            "mean": 20615.555555555555,
+            "min": 15370.0,
+            "max": 25960.0,
+            "count": 9
+          }
         },
         "area_km2": 0.3080305282532608
       }
     },
     {
       "neighborhood_name": "B\u00e9dier\u2013Oudin\u00e9 (13e)",
-      "status": "warn",
-      "issues": [],
+      "status": "fail",
+      "issues": [
+        "Column 'poverty_rate' has 25.00% missing values (2/8 IRIS units, threshold: 20.00%)",
+        "Population density out of hard bounds for 1/8 IRIS units (range: 235 - 235/km\u00b2, expected: 1000 - 60000)"
+      ],
       "warnings": [
         "Missing service categories: ['Entertainment']",
         "Some buildings have > 12 levels (max: 20.0)",
         "Building area ratio (24.41%) outside typical range (30.00% - 90.00%)",
-        "walking_ratio (0.0365) outside typical range (0.1 - 0.6)"
+        "NaN values in column 'median_income': 1/8 IRIS units",
+        "NaN values in column 'poverty_rate': 2/8 IRIS units",
+        "Population density outside typical range for 3/8 IRIS units (range: 235 - 3572/km\u00b2, typical: 5000 - 50000)",
+        "ses_index outside typical range for 1/8 IRIS units (range: 0.0588 - 0.0588, typical: 0.1 - 0.8)",
+        "unemployment_rate outside typical range for 1/8 IRIS units (range: 0.3676 - 0.3676, typical: 0.01 - 0.3)",
+        "car_ownership_rate outside typical range for 1/8 IRIS units (range: 0.0000 - 0.0000, typical: 0.1 - 0.6)",
+        "car_commute_ratio outside typical range for 1/8 IRIS units (range: 0.0233 - 0.0233, typical: 0.05 - 0.5)",
+        "walking_ratio outside typical range for 8/8 IRIS units (range: 0.0000 - 0.0703, typical: 0.1 - 0.6)",
+        "cycling_ratio outside typical range for 1/8 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.1)",
+        "public_transport_ratio outside typical range for 3/8 IRIS units (range: 0.7675 - 0.9535, typical: 0.3 - 0.75)",
+        "two_wheelers_ratio outside typical range for 3/8 IRIS units (range: 0.0000 - 0.0094, typical: 0.01 - 0.1)",
+        "permanent_employment_ratio outside typical range for 1/8 IRIS units (range: 0.6190 - 0.6190, typical: 0.7 - 0.95)",
+        "Median income outside typical range for 1/7 IRIS units (range: 14850 - 14850 \u20ac/year, typical: 15000 - 70000)",
+        "Mode share sum outside expected range for 1/8 IRIS units (range: 0.7784 - 0.7784, expected: 0.8 - 1.2)",
+        "Employment ratio sum outside expected range for 1/8 IRIS units (range: 0.7857 - 0.7857, expected: 0.8 - 1.2)"
       ],
       "checks": {
         "file_structure": {
@@ -1110,29 +2400,139 @@
           }
         },
         "census": {
-          "status": "warn",
-          "issues": [],
+          "status": "fail",
+          "issues": [
+            "Column 'poverty_rate' has 25.00% missing values (2/8 IRIS units, threshold: 20.00%)",
+            "Population density out of hard bounds for 1/8 IRIS units (range: 235 - 235/km\u00b2, expected: 1000 - 60000)"
+          ],
           "warnings": [
-            "walking_ratio (0.0365) outside typical range (0.1 - 0.6)"
+            "NaN values in column 'median_income': 1/8 IRIS units",
+            "NaN values in column 'poverty_rate': 2/8 IRIS units",
+            "Population density outside typical range for 3/8 IRIS units (range: 235 - 3572/km\u00b2, typical: 5000 - 50000)",
+            "ses_index outside typical range for 1/8 IRIS units (range: 0.0588 - 0.0588, typical: 0.1 - 0.8)",
+            "unemployment_rate outside typical range for 1/8 IRIS units (range: 0.3676 - 0.3676, typical: 0.01 - 0.3)",
+            "car_ownership_rate outside typical range for 1/8 IRIS units (range: 0.0000 - 0.0000, typical: 0.1 - 0.6)",
+            "car_commute_ratio outside typical range for 1/8 IRIS units (range: 0.0233 - 0.0233, typical: 0.05 - 0.5)",
+            "walking_ratio outside typical range for 8/8 IRIS units (range: 0.0000 - 0.0703, typical: 0.1 - 0.6)",
+            "cycling_ratio outside typical range for 1/8 IRIS units (range: 0.0000 - 0.0000, typical: 0.01 - 0.1)",
+            "public_transport_ratio outside typical range for 3/8 IRIS units (range: 0.7675 - 0.9535, typical: 0.3 - 0.75)",
+            "two_wheelers_ratio outside typical range for 3/8 IRIS units (range: 0.0000 - 0.0094, typical: 0.01 - 0.1)",
+            "permanent_employment_ratio outside typical range for 1/8 IRIS units (range: 0.6190 - 0.6190, typical: 0.7 - 0.95)",
+            "Median income outside typical range for 1/7 IRIS units (range: 14850 - 14850 \u20ac/year, typical: 15000 - 70000)",
+            "Mode share sum outside expected range for 1/8 IRIS units (range: 0.7784 - 0.7784, expected: 0.8 - 1.2)",
+            "Employment ratio sum outside expected range for 1/8 IRIS units (range: 0.7857 - 0.7857, expected: 0.8 - 1.2)"
           ],
           "statistics": {
-            "population_density": 41880.0310212289,
-            "children_per_capita": 0.13534542870895805,
-            "elderly_ratio": 0.15262356854414422,
-            "working_age_ratio": 0.7120310027468978,
-            "ses_index": 0.32399906553152225,
-            "unemployment_rate": 0.14203204732798974,
-            "poverty_rate": 0.22516666666666665,
-            "car_commute_ratio": 0.10066545004568066,
-            "walking_ratio": 0.03650690006659332,
-            "cycling_ratio": 0.024674767949462058,
-            "public_transport_ratio": 0.7264645669559867,
-            "two_wheelers_ratio": 0.018832539670474466,
-            "student_ratio": 0.10420717723982816,
-            "retired_ratio": 0.1696851970676645,
-            "permanent_employment_ratio": 0.8205539773616735,
-            "temporary_employment_ratio": 0.12420941231241636,
-            "median_income": 20520.0
+            "iris_units_count": 8,
+            "iris_code_column": "IRIS",
+            "population_density": {
+              "mean": 10551.066996642927,
+              "min": 235.35157847168566,
+              "max": 22662.02689923014,
+              "count": 8
+            },
+            "children_per_capita": {
+              "mean": 0.1353454287089581,
+              "min": 0.13534542870895805,
+              "max": 0.1353454287089581,
+              "count": 8
+            },
+            "elderly_ratio": {
+              "mean": 0.15262356854414424,
+              "min": 0.1526235685441442,
+              "max": 0.15262356854414427,
+              "count": 8
+            },
+            "working_age_ratio": {
+              "mean": 0.7120310027468977,
+              "min": 0.7120310027468977,
+              "max": 0.7120310027468978,
+              "count": 8
+            },
+            "ses_index": {
+              "mean": 0.2640885150448507,
+              "min": 0.0588235294117647,
+              "max": 0.5534465832984998,
+              "count": 8
+            },
+            "unemployment_rate": {
+              "mean": 0.17398163826163954,
+              "min": 0.11081742653234689,
+              "max": 0.36764705882353005,
+              "count": 8
+            },
+            "poverty_rate": {
+              "mean": 0.2251666666666667,
+              "min": 0.124,
+              "max": 0.34,
+              "count": 6
+            },
+            "car_ownership_rate": {
+              "mean": 0.2668302997237995,
+              "min": 0.0,
+              "max": 0.39280125195618154,
+              "count": 8
+            },
+            "car_commute_ratio": {
+              "mean": 0.09032947564023616,
+              "min": 0.023255813953488396,
+              "max": 0.10952282472236563,
+              "count": 8
+            },
+            "walking_ratio": {
+              "mean": 0.03254316108338286,
+              "min": 0.0,
+              "max": 0.07025254206814885,
+              "count": 8
+            },
+            "cycling_ratio": {
+              "mean": 0.021354884175399554,
+              "min": 0.0,
+              "max": 0.04992857415751346,
+              "count": 8
+            },
+            "public_transport_ratio": {
+              "mean": 0.7550423694788422,
+              "min": 0.626040882688482,
+              "max": 0.9534883720930233,
+              "count": 8
+            },
+            "two_wheelers_ratio": {
+              "mean": 0.01533392934667498,
+              "min": 0.0,
+              "max": 0.03323913428039716,
+              "count": 8
+            },
+            "student_ratio": {
+              "mean": 0.11113750211414403,
+              "min": 0.06392262704079306,
+              "max": 0.17422035173594186,
+              "count": 8
+            },
+            "retired_ratio": {
+              "mean": 0.16818847618024543,
+              "min": 0.1526235685441442,
+              "max": 0.1789392688493001,
+              "count": 8
+            },
+            "permanent_employment_ratio": {
+              "mean": 0.7984033302158045,
+              "min": 0.6190476190476191,
+              "max": 0.8565976696673341,
+              "count": 8
+            },
+            "temporary_employment_ratio": {
+              "mean": 0.12538405013893855,
+              "min": 0.09003672859375224,
+              "max": 0.16666666666666666,
+              "count": 8
+            },
+            "median_income": {
+              "mean": 20520.0,
+              "min": 14850.0,
+              "max": 28560.0,
+              "count": 7
+            }
           }
         },
         "cross_source_consistency": {
@@ -1173,23 +2573,116 @@
           "pedestrian_count": 298
         },
         "census": {
-          "population_density": 41880.0310212289,
-          "children_per_capita": 0.13534542870895805,
-          "elderly_ratio": 0.15262356854414422,
-          "working_age_ratio": 0.7120310027468978,
-          "ses_index": 0.32399906553152225,
-          "unemployment_rate": 0.14203204732798974,
-          "poverty_rate": 0.22516666666666665,
-          "car_commute_ratio": 0.10066545004568066,
-          "walking_ratio": 0.03650690006659332,
-          "cycling_ratio": 0.024674767949462058,
-          "public_transport_ratio": 0.7264645669559867,
-          "two_wheelers_ratio": 0.018832539670474466,
-          "student_ratio": 0.10420717723982816,
-          "retired_ratio": 0.1696851970676645,
-          "permanent_employment_ratio": 0.8205539773616735,
-          "temporary_employment_ratio": 0.12420941231241636,
-          "median_income": 20520.0
+          "iris_units_count": 8,
+          "iris_code_column": "IRIS",
+          "population_density": {
+            "mean": 10551.066996642927,
+            "min": 235.35157847168566,
+            "max": 22662.02689923014,
+            "count": 8
+          },
+          "children_per_capita": {
+            "mean": 0.1353454287089581,
+            "min": 0.13534542870895805,
+            "max": 0.1353454287089581,
+            "count": 8
+          },
+          "elderly_ratio": {
+            "mean": 0.15262356854414424,
+            "min": 0.1526235685441442,
+            "max": 0.15262356854414427,
+            "count": 8
+          },
+          "working_age_ratio": {
+            "mean": 0.7120310027468977,
+            "min": 0.7120310027468977,
+            "max": 0.7120310027468978,
+            "count": 8
+          },
+          "ses_index": {
+            "mean": 0.2640885150448507,
+            "min": 0.0588235294117647,
+            "max": 0.5534465832984998,
+            "count": 8
+          },
+          "unemployment_rate": {
+            "mean": 0.17398163826163954,
+            "min": 0.11081742653234689,
+            "max": 0.36764705882353005,
+            "count": 8
+          },
+          "poverty_rate": {
+            "mean": 0.2251666666666667,
+            "min": 0.124,
+            "max": 0.34,
+            "count": 6
+          },
+          "car_ownership_rate": {
+            "mean": 0.2668302997237995,
+            "min": 0.0,
+            "max": 0.39280125195618154,
+            "count": 8
+          },
+          "car_commute_ratio": {
+            "mean": 0.09032947564023616,
+            "min": 0.023255813953488396,
+            "max": 0.10952282472236563,
+            "count": 8
+          },
+          "walking_ratio": {
+            "mean": 0.03254316108338286,
+            "min": 0.0,
+            "max": 0.07025254206814885,
+            "count": 8
+          },
+          "cycling_ratio": {
+            "mean": 0.021354884175399554,
+            "min": 0.0,
+            "max": 0.04992857415751346,
+            "count": 8
+          },
+          "public_transport_ratio": {
+            "mean": 0.7550423694788422,
+            "min": 0.626040882688482,
+            "max": 0.9534883720930233,
+            "count": 8
+          },
+          "two_wheelers_ratio": {
+            "mean": 0.01533392934667498,
+            "min": 0.0,
+            "max": 0.03323913428039716,
+            "count": 8
+          },
+          "student_ratio": {
+            "mean": 0.11113750211414403,
+            "min": 0.06392262704079306,
+            "max": 0.17422035173594186,
+            "count": 8
+          },
+          "retired_ratio": {
+            "mean": 0.16818847618024543,
+            "min": 0.1526235685441442,
+            "max": 0.1789392688493001,
+            "count": 8
+          },
+          "permanent_employment_ratio": {
+            "mean": 0.7984033302158045,
+            "min": 0.6190476190476191,
+            "max": 0.8565976696673341,
+            "count": 8
+          },
+          "temporary_employment_ratio": {
+            "mean": 0.12538405013893855,
+            "min": 0.09003672859375224,
+            "max": 0.16666666666666666,
+            "count": 8
+          },
+          "median_income": {
+            "mean": 20520.0,
+            "min": 14850.0,
+            "max": 28560.0,
+            "count": 7
+          }
         },
         "area_km2": 0.2729455746533624
       }
