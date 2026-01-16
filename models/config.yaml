@@ -2,25 +2,31 @@
 # Copy this to config.yaml and adjust as needed
 
 model:
-  name: "ft_transformer"
-  d_token: 128
-  n_layers: 3
-  n_heads: 4
+  name: "spatial_graph_transformer"
+  architecture: "graph_transformer"
+  num_features: 33
+  hidden_dim: 128
+  num_layers: 3
+  num_heads: 4
   dropout: 0.1
-  activation: "gelu"
+  num_classes: 8
+  edge_dim: 4  # [dx, dy, euclidean_dist, network_dist]
 
 training:
-  batch_size: 64
+  batch_size: 16  # Reduced for graph model (can be larger with efficient batching)
   learning_rate: 0.001
   weight_decay: 0.0001
   num_epochs: 100
   early_stopping_patience: 10
   early_stopping_min_delta: 0.001
+  use_mixed_precision: false  # Can enable FP16 for memory savings
 
 features:
   walk_15min_radius_meters: 1200  # 15-minute walk radius in meters (default: 1200m ≈ 1.2 km)
   grid_cell_size_meters: 100  # Size of grid cells for spatial context (default: 100m × 100m)
-  max_context_points: null  # Auto-calculate based on radius and cell size: ceil(π × (radius/cell_size)²) + buffer, or set explicitly
+  target_point_sampling_interval_meters: 100  # Grid spacing for target points
+  filter_by_network_distance: true  # Filter neighbors by network distance
+  include_all_within_radius: true  # Include ALL neighbors (no truncation)
 
 loss:
   type: "distance_similarity"  # Distance-based similarity loss using KL divergence

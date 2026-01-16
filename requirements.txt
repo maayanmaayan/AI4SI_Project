@@ -1,5 +1,6 @@
 # Core Deep Learning Framework
 torch>=2.0.0
+torch-geometric>=2.3.0
 
 # Data Processing & Analysis
 pandas>=2.0.0

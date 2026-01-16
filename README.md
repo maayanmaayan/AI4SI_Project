@@ -1,13 +1,13 @@
 # AI for Social Good - 15-Minute City Service Gap Prediction
 
-This project implements a Tabular Transformer (FT-Transformer)-based AI model to support data-driven implementation of the 15-minute city model. The system learns service distribution patterns from neighborhoods already designed according to 15-minute city principles, then identifies service gaps and recommends appropriate interventions to improve walkability and accessibility in other neighborhoods.
+This project implements a Spatial Graph Transformer-based AI model to support data-driven implementation of the 15-minute city model. The system learns service distribution patterns from neighborhoods already designed according to 15-minute city principles, then identifies service gaps and recommends appropriate interventions to improve walkability and accessibility in other neighborhoods.
 
 ## Project Overview
 
 This is an AI/ML project built with Cursor that focuses on:
 - **Problem**: Identifying service gaps in urban neighborhoods for 15-minute city implementation
-- **Model**: Tabular Transformer (FT-Transformer) for tabular data classification
-- **Input**: Multi-point sequences - each location represented as [center point] + [all grid cells within 15-minute walk radius], each with 20+ urban/demographic features
+- **Model**: Spatial Graph Transformer using PyTorch Geometric for graph-based classification
+- **Input**: Star graphs - each location represented as target point (node 0) + neighbor grid cells (nodes 1-N) within network walking distance, each with 33 urban/demographic features
 - **Output**: Probability distribution over 8 NEXI service categories (Education, Entertainment, Grocery, Health, Posts and banks, Parks, Sustenance, Shops)
 - **Training Strategy**: Model trains exclusively on 15-minute city compliant neighborhoods to learn optimal service distribution patterns
 - **Loss Function**: Distance-based similarity loss using KL divergence between predicted and distance-based target probability vectors
@@ -36,11 +36,11 @@ See `PRD.md` for detailed implementation phases and timeline (2-week MVP).
 When working with Cursor on this AI project:
 
 1. **Data Collection** — Extract OSM data (services, buildings, walkability) and Census data (demographics, socioeconomic indicators, income, car ownership) for Paris neighborhoods defined in `paris_neighborhoods.geojson`. Note: Children per capita and elderly ratio are estimated using Paris-wide age distribution ratios due to IRIS-level data limitations.
-2. **Feature Engineering** — Generate regular grid cells around each location, compute 20+ features (demographics, built form, service counts, walkability) for center point + all grid cells within 15-minute walk radius. Grid cells represent spatial context of people who can access each location.
-3. **Model Training** — Train the FT-Transformer exclusively on 15-minute city compliant neighborhoods using distance-based loss (distance to nearest service of predicted category)
-4. **Hyperparameter Tuning** — Train 7 model variants: baseline (lr=0.001, n_layers=3, temp=200m), then vary learning rate [0.0005, 0.002], model depth [2, 4 layers], and temperature [150, 250m] independently. Select best model based on validation KL divergence loss
+2. **Feature Engineering** — Generate regular grid cells around each location, compute 33 features (demographics, built form, service counts, walkability) for target point + all neighbor grid cells within network walking distance. Build star graphs with edge attributes encoding spatial relationships. Neighbors represent spatial context of people who can access each location.
+3. **Model Training** — Train the Spatial Graph Transformer exclusively on 15-minute city compliant neighborhoods using distance-based loss (distance to nearest service of predicted category)
+4. **Hyperparameter Tuning** — Train 7 model variants: baseline (lr=0.001, num_layers=3, temp=200m), then vary learning rate [0.0005, 0.002], model depth [2, 4 layers], and temperature [150, 250m] independently. Select best model based on validation KL divergence loss
 5. **Evaluation** — Evaluate model on compliant neighborhoods only (train/validation/test splits); model success indicated by learning (decreasing loss, improving metrics)
-6. **Interpretability** — Analyze attention patterns and SHAP values to understand model decisions
+6. **Interpretability** — Analyze graph attention patterns and SHAP values to understand model decisions
 
 ## Project Structure
 
@@ -51,16 +51,17 @@ AI4SI_Project/
 │   ├── processed/              # Cleaned and preprocessed features
 │   └── splits/                 # Train/validation/test splits
 ├── models/
-│   ├── transformer.py           # FT-Transformer architecture
-│   ├── config.py                # Hyperparameters
+│   ├── config.yaml              # Model hyperparameters
 │   └── checkpoints/             # Saved model files
 ├── src/
 │   ├── data/
 │   │   ├── collection/         # OSM extraction, Census loading, feature engineering
 │   │   └── preprocessing.py    # Data cleaning/normalization
 │   ├── training/
-│   │   ├── train.py            # Model training script
-│   │   └── hyperparameter_tuning.py
+│   │   ├── model.py            # Graph Transformer architecture
+│   │   ├── dataset.py          # PyTorch Geometric Dataset class
+│   │   ├── train.py            # Training script
+│   │   └── loss.py             # Distance-based loss function
 │   ├── evaluation/
 │   │   ├── metrics.py          # Evaluation metrics
 │   │   ├── validate_principles.py # 15-minute city validation

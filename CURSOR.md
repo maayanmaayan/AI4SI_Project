@@ -1,11 +1,11 @@
 # AI for Social Good - 15-Minute City Service Gap Prediction
 
-<!-- Brief one-line description: Tabular Transformer (FT-Transformer) for predicting service category interventions to improve walkability in urban neighborhoods -->
+<!-- Brief one-line description: Spatial Graph Transformer for predicting service category interventions to improve walkability in urban neighborhoods -->
 
 ## Project Overview
 
-This project implements a Tabular Transformer (FT-Transformer)-based model that:
-- **Input**: Map location (coordinates) + 20+ urban/demographic features
+This project implements a Spatial Graph Transformer-based model that:
+- **Input**: Star graphs - target point (node 0) + neighbor grid cells (nodes 1-N) within network walking distance, each with 33 urban/demographic features
 - **Output**: Probability distribution over 8 NEXI service categories
 - **Task**: Service gap prediction with distance-based learning
 - **Domain**: 15-minute city implementation using OpenStreetMap and Census data
@@ -17,7 +17,7 @@ This project implements a Tabular Transformer (FT-Transformer)-based model that:
 
 <!-- List the main technologies used in this project -->
 
-- **Deep Learning**: PyTorch 2.x, FT-Transformer (tabular transformer implementation)
+- **Deep Learning**: PyTorch 2.x, PyTorch Geometric 2.3+ (graph neural networks, TransformerConv)
 - **ML Utilities**: scikit-learn 1.3+ (metrics, splits, preprocessing utilities)
 - **Data Processing**: pandas 2.0+, numpy 1.24+, geopandas 0.14+ (geospatial data)
 - **OSM Data**: osmnx 1.6+ (OSM network analysis), Overpass API
@@ -47,8 +47,7 @@ AI4SI_Project/
 │       ├── val.csv
 │       └── test.csv
 ├── models/
-│   ├── transformer.py          # FT-Transformer model implementation
-│   ├── config.py                # Hyperparameters
+│   ├── config.yaml              # Model hyperparameters
 │   └── checkpoints/             # Saved model files (.pt)
 ├── src/
 │   ├── data/
@@ -58,8 +57,10 @@ AI4SI_Project/
 │   │   │   └── feature_engineer.py # Feature computation
 │   │   └── preprocessing.py     # Data cleaning/normalization
 │   ├── training/
-│   │   ├── train.py             # Model training script
-│   │   └── hyperparameter_tuning.py # Hyperparameter optimization
+│   │   ├── model.py             # Graph Transformer architecture
+│   │   ├── dataset.py           # PyTorch Geometric Dataset class
+│   │   ├── train.py             # Training script
+│   │   └── loss.py              # Distance-based loss function
 │   ├── evaluation/
 │   │   ├── metrics.py           # Evaluation metrics
 │   │   ├── validate_principles.py # 15-minute city validation
@@ -134,29 +135,32 @@ mypy src/
 
 ### Feature Categories (20+ features per point)
 
-**Input Structure**: Multi-point sequences
-- Each prediction location: sequence of [center point] + [all grid cells within 15-minute walk radius]
-- Each point (center or grid cell) has its own feature vector
+**Input Structure**: Star graphs
+- Each prediction location: star graph with target point (node 0) connected to all neighbor grid cells (nodes 1-N) within network walking distance
+- Each node (target or neighbor) has its own feature vector (33 features)
+- Edge attributes encode spatial relationships: [dx, dy, euclidean_distance, network_distance]
 
-**Features per point**:
-- **Demographics**: Population density, SES index, car ownership rate, children per capita (estimated), elderly ratio (estimated), unemployment rate, student ratio, walking ratio, cycling ratio, public transport ratio, two-wheelers ratio, car commute ratio, retired ratio, permanent employment ratio, temporary employment ratio, median income, poverty rate
-- **Built Form**: Building density, building count, average building levels, floor area per capita
-- **Services**: Counts per category within the 15-minute walk radius from that point's perspective (8 features, configurable via `features.walk_15min_radius_meters` in config.yaml):
+**Features per point** (33 total):
+- **Demographics** (17 features): Population density, SES index, car ownership rate, children per capita (estimated), elderly ratio (estimated), unemployment rate, student ratio, walking ratio, cycling ratio, public transport ratio, two-wheelers ratio, car commute ratio, retired ratio, permanent employment ratio, temporary employment ratio, median income, poverty rate
+- **Built Form** (4 features): Building density, building count, average building levels, floor area per capita
+- **Services** (8 features): Counts per category within the 15-minute walk radius from that point's perspective (configurable via `features.walk_15min_radius_meters` in config.yaml):
   - `count_education_15min`, `count_entertainment_15min`, `count_grocery_15min`, `count_health_15min`, `count_posts_banks_15min`, `count_parks_15min`, `count_sustenance_15min`, `count_shops_15min`
-- **Walkability**: Intersection density, average block length, pedestrian street ratio, sidewalk presence
+- **Walkability** (4 features): Intersection density, average block length, pedestrian street ratio, sidewalk presence
 
-**Grid Cell Generation**:
+**Graph Structure**:
+- Star graph: target point (node 0) + all neighbor grid cells (nodes 1-N) within network walking distance
+- Edge attributes: [dx, dy, euclidean_distance, network_distance] - explicit spatial encoding
 - Regular grid with configurable cell size (default: 100m × 100m via `features.grid_cell_size_meters`)
-- For each location: generate grid cells, filter to include only cells within `walk_15min_radius_meters`
-- All cells within radius included (no truncation)
-- Max sequence length auto-calculated or configurable via `features.max_context_points`
+- For each location: generate grid cells, filter by network walking distance (not Euclidean)
+- All neighbors within network distance included (no truncation, no padding needed)
 
 **Feature Engineering Rationale**:
-- **Multi-point sequences**: Model learns from spatial distribution of people/services, not just aggregated statistics. Grid cells represent demographic and built environment context of people who can access the center location. This is essential for the model's purpose: understanding who can reach a location, not just what's at the location.
+- **Star graph structure**: Model learns from spatial distribution of people/services through graph attention. Neighbors represent demographic and built environment context of people who can access the center location. Graph structure naturally handles variable numbers of neighbors without padding.
+- **Network distance filtering**: Neighbors are filtered by network walking distance (not Euclidean) to ensure only truly walkable neighbors are included. This aligns with 15-minute city principles.
+- **Edge attributes**: Explicit spatial encoding via edge attributes [dx, dy, euclidean_distance, network_distance] allows the model to learn spatial relationships directly.
 - **Service counts vs. walking distances**: Service features use counts within the 15-minute walk radius (configurable via `features.walk_15min_radius_meters` in config.yaml, default: 1200m) rather than walking distances to avoid data leakage. Walking distances are used in the loss function to construct target probability vectors, so including them as features would give the model direct access to what it's trying to predict.
-- **Removed composite features**: Composite features (essential services coverage, average walk time to essentials, 15-minute walk score) are removed to simplify the feature set and avoid redundancy. The transformer model can learn these patterns from the individual features if needed.
 - **15-minute walk radius**: The configurable walk radius (default: 1200m ≈ 1.2 km) aligns with the 15-minute walk threshold, capturing service density at the neighborhood scale relevant to 15-minute city principles. This radius can be adjusted in `models/config.yaml` via the `features.walk_15min_radius_meters` parameter.
-- **Why FT-Transformer**: With multi-point sequences, the transformer's attention mechanism can learn spatial relationships between grid cells, identifying which areas matter most for service gap prediction. This leverages the transformer's strength in learning from sequences - without sequences, a simple MLP would suffice.
+- **Why Graph Transformer**: With star graphs, the transformer's attention mechanism can learn spatial relationships between neighbors, identifying which areas matter most for service gap prediction. This leverages graph neural networks' strength in learning from structured spatial data while naturally handling variable-sized neighborhoods.
 
 ### Preprocessing Steps
 1. Load neighborhood boundaries and compliance labels from `paris_neighborhoods.geojson`
@@ -171,38 +175,40 @@ mypy src/
 
 ## Model Architecture
 
-<!-- Document the tabular transformer model design -->
+<!-- Document the graph transformer model design -->
 
-### Tabular Transformer (FT-Transformer) Design
-- **Architecture**: FT-Transformer (single primary model)
-- **Input**: Multi-point sequences of feature vectors from 15-minute city compliant neighborhoods only (training)
-  - Each location: sequence of [center point feature vector] + [all grid cells within 15-minute walk radius]
-  - Grid cells represent demographic and built environment context of people who can access the center location
-  - Sequence length varies per location (all cells within radius included)
-  - Padding/masking used for batching variable-length sequences
+### Spatial Graph Transformer Design
+- **Architecture**: Spatial Graph Transformer using PyTorch Geometric (single primary model)
+- **Input**: Star graphs from 15-minute city compliant neighborhoods only (training)
+  - Each location: star graph with target point (node 0) connected to all neighbor grid cells (nodes 1-N) within network walking distance
+  - Neighbors represent demographic and built environment context of people who can access the center location
+  - Number of neighbors varies per location (all neighbors within network distance included)
+  - No padding needed - graph structure naturally handles variable sizes
 - **Output**: Probability distribution over 8 NEXI service categories (supports multi-service prediction)
-- **Learning Approach**: Exemplar-based learning - learns optimal service distribution patterns directly from compliant neighborhoods by understanding spatial context via attention over grid cell sequences, then generalizes to identify gaps in non-compliant neighborhoods
+- **Learning Approach**: Exemplar-based learning - learns optimal service distribution patterns directly from compliant neighborhoods by understanding spatial context via graph attention over neighbors, then generalizes to identify gaps in non-compliant neighborhoods
 
 ### Training Configuration
-- **Model Type**: Transformer encoder over sequence of feature vectors (multi-class classification head)
+- **Model Type**: Graph Transformer using TransformerConv layers with edge attributes (multi-class classification head)
 - **Training Data**: Exclusively from 15-minute city compliant neighborhoods
 - **Input Processing**:
   - Generate regular grid cells (configurable size, default: 100m × 100m) around each location
-  - Include all grid cells within `walk_15min_radius_meters` (no truncation)
-  - Compute features for center point + each grid cell
-  - Handle variable sequence lengths with padding/masking
-- **Loss Function**: Distance-based loss (hybrid approach)
-  - Primary: Network-based walking distance from predicted service category to nearest actual service of that type (via OSMnx)
-  - Secondary: Classification component (cross-entropy) for robust learning
-  - Normalize distances by the 15-minute walk radius (configurable via `features.walk_15min_radius_meters`, default: 1200m) for comparability
+  - Filter neighbors by network walking distance (not Euclidean) within `walk_15min_radius_meters`
+  - Compute features for target point + each neighbor grid cell
+  - Build star graph: target (node 0) + neighbors (nodes 1-N) with edge attributes [dx, dy, euclidean_distance, network_distance]
+  - Handle variable graph sizes naturally (no padding needed)
+- **Loss Function**: Distance-based loss using KL divergence
+  - Network-based walking distance from predicted service category to nearest actual service of that type (via OSMnx)
+  - Target probability vector constructed from distances using temperature-scaled softmax
+  - KL divergence between predicted and target probability distributions
 - **Hyperparameters**:
-  - d_token, n_layers, n_heads, dropout, learning rate, weight decay, batch size
+  - hidden_dim, num_layers, num_heads, dropout, learning rate, weight decay, batch size
   - Grid cell size (`features.grid_cell_size_meters`, default: 100m)
-  - Max context points (`features.max_context_points`, auto-calculated or explicit)
+  - Walk radius (`features.walk_15min_radius_meters`, default: 1200m)
+  - Temperature parameter for target vector (`loss.temperature`, default: 200m)
   - Tune via validation (or lightweight hyperparameter search)
 - **Early Stopping**: Based on validation loss with patience
 - **Multi-Service Prediction**: Optional capability to predict multiple needed services simultaneously
-- **Attention Mechanism**: Learns spatial relationships between grid cells, identifying which areas matter most for predictions
+- **Attention Mechanism**: Graph attention learns spatial relationships between neighbors via TransformerConv layers, identifying which areas matter most for predictions
 
 ## Evaluation Metrics
 
@@ -248,6 +254,8 @@ mypy src/
 - Version control data preprocessing steps
 - Always validate data splits maintain neighborhood balance
 - Use OSMnx for network-based distance calculations (never Euclidean for walkability)
+- Use PyTorch Geometric DataLoader for efficient batching of variable-sized graphs
+- Build PyTorch Geometric Data objects with proper edge attributes and node features
 
 ### File Naming
 - Use snake_case for Python files
@@ -259,6 +267,8 @@ mypy src/
 ### Architecture Patterns
 - **Exemplar-Based Learning**: Always train exclusively on compliant neighborhoods
 - **Distance-Based Loss**: Use network-based walking distance via OSMnx
+- **Graph Structure**: Use star graphs with edge attributes for spatial encoding
+- **Variable-Sized Graphs**: Naturally handle different numbers of neighbors without padding
 - **Comparative Evaluation**: Always evaluate on both compliant and non-compliant neighborhoods
 - **Statistical Validation**: Include statistical tests (t-test, Mann-Whitney U) for validation
 
@@ -467,7 +477,7 @@ Every feature, component, or enhancement should follow the Plan-Implement-Verify
 
 **Modifying Model Architecture:**
 1. **PLAN**: Define changes, impact on loss function, hyperparameters
-2. **IMPLEMENT**: Update `transformer.py`, maintain distance-based loss
+2. **IMPLEMENT**: Update `model.py`, maintain distance-based loss
 3. **VERIFY**: Test forward pass, validate training converges, compare metrics
 
 **Adding Evaluation Metric:**
