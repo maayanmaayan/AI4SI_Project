@@ -10,6 +10,10 @@ sys.path.insert(0, str(project_root))
 
 from src.data.collection.feature_engineer import FeatureEngineer
 from src.utils.helpers import load_neighborhoods
+from src.utils.logging import setup_logging
+
+# Setup logging to ensure output is visible
+setup_logging(log_level="INFO")
 
 
 def main():

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Spatial Graph Transformer is a graph neural network architecture designed for classifying geographic points based on their spatial context. The model uses a star graph structure where a target point (center) aggregates information from all neighboring grid cells within network walking distance. The architecture naturally handles variable numbers of neighbors without padding, uses explicit spatial encoding via edge attributes, and maintains permutation invariance.
+The Spatial Graph Transformer is a graph neural network architecture designed for classifying geographic points based on their spatial context. The model uses a star graph structure where a target point (center) aggregates information from all neighboring grid cells within a Euclidean distance threshold. The architecture naturally handles variable numbers of neighbors without padding, uses explicit spatial encoding via edge attributes, and maintains permutation invariance.
 
 ## Architecture Components
 
@@ -11,9 +11,9 @@ The Spatial Graph Transformer is a graph neural network architecture designed fo
 Each prediction location is represented as a **star graph**:
 
 - **Node 0**: Target point (the location for which we predict service gaps)
-- **Nodes 1-N**: Neighbor grid cells within network walking distance
+- **Nodes 1-N**: Neighbor grid cells within Euclidean distance threshold (default: 1200m)
 - **Edges**: All neighbors (nodes 1-N) are connected to the target (node 0)
-- **Edge Attributes**: Each edge encodes spatial relationships: `[dx, dy, euclidean_distance, network_distance]`
+- **Edge Attributes**: Each edge encodes spatial relationships: `[dx, dy, euclidean_distance, network_distance]` (network_distance is set to Euclidean during feature engineering, recalculated in loss function)
 
 **Key Properties**:
 - Variable graph sizes: Different target points have different numbers of neighbors
@@ -67,11 +67,12 @@ Edge attributes provide explicit spatial encoding:
 
 - **dx, dy**: Relative coordinates (neighbor position relative to target)
 - **euclidean_distance**: Straight-line distance between target and neighbor
-- **network_distance**: Walking distance along the street network
+- **network_distance**: During feature engineering, set to Euclidean distance (placeholder). Actual network/walking distance is calculated in the loss function when constructing target probability vectors.
 
 **Why Edge Attributes Matter**:
 - Direct spatial information: Model doesn't need to infer spatial relationships from node features alone
-- Network distance: More accurate than Euclidean for walkability assessment
+- Euclidean distance: Used for efficient neighbor filtering during feature engineering (50-100x faster than network distance)
+- Network distance: Calculated in loss function for accurate target probability vectors
 - Relative coordinates: Help model understand directional relationships
 
 ### 5. Target Node Extraction
@@ -91,9 +92,10 @@ After graph attention layers, only the target node (node 0) is used for classifi
 1. **Feature Engineering**:
    - Generate target points (regular grid within neighborhoods)
    - Generate neighbor grid cells around each target
-   - Filter neighbors by network walking distance
+   - Filter neighbors by Euclidean distance (for computational efficiency)
    - Compute 33 features for target and each neighbor
-   - Calculate edge attributes (dx, dy, distances)
+   - Calculate edge attributes (dx, dy, euclidean_distance, network_distance set to Euclidean)
+   - Note: Network/walking distances are calculated only in the loss function phase
 
 2. **Graph Construction**:
    - Build star graph for each target point

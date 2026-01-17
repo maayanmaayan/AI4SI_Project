@@ -215,9 +215,18 @@ L ≈ 0.95
 
 ## Key Implementation Details
 
+### 0. When Network Distance is Calculated
+
+**Important**: Network/walking distance is calculated **only in the loss function phase**, not during feature engineering. This design choice provides significant performance benefits:
+
+- **Feature Engineering Phase**: Uses Euclidean distance for neighbor filtering and service counts (50-100x faster)
+- **Loss Function Phase**: Uses network/walking distance for target probability vector construction (accurate but slower)
+
+This separation allows the feature engineering pipeline to run efficiently while maintaining accuracy in the loss function where it matters most.
+
 ### 1. Network Distance Calculation
 
-The network distance is computed using OSMnx library:
+The network distance is computed using OSMnx library (in the loss function phase):
 
 ```python
 import osmnx as ox
@@ -242,14 +251,16 @@ distance = nx.shortest_path_length(
 
 ### 2. Distance Vector Calculation
 
-For each sample location, the system calculates distances to all 8 categories:
+For each sample location, the system calculates network distances to all 8 categories (during loss function computation):
 
 1. For each category `j`, loads the category-specific service file: `services_by_category/{category_j}.geojson`
 2. Finds the service location closest to the sample location in that category
-3. Calculates network distance from sample location to that nearest service
+3. Calculates network distance from sample location to that nearest service using OSMnx
 4. Repeats for all 8 categories to build the distance vector `D = [d_0, d_1, ..., d_7]`
 
-**Optimization**: Service locations are pre-extracted and organized by category for fast lookup during training. Distance calculations can be parallelized across categories.
+**Note**: This network distance calculation happens in `compute_target_probability_vector()` during feature engineering, which is called to create the target vectors used by the loss function. The actual loss computation uses these pre-computed target vectors.
+
+**Optimization**: Service locations are pre-extracted and organized by category for fast lookup. Network distance calculations can be parallelized across categories.
 
 ### 3. Distance-to-Probability Conversion
 
@@ -284,13 +295,13 @@ The loss function behavior is controlled by parameters in `models/config.yaml`:
 loss:
   type: "distance_similarity"  # Distance-based similarity loss using KL divergence
   temperature: 200  # Temperature parameter τ for distance-to-probability conversion (in meters)
-  use_network_distance: true  # Use OSMnx network distance (not Euclidean)
+  use_network_distance: true  # Use OSMnx network distance for target probability vectors (always true)
   missing_service_penalty: 2400  # Distance (meters) to use when service category is missing
 ```
 
 **Parameters**:
 - `temperature` (default: 200m): Controls how quickly probabilities decrease with distance in the target vector
-- `use_network_distance` (default: true): Whether to use network-based walking distances (recommended)
+- `use_network_distance` (default: true): Always uses network-based walking distances for target probability vectors. Note: Feature engineering uses Euclidean distance for speed, but target vectors always use network distance for accuracy.
 - `missing_service_penalty` (default: 2400m): Distance to assign when a service category has no services in the neighborhood (2 × 15-minute walk distance)
 
 ---

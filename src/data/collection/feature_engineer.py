@@ -16,6 +16,7 @@ import networkx as nx
 import osmnx as ox
 from shapely.geometry import Point, Polygon
 from shapely.ops import unary_union
+from shapely import wkt
 
 from src.utils.config import get_config
 from src.utils.logging import get_logger
@@ -65,7 +66,7 @@ class FeatureEngineer:
             "grid_cell_size_meters", 100
         )
         self.walk_15min_radius_meters: float = features_config.get(
-            "walk_15min_radius_meters", 1200
+            "walk_15min_radius_meters", 1000
         )
         self.sampling_interval_meters: float = features_config.get(
             "target_point_sampling_interval_meters", 100
@@ -77,6 +78,16 @@ class FeatureEngineer:
 
         # Initialize distance cache for Phase 3.3
         self._distance_cache: Dict[Tuple, float] = {}
+        
+        # Cache for IRIS boundaries (loaded once, reused for all points)
+        self._iris_boundaries_cache: Optional[gpd.GeoDataFrame] = None
+        
+        # Cache for service GeoDataFrames per neighborhood (major performance boost)
+        # Key: (neighborhood_name, is_compliant), Value: Dict[category_name, gpd.GeoDataFrame]
+        self._services_cache: Dict[Tuple[str, bool], Dict[str, gpd.GeoDataFrame]] = {}
+        
+        # Cache for buildings GeoDataFrame per neighborhood
+        self._buildings_cache: Dict[Tuple[str, bool], Optional[gpd.GeoDataFrame]] = {}
 
         logger.info("FeatureEngineer initialized")
 
@@ -302,8 +313,8 @@ class FeatureEngineer:
         for disconnected components, missing nodes, and network failures.
 
         Args:
-            point1: First point in WGS84 (EPSG:4326).
-            point2: Second point in WGS84 (EPSG:4326).
+            point1: First point in WGS84 (EPSG:4326). Can be Point or Polygon (uses centroid).
+            point2: Second point in WGS84 (EPSG:4326). Can be Point or Polygon (uses centroid).
             network_graph: NetworkX graph with 'length' edge attributes.
 
         Returns:
@@ -320,6 +331,21 @@ class FeatureEngineer:
             return float("inf")
 
         try:
+            # Extract Point from geometry if needed (handle Polygon by using centroid)
+            from shapely.geometry import Point as ShapelyPoint
+            if not isinstance(point1, ShapelyPoint):
+                point1 = point1.centroid if hasattr(point1, 'centroid') else point1
+            if not isinstance(point2, ShapelyPoint):
+                point2 = point2.centroid if hasattr(point2, 'centroid') else point2
+            
+            # Ensure we have Point objects with x and y attributes
+            if not hasattr(point1, 'x') or not hasattr(point1, 'y'):
+                logger.warning(f"point1 is not a valid Point geometry: {type(point1)}")
+                return float("inf")
+            if not hasattr(point2, 'x') or not hasattr(point2, 'y'):
+                logger.warning(f"point2 is not a valid Point geometry: {type(point2)}")
+                return float("inf")
+            
             # Find nearest network nodes
             node1 = ox.distance.nearest_nodes(
                 network_graph, point1.x, point1.y
@@ -328,28 +354,11 @@ class FeatureEngineer:
                 network_graph, point2.x, point2.y
             )
 
-            # Check if nodes are in same connected component
-            if not nx.is_strongly_connected(network_graph):
-                # For directed graphs, check weak connectivity
-                if not nx.is_weakly_connected(network_graph):
-                    # Find components
-                    components = list(nx.weakly_connected_components(network_graph))
-                    node1_component = None
-                    node2_component = None
-
-                    for comp in components:
-                        if node1 in comp:
-                            node1_component = comp
-                        if node2 in comp:
-                            node2_component = comp
-
-                    if node1_component != node2_component:
-                        logger.debug(
-                            f"Nodes {node1} and {node2} in different components"
-                        )
-                        return float("inf")
-
-            # Calculate shortest path length
+            # Calculate shortest path length directly
+            # Note: We skip the expensive connectivity check because:
+            # 1. It's called hundreds of times per target point (very slow)
+            # 2. shortest_path_length() will raise NetworkXNoPath if nodes are disconnected
+            # 3. We already handle that exception below
             try:
                 distance = nx.shortest_path_length(
                     network_graph, node1, node2, weight="length"
@@ -370,21 +379,21 @@ class FeatureEngineer:
         network_graph: nx.MultiDiGraph,
         max_distance_meters: Optional[float] = None,
     ) -> List[Dict[str, Any]]:
-        """Filter grid cells by network walking distance with Euclidean pre-filtering.
+        """Filter grid cells by Euclidean distance (network distance calculated later in loss function).
 
-        First pre-filters cells by Euclidean distance (optimization), then calculates
-        network distances for remaining cells. Returns neighbors with edge attributes.
+        Uses only Euclidean distance for filtering to speed up feature engineering.
+        Network/walking distance will be calculated in the loss function phase.
 
         Args:
             target_point: Target point in WGS84.
             grid_cells: List of grid cell centers in WGS84.
-            network_graph: NetworkX graph for distance calculations.
-            max_distance_meters: Maximum network distance in meters. If None, uses
+            network_graph: NetworkX graph (not used, kept for API compatibility).
+            max_distance_meters: Maximum Euclidean distance in meters. If None, uses
                 walk_15min_radius_meters.
 
         Returns:
-            List of dicts with keys: 'cell', 'network_distance', 'euclidean_distance',
-            'dx', 'dy'. Only includes cells within max_distance_meters.
+            List of dicts with keys: 'cell', 'network_distance' (set to euclidean), 
+            'euclidean_distance', 'dx', 'dy'. Only includes cells within max_distance_meters.
 
         Example:
             >>> cells = engineer.generate_grid_cells(target_point)
@@ -396,20 +405,15 @@ class FeatureEngineer:
         if max_distance_meters is None:
             max_distance_meters = self.walk_15min_radius_meters
 
-        # Phase 3.1: Pre-filter by Euclidean distance
-        filtered_cells = self._prefilter_by_euclidean(target_point, grid_cells)
-
         # Convert target to metric for distance calculations
         target_gdf = gpd.GeoDataFrame([1], geometry=[target_point], crs="EPSG:4326")
         target_metric = target_gdf.to_crs("EPSG:3857").geometry.iloc[0]
 
         neighbors = []
-        for cell in filtered_cells:
-            # Calculate network distance
-            network_distance = self.compute_network_distance(
-                target_point, cell, network_graph
-            )
-
+        total_cells = len(grid_cells)
+        logger.info(f"  Filtering {total_cells} cells by Euclidean distance (max: {max_distance_meters:.0f}m)...")
+        
+        for cell_idx, cell in enumerate(grid_cells):
             # Calculate Euclidean distance and relative coordinates
             cell_gdf = gpd.GeoDataFrame([1], geometry=[cell], crs="EPSG:4326")
             cell_metric = cell_gdf.to_crs("EPSG:3857").geometry.iloc[0]
@@ -418,26 +422,12 @@ class FeatureEngineer:
             dx = cell_metric.x - target_metric.x
             dy = cell_metric.y - target_metric.y
 
-            # Check if within network distance threshold
-            if network_distance <= max_distance_meters:
+            # Filter by Euclidean distance only
+            if euclidean_distance <= max_distance_meters:
                 neighbors.append(
                     {
                         "cell": cell,
-                        "network_distance": network_distance,
-                        "euclidean_distance": euclidean_distance,
-                        "dx": dx,
-                        "dy": dy,
-                    }
-                )
-            elif network_distance == float("inf") and euclidean_distance * 1.3 <= max_distance_meters:
-                # Phase 3.2: Euclidean fallback if network calculation failed
-                logger.debug(
-                    f"Using Euclidean fallback for cell (network distance was inf)"
-                )
-                neighbors.append(
-                    {
-                        "cell": cell,
-                        "network_distance": euclidean_distance * 1.3,
+                        "network_distance": euclidean_distance,  # Use Euclidean as placeholder, will be recalculated in loss
                         "euclidean_distance": euclidean_distance,
                         "dx": dx,
                         "dy": dy,
@@ -445,16 +435,20 @@ class FeatureEngineer:
                 )
 
         logger.debug(
-            f"Network distance filtering: {len(filtered_cells)} -> {len(neighbors)} neighbors"
+            f"Euclidean distance filtering: {len(grid_cells)} -> {len(neighbors)} neighbors"
         )
         return neighbors
 
     def _load_iris_boundaries(self) -> gpd.GeoDataFrame:
-        """Load IRIS boundary file for spatial joins.
+        """Load IRIS boundary file for spatial joins (cached after first load).
 
         Returns:
             GeoDataFrame with IRIS geometries and codes.
         """
+        # Return cached version if already loaded
+        if self._iris_boundaries_cache is not None:
+            return self._iris_boundaries_cache
+        
         # Try common locations (prioritize 2021 boundaries)
         possible_paths = [
             Path(
@@ -487,14 +481,18 @@ class FeatureEngineer:
                     # Convert to WGS84 if needed
                     if iris_boundaries.crs != "EPSG:4326":
                         iris_boundaries = iris_boundaries.to_crs("EPSG:4326")
-                    logger.info(f"Loaded {len(iris_boundaries)} IRIS boundaries from {path}")
+                    logger.info(f"Loaded {len(iris_boundaries)} IRIS boundaries from {path} (cached for reuse)")
+                    # Cache the result
+                    self._iris_boundaries_cache = iris_boundaries
                     return iris_boundaries
                 except Exception as e:
                     logger.warning(f"Failed to load IRIS boundaries from {path}: {e}")
                     continue
 
         logger.warning("IRIS boundaries file not found. Spatial matching may not work.")
-        return gpd.GeoDataFrame()
+        # Cache empty GeoDataFrame to avoid retrying
+        self._iris_boundaries_cache = gpd.GeoDataFrame()
+        return self._iris_boundaries_cache
 
     def compute_demographic_features(
         self, point: Point, neighborhood_name: str, is_compliant: bool
@@ -511,7 +509,8 @@ class FeatureEngineer:
         """
         # Load Census data
         normalized_name = neighborhood_name.lower().replace(" ", "_")
-        census_path = Path(f"data/raw/census/compliant/{normalized_name}/census_data.parquet")
+        status = "compliant" if is_compliant else "non_compliant"
+        census_path = Path(f"data/raw/census/{status}/{normalized_name}/census_data.parquet")
 
         if not census_path.exists():
             logger.warning(f"Census data not found for {neighborhood_name}")
@@ -546,6 +545,33 @@ class FeatureEngineer:
 
         # Get IRIS code and match to census data
         iris_idx = joined["index_right"].iloc[0]
+        
+        # Check if iris_idx is NaN (no match found in spatial join)
+        if pd.isna(iris_idx):
+            logger.debug(f"Point not in any IRIS unit (NaN index), using neighborhood average")
+            if len(census_data) > 0:
+                features = self._extract_demographic_features_from_census(census_data)
+                return features
+            return np.zeros(17, dtype=np.float32)
+        
+        # Convert to int if it's a valid index
+        try:
+            iris_idx = int(iris_idx)
+        except (ValueError, TypeError):
+            logger.debug(f"Invalid IRIS index {iris_idx}, using neighborhood average")
+            if len(census_data) > 0:
+                features = self._extract_demographic_features_from_census(census_data)
+                return features
+            return np.zeros(17, dtype=np.float32)
+        
+        # Check if index is within bounds
+        if iris_idx < 0 or iris_idx >= len(iris_boundaries):
+            logger.debug(f"IRIS index {iris_idx} out of bounds, using neighborhood average")
+            if len(census_data) > 0:
+                features = self._extract_demographic_features_from_census(census_data)
+                return features
+            return np.zeros(17, dtype=np.float32)
+        
         iris_code_col = None
         for col in ["CODE_IRIS", "DCOMIRIS", "IRIS"]:
             if col in iris_boundaries.columns:
@@ -560,6 +586,16 @@ class FeatureEngineer:
             return np.zeros(17, dtype=np.float32)
 
         iris_code = iris_boundaries.iloc[iris_idx][iris_code_col]
+        
+        # Convert iris_code to string for comparison (census data might have string codes)
+        if pd.notna(iris_code):
+            iris_code = str(iris_code).strip()
+        else:
+            logger.debug(f"IRIS code is NaN, using neighborhood average")
+            if len(census_data) > 0:
+                features = self._extract_demographic_features_from_census(census_data)
+                return features
+            return np.zeros(17, dtype=np.float32)
 
         # Match to census data
         census_col = None
@@ -575,7 +611,16 @@ class FeatureEngineer:
                 return features
             return np.zeros(17, dtype=np.float32)
 
-        matched = census_data[census_data[census_col] == iris_code]
+        # Convert census column to string for comparison
+        try:
+            census_data_str = census_data[census_col].astype(str).str.strip()
+            matched = census_data[census_data_str == iris_code]
+        except Exception as e:
+            logger.debug(f"Error matching IRIS code {iris_code}: {e}, using neighborhood average")
+            if len(census_data) > 0:
+                features = self._extract_demographic_features_from_census(census_data)
+                return features
+            return np.zeros(17, dtype=np.float32)
         if matched.empty:
             logger.debug(f"IRIS code {iris_code} not found in census data, using neighborhood average")
             if len(census_data) > 0:
@@ -618,7 +663,21 @@ class FeatureEngineer:
         # 16: working_age_ratio
 
         # Use mean for multiple rows (neighborhood average)
-        row = census_row.iloc[0] if len(census_row) == 1 else census_row.mean()
+        # Only compute mean for numeric columns to avoid errors with string columns
+        if len(census_row) == 1:
+            row = census_row.iloc[0]
+        else:
+            # Select only numeric columns for mean calculation
+            numeric_cols = census_row.select_dtypes(include=[np.number]).columns
+            if len(numeric_cols) > 0:
+                row_mean = census_row[numeric_cols].mean()
+                # Start with first row and update numeric columns with mean
+                row = census_row.iloc[0].copy()
+                for col in numeric_cols:
+                    row[col] = row_mean[col]
+            else:
+                # Fallback to first row if no numeric columns
+                row = census_row.iloc[0]
 
         # Extract features (use column names from CensusLoader output)
         feature_cols = [
@@ -649,6 +708,45 @@ class FeatureEngineer:
 
         return features
 
+    def _load_buildings_cache(self, neighborhood_name: str, is_compliant: bool) -> Optional[gpd.GeoDataFrame]:
+        """Load and cache buildings GeoDataFrame for a neighborhood (performance optimization).
+        
+        Args:
+            neighborhood_name: Name of the neighborhood.
+            is_compliant: Whether neighborhood is compliant.
+            
+        Returns:
+            Pre-loaded, metric-CRS GeoDataFrame of buildings, or None if not found.
+        """
+        cache_key = (neighborhood_name, is_compliant)
+        
+        if cache_key in self._buildings_cache:
+            return self._buildings_cache[cache_key]
+        
+        normalized_name = neighborhood_name.lower().replace(" ", "_")
+        status = "compliant" if is_compliant else "non_compliant"
+        buildings_path = Path(f"data/raw/osm/{status}/{normalized_name}/buildings.geojson")
+        
+        if not buildings_path.exists():
+            self._buildings_cache[cache_key] = None
+            return None
+        
+        try:
+            buildings = gpd.read_file(buildings_path)
+            if buildings.empty:
+                self._buildings_cache[cache_key] = None
+                return None
+            
+            # Pre-convert to metric CRS once (major speedup)
+            buildings_metric = buildings.to_crs("EPSG:3857")
+            self._buildings_cache[cache_key] = buildings_metric
+            logger.debug(f"Cached buildings for {neighborhood_name}")
+            return buildings_metric
+        except Exception as e:
+            logger.warning(f"Error loading buildings for {neighborhood_name}: {e}")
+            self._buildings_cache[cache_key] = None
+            return None
+
     def compute_built_form_features(
         self, point: Point, neighborhood_name: str, is_compliant: bool
     ) -> np.ndarray:
@@ -662,31 +760,24 @@ class FeatureEngineer:
         Returns:
             NumPy array of shape (4,) with built form features.
         """
-        normalized_name = neighborhood_name.lower().replace(" ", "_")
-        status = "compliant" if is_compliant else "non_compliant"
-        buildings_path = Path(f"data/raw/osm/{status}/{normalized_name}/buildings.geojson")
-
         features = np.zeros(4, dtype=np.float32)
 
-        if not buildings_path.exists():
-            logger.debug(f"Buildings file not found for {neighborhood_name}")
+        # Use cached buildings (loaded once per neighborhood, pre-converted to metric CRS)
+        buildings_metric = self._load_buildings_cache(neighborhood_name, is_compliant)
+        
+        if buildings_metric is None or buildings_metric.empty:
             return features
 
         try:
-            buildings = gpd.read_file(buildings_path)
-            if buildings.empty:
-                return features
-
-            # Convert to metric CRS for buffer calculation
+            # Convert point to metric CRS once
             point_gdf = gpd.GeoDataFrame([1], geometry=[point], crs="EPSG:4326")
-            point_metric = point_gdf.to_crs("EPSG:3857")
-            buildings_metric = buildings.to_crs("EPSG:3857")
+            point_metric = point_gdf.to_crs("EPSG:3857").geometry.iloc[0]
 
             # Create 100m buffer
             buffer_radius = 100.0
             buffer_area = np.pi * buffer_radius ** 2
 
-            point_buffer = point_metric.geometry.iloc[0].buffer(buffer_radius)
+            point_buffer = point_metric.buffer(buffer_radius)
 
             # Find buildings within buffer
             buildings_in_buffer = buildings_metric[
@@ -730,6 +821,48 @@ class FeatureEngineer:
 
         return features
 
+    def _load_services_cache(self, neighborhood_name: str, is_compliant: bool) -> Dict[str, gpd.GeoDataFrame]:
+        """Load and cache service GeoDataFrames for a neighborhood (major performance optimization).
+        
+        Args:
+            neighborhood_name: Name of the neighborhood.
+            is_compliant: Whether neighborhood is compliant.
+            
+        Returns:
+            Dictionary mapping category names to pre-loaded, metric-CRS GeoDataFrames.
+        """
+        cache_key = (neighborhood_name, is_compliant)
+        
+        if cache_key in self._services_cache:
+            return self._services_cache[cache_key]
+        
+        normalized_name = neighborhood_name.lower().replace(" ", "_")
+        status = "compliant" if is_compliant else "non_compliant"
+        base_path = Path(f"data/raw/osm/{status}/{normalized_name}/services_by_category")
+        
+        service_categories = get_service_category_names()
+        services_dict = {}
+        
+        for category in service_categories:
+            category_file = category.lower().replace(" ", "_")
+            service_path = base_path / f"{category_file}.geojson"
+            
+            if not service_path.exists():
+                continue
+                
+            try:
+                services = gpd.read_file(service_path)
+                if not services.empty:
+                    # Pre-convert to metric CRS once (major speedup)
+                    services_metric = services.to_crs("EPSG:3857")
+                    services_dict[category] = services_metric
+            except Exception as e:
+                logger.warning(f"Error loading service file {service_path}: {e}")
+        
+        self._services_cache[cache_key] = services_dict
+        logger.debug(f"Cached {len(services_dict)} service categories for {neighborhood_name}")
+        return services_dict
+
     def compute_service_features(
         self, point: Point, neighborhood_name: str, is_compliant: bool, network_graph: nx.MultiDiGraph
     ) -> np.ndarray:
@@ -744,59 +877,28 @@ class FeatureEngineer:
         Returns:
             NumPy array of shape (8,) with service counts per category.
         """
-        normalized_name = neighborhood_name.lower().replace(" ", "_")
-        status = "compliant" if is_compliant else "non_compliant"
-        base_path = Path(f"data/raw/osm/{status}/{normalized_name}/services_by_category")
-
+        # Use cached services (loaded once per neighborhood, pre-converted to metric CRS)
+        services_dict = self._load_services_cache(neighborhood_name, is_compliant)
+        
+        # Convert point to metric CRS once
+        point_gdf = gpd.GeoDataFrame([1], geometry=[point], crs="EPSG:4326")
+        point_metric = point_gdf.to_crs("EPSG:3857").geometry.iloc[0]
+        
         service_categories = get_service_category_names()
         features = np.zeros(8, dtype=np.float32)
 
         for idx, category in enumerate(service_categories):
-            # Convert category name to filename
-            category_file = category.lower().replace(" ", "_")
-            service_path = base_path / f"{category_file}.geojson"
-
-            if not service_path.exists():
-                logger.debug(f"Service file not found: {service_path}")
+            if category not in services_dict:
                 continue
-
+                
             try:
-                services = gpd.read_file(service_path)
-                if services.empty:
-                    continue
-
-                # Pre-filter by Euclidean distance (optimization)
-                point_gdf = gpd.GeoDataFrame([1], geometry=[point], crs="EPSG:4326")
-                services_metric = services.to_crs("EPSG:3857")
-                point_metric = point_gdf.to_crs("EPSG:3857").geometry.iloc[0]
-
-                # Euclidean pre-filter (1.5x network radius for safety)
-                euclidean_threshold = self.walk_15min_radius_meters * 1.5
-                services_metric["distance_euclidean"] = services_metric.geometry.apply(
-                    lambda geom: point_metric.distance(geom)
-                )
-                services_filtered = services_metric[
-                    services_metric["distance_euclidean"] <= euclidean_threshold
-                ]
-
-                if services_filtered.empty:
-                    continue
-
-                # Count services within network distance
-                count = 0
-                for _, service_row in services_filtered.iterrows():
-                    service_point = service_row.geometry
-                    # Convert back to WGS84 for network distance
-                    service_wgs84 = gpd.GeoDataFrame(
-                        [1], geometry=[service_point], crs="EPSG:3857"
-                    ).to_crs("EPSG:4326").geometry.iloc[0]
-
-                    distance = self.compute_network_distance(
-                        point, service_wgs84, network_graph
-                    )
-                    if distance <= self.walk_15min_radius_meters:
-                        count += 1
-
+                services_metric = services_dict[category]
+                
+                # Vectorized distance calculation (much faster than apply + iterrows)
+                distances = services_metric.geometry.distance(point_metric)
+                
+                # Count services within radius (vectorized)
+                count = (distances <= self.walk_15min_radius_meters).sum()
                 features[idx] = float(count)
 
             except Exception as e:
@@ -833,11 +935,53 @@ class FeatureEngineer:
             buffer_area = np.pi * buffer_radius ** 2
 
             # Get network nodes and edges
-            nodes_gdf = ox.graph_to_gdfs(network_graph, edges=False, node_geometry=True)
+            # graph_to_gdfs returns (edges_gdf, nodes_gdf) tuple, or just nodes_gdf if edges=False
+            try:
+                nodes_result = ox.graph_to_gdfs(network_graph, edges=False, node_geometry=True)
+                if isinstance(nodes_result, tuple):
+                    nodes_gdf = nodes_result[1] if len(nodes_result) > 1 else nodes_result[0]
+                else:
+                    nodes_gdf = nodes_result
+            except Exception as e:
+                logger.debug(f"Failed to extract nodes from graph: {e}")
+                return features
+            
+            if nodes_gdf is None:
+                return features
+            
+            # Check if it's a GeoDataFrame with geometry
+            if not isinstance(nodes_gdf, gpd.GeoDataFrame):
+                return features
+            
             if nodes_gdf.empty:
                 return features
+            
+            # Ensure geometry column exists and is set as active
+            if 'geometry' not in nodes_gdf.columns:
+                # Try to create geometry from x, y coordinates if they exist
+                if 'x' in nodes_gdf.columns and 'y' in nodes_gdf.columns:
+                    from shapely.geometry import Point
+                    nodes_gdf['geometry'] = nodes_gdf.apply(
+                        lambda row: Point(row['x'], row['y']), axis=1
+                    )
+                    nodes_gdf = nodes_gdf.set_geometry('geometry', crs="EPSG:4326")
+                else:
+                    logger.debug("No geometry column and no x/y coordinates in nodes")
+                    return features
+            else:
+                # Ensure geometry column is set as active and has valid data
+                if nodes_gdf.geometry.isna().all():
+                    logger.debug("All node geometries are NaN")
+                    return features
+                # Explicitly set geometry as active (in case it's not)
+                if nodes_gdf._geometry_column_name != 'geometry':
+                    nodes_gdf = nodes_gdf.set_geometry('geometry')
 
-            nodes_metric = nodes_gdf.to_crs("EPSG:3857")
+            try:
+                nodes_metric = nodes_gdf.to_crs("EPSG:3857")
+            except Exception as e:
+                logger.debug(f"Failed to convert nodes to metric CRS: {e}")
+                return features
 
             # Feature 0: intersection_density (nodes with degree >= 3 within 200m)
             nodes_metric["distance"] = nodes_metric.geometry.apply(
@@ -852,9 +996,37 @@ class FeatureEngineer:
                 features[0] = intersections / buffer_area
 
             # Feature 1: average_block_length (average edge length in local area)
-            edges_gdf = ox.graph_to_gdfs(network_graph, edges=True, node_geometry=False)
-            if not edges_gdf.empty:
-                edges_metric = edges_gdf.to_crs("EPSG:3857")
+            # graph_to_gdfs returns (edges_gdf, nodes_gdf) tuple
+            edges_metric = None
+            try:
+                edges_result = ox.graph_to_gdfs(network_graph, edges=True, node_geometry=False)
+                if isinstance(edges_result, tuple):
+                    edges_gdf = edges_result[0] if len(edges_result) > 0 else None
+                else:
+                    edges_gdf = edges_result
+                
+                if edges_gdf is not None and isinstance(edges_gdf, gpd.GeoDataFrame):
+                    if edges_gdf.empty:
+                        edges_metric = None
+                    elif 'geometry' not in edges_gdf.columns:
+                        logger.debug("Edges GeoDataFrame has no geometry column")
+                        edges_metric = None
+                    elif edges_gdf.geometry.isna().all():
+                        logger.debug("All edge geometries are NaN")
+                        edges_metric = None
+                    else:
+                        # Ensure geometry is set as active
+                        if edges_gdf._geometry_column_name != 'geometry':
+                            edges_gdf = edges_gdf.set_geometry('geometry')
+                        try:
+                            edges_metric = edges_gdf.to_crs("EPSG:3857")
+                        except Exception as e:
+                            logger.debug(f"Failed to convert edges to metric CRS: {e}")
+                            edges_metric = None
+            except Exception as e:
+                logger.debug(f"Failed to extract edges from graph: {e}")
+            
+            if edges_metric is not None:
                 # Filter edges near point (simplified: check if edge center is within buffer)
                 edges_metric["center"] = edges_metric.geometry.centroid
                 edges_metric["distance"] = edges_metric["center"].apply(
@@ -971,9 +1143,13 @@ class FeatureEngineer:
                     distances[idx] = self.missing_service_penalty
                     continue
 
-                # Find nearest service using network distance
+                # Find nearest service using network distance (this is for the target probability vector used in loss function)
+                logger.debug(f"  Computing network distance to {category} services ({len(services)} services)...")
                 min_distance = float("inf")
-                for _, service_row in services.iterrows():
+                for service_idx, (_, service_row) in enumerate(services.iterrows()):
+                    # Log progress for large service sets
+                    if len(services) > 50 and (service_idx + 1) % 25 == 0:
+                        logger.debug(f"    Checking {service_idx + 1}/{len(services)} {category} services...")
                     service_geom = service_row.geometry
                     # Get point from geometry (centroid for polygons, direct for points)
                     if service_geom.geom_type in ["Polygon", "MultiPolygon"]:
@@ -1025,21 +1201,28 @@ class FeatureEngineer:
             Dict with keys: target_features, neighbor_data, target_prob_vector, num_neighbors.
         """
         # Generate grid cells around target
+        logger.info(f"[{neighborhood_name}] Target {target_id}: Generating grid cells...")
         grid_cells = self.generate_grid_cells(target_point)
+        logger.info(f"[{neighborhood_name}] Target {target_id}: Generated {len(grid_cells)} grid cells")
 
-        # Filter by network distance
+        # Filter by Euclidean distance (network distance calculated later in loss function)
+        logger.info(f"[{neighborhood_name}] Target {target_id}: Filtering {len(grid_cells)} cells by Euclidean distance...")
         neighbors = self.filter_by_network_distance(
             target_point, grid_cells, network_graph
         )
+        logger.info(f"[{neighborhood_name}] Target {target_id}: Found {len(neighbors)} neighbors")
 
         # Compute target point features
+        logger.info(f"[{neighborhood_name}] Target {target_id}: Computing target features...")
         target_features = self.compute_point_features(
             target_point, neighborhood_name, is_compliant, network_graph
         )
+        logger.info(f"[{neighborhood_name}] Target {target_id}: Target features computed")
 
         # Compute neighbor features
+        logger.info(f"[{neighborhood_name}] Target {target_id}: Computing features for {len(neighbors)} neighbors...")
         neighbor_data = []
-        for neighbor in neighbors:
+        for neighbor_idx, neighbor in enumerate(neighbors):
             neighbor_cell = neighbor["cell"]
             neighbor_features = self.compute_point_features(
                 neighbor_cell, neighborhood_name, is_compliant, network_graph
@@ -1054,11 +1237,18 @@ class FeatureEngineer:
                     "dy": neighbor["dy"],
                 }
             )
+            # Log every 50 neighbors for very large neighbor sets
+            if len(neighbors) > 50 and (neighbor_idx + 1) % 50 == 0:
+                logger.info(f"[{neighborhood_name}] Target {target_id}: Processed {neighbor_idx + 1}/{len(neighbors)} neighbors...")
+
+        logger.info(f"[{neighborhood_name}] Target {target_id}: All neighbor features computed")
 
         # Compute target probability vector
+        logger.info(f"[{neighborhood_name}] Target {target_id}: Computing target probability vector (network distance)...")
         target_prob_vector = self.compute_target_probability_vector(
             target_point, neighborhood_name, is_compliant, network_graph
         )
+        logger.info(f"[{neighborhood_name}] Target {target_id}: ✓ Completed processing")
 
         return {
             "target_features": target_features,
@@ -1089,23 +1279,71 @@ class FeatureEngineer:
         output_dir = Path(f"data/processed/features/{status}/{normalized_name}")
         output_file = output_dir / "target_points.parquet"
 
-        # Check cache
+        # Check cache and load existing results for resume
+        existing_df = None
         if not force and output_file.exists():
-            logger.info(f"Loading cached features for {neighborhood_name}")
+            logger.info(f"Checking for existing results: {output_file}")
             try:
-                return pd.read_parquet(output_file)
+                existing_df = pd.read_parquet(output_file)
+                if "target_id" not in existing_df.columns:
+                    logger.warning(f"Existing file missing 'target_id' column, will re-process")
+                    existing_df = None
+                else:
+                    # Check if all points are processed
+                    target_points_check = self.generate_target_points(neighborhood)
+                    if len(existing_df) >= len(target_points_check):
+                        logger.info(f"All {len(existing_df)} target points already processed for {neighborhood_name}")
+                        return existing_df
+                    else:
+                        logger.info(f"Found partial results: {len(existing_df)}/{len(target_points_check)} points. Will resume from saved progress.")
             except Exception as e:
-                logger.warning(f"Failed to load cached file: {e}, re-processing")
+                logger.warning(f"Failed to load existing file: {e}, will re-process from start")
+                existing_df = None
 
         logger.info(f"Processing neighborhood: {neighborhood_name}")
 
         # Generate target points
+        logger.info(f"[{neighborhood_name}] Step 1/4: Generating target points...")
         target_points = self.generate_target_points(neighborhood)
         if target_points.empty:
             logger.warning(f"No target points generated for {neighborhood_name}")
             return pd.DataFrame()
+        logger.info(f"[{neighborhood_name}] Generated {len(target_points)} target points")
+
+        # Load existing results if resuming
+        processed_ids = set()
+        results = []
+        if existing_df is not None and not existing_df.empty:
+            # Extract target_ids that were already processed
+            processed_ids = set(existing_df["target_id"].astype(int).tolist())
+            logger.info(f"[{neighborhood_name}] Loaded {len(processed_ids)} already processed target IDs")
+            
+            # Convert existing results to list format (preserve order by target_id)
+            existing_df_sorted = existing_df.sort_values("target_id")
+            for _, row in existing_df_sorted.iterrows():
+                # Convert WKT string back to Point geometry if needed
+                geom = row["target_geometry"]
+                if isinstance(geom, str):
+                    geom = wkt.loads(geom)
+                
+                results.append({
+                    "target_id": int(row["target_id"]),  # Ensure integer type
+                    "neighborhood_name": row["neighborhood_name"],
+                    "label": row["label"],
+                    "target_features": row["target_features"],
+                    "neighbor_data": row["neighbor_data"],
+                    "target_prob_vector": row["target_prob_vector"],
+                    "target_geometry": geom,
+                    "num_neighbors": row["num_neighbors"],
+                })
+            logger.info(f"[{neighborhood_name}] Resuming: {len(processed_ids)} points already processed, {len(target_points) - len(processed_ids)} remaining")
+            if len(processed_ids) <= 20:
+                logger.info(f"[{neighborhood_name}] Already processed target IDs: {sorted(list(processed_ids))}")
+            else:
+                logger.info(f"[{neighborhood_name}] Already processed target IDs: {sorted(list(processed_ids))[:10]} ... {sorted(list(processed_ids))[-10:]}")
 
         # Load network graph
+        logger.info(f"[{neighborhood_name}] Step 2/4: Loading network graph...")
         network_path = Path(f"data/raw/osm/{status}/{normalized_name}/network.graphml")
         if not network_path.exists():
             logger.warning(f"Network graph not found for {neighborhood_name}")
@@ -1113,19 +1351,40 @@ class FeatureEngineer:
 
         try:
             network_graph = ox.load_graphml(network_path)
+            logger.info(f"[{neighborhood_name}] Loaded network graph: {len(network_graph.nodes())} nodes, {len(network_graph.edges())} edges")
+            
+            # Pre-load caches for this neighborhood (major performance optimization)
+            logger.info(f"[{neighborhood_name}] Step 2.5/4: Pre-loading data caches...")
+            self._load_services_cache(neighborhood_name, is_compliant)
+            self._load_buildings_cache(neighborhood_name, is_compliant)
+            logger.info(f"[{neighborhood_name}] Data caches pre-loaded")
         except Exception as e:
             logger.error(f"Failed to load network graph: {e}")
             return pd.DataFrame()
 
-        # Process each target point
-        results = []
+        # Process each target point sequentially
+        remaining_points = len(target_points) - len(processed_ids)
+        logger.info(f"[{neighborhood_name}] Step 3/4: Processing {remaining_points} remaining target points sequentially...")
         total_points = len(target_points)
 
+        points_processed_this_run = 0
+        skipped_count = 0
         for idx, row in target_points.iterrows():
             target_point = row.geometry
-            target_id = row["target_id"]
+            target_id = int(row["target_id"])  # Ensure integer type for comparison
+            
+            # Skip if already processed (this avoids re-calculating expensive network distances)
+            if target_id in processed_ids:
+                skipped_count += 1
+                if skipped_count == 1 or skipped_count % 50 == 0:
+                    logger.info(f"[{neighborhood_name}] ⏭️  Skipping target point {target_id} (already processed) - {skipped_count} skipped so far")
+                continue
 
             try:
+                # Log every point for better visibility
+                if (points_processed_this_run + 1) % 5 == 0 or points_processed_this_run == 0:
+                    logger.info(f"[{neighborhood_name}] Processing target point {len(results) + 1}/{total_points} (ID: {target_id})...")
+                
                 result = self.process_target_point(
                     target_point,
                     target_id,
@@ -1147,30 +1406,53 @@ class FeatureEngineer:
                         "num_neighbors": result["num_neighbors"],
                     }
                 )
+                points_processed_this_run += 1
 
-                # Log progress every 10 points
-                if (idx + 1) % 10 == 0:
+                # Save milestone every 10 points
+                if points_processed_this_run % 10 == 0:
+                    logger.info(f"[{neighborhood_name}] Milestone: Saving progress after {len(results)}/{total_points} points...")
+                    ensure_dir_exists(str(output_dir))
+                    df_temp = pd.DataFrame(results)
+                    # Convert Shapely geometries to WKT strings for parquet compatibility
+                    if "target_geometry" in df_temp.columns:
+                        df_temp["target_geometry"] = df_temp["target_geometry"].apply(
+                            lambda geom: geom.wkt if hasattr(geom, 'wkt') else str(geom)
+                        )
+                    save_dataframe(df_temp, str(output_file), format="parquet")
+                    logger.info(f"[{neighborhood_name}] ✓ Saved milestone: {len(results)} points saved to {output_file}")
+
+                # Log progress every 5 points
+                if points_processed_this_run % 5 == 0:
                     logger.info(
-                        f"Processed {idx + 1}/{total_points} target points for {neighborhood_name}"
+                        f"[{neighborhood_name}] ✓ Completed {len(results)}/{total_points} target points ({points_processed_this_run} processed this run)"
                     )
 
             except Exception as e:
+                import traceback
                 logger.error(f"Error processing target point {target_id}: {e}")
+                logger.error(f"Traceback: {traceback.format_exc()}")
                 continue
 
         if not results:
             logger.warning(f"No target points processed for {neighborhood_name}")
             return pd.DataFrame()
 
-        # Convert to DataFrame
+        # Convert to DataFrame and save final results
+        logger.info(f"[{neighborhood_name}] Step 4/4: Saving final results...")
         df = pd.DataFrame(results)
+
+        # Convert Shapely geometries to WKT strings for parquet compatibility
+        if "target_geometry" in df.columns:
+            df["target_geometry"] = df["target_geometry"].apply(
+                lambda geom: geom.wkt if hasattr(geom, 'wkt') else str(geom)
+            )
 
         # Save to Parquet
         ensure_dir_exists(str(output_dir))
         save_dataframe(df, str(output_file), format="parquet")
 
         logger.info(
-            f"Processed {len(df)} target points for {neighborhood_name}, saved to {output_file}"
+            f"[{neighborhood_name}] ✓ COMPLETE: Processed {len(df)} target points, saved to {output_file}"
         )
 
         return df
@@ -1187,16 +1469,18 @@ class FeatureEngineer:
         Returns:
             Dictionary with summary statistics.
         """
-        logger.info("Processing all neighborhoods")
+        logger.info("=" * 80)
+        logger.info("STARTING: Processing all neighborhoods")
+        logger.info("=" * 80)
 
-        # Split into compliant and non-compliant
+        # Only process compliant neighborhoods
         compliant = get_compliant_neighborhoods(neighborhoods)
-        non_compliant = get_non_compliant_neighborhoods(neighborhoods)
+        logger.info(f"Found {len(compliant)} compliant neighborhoods to process")
 
         summary = {
-            "total_neighborhoods": len(neighborhoods),
+            "total_neighborhoods": len(compliant),
             "compliant_count": len(compliant),
-            "non_compliant_count": len(non_compliant),
+            "non_compliant_count": 0,
             "successful_count": 0,
             "failed_count": 0,
             "cached_count": 0,
@@ -1204,7 +1488,12 @@ class FeatureEngineer:
         }
 
         # Process compliant neighborhoods
+        logger.info(f"\n{'='*80}")
+        logger.info(f"PROCESSING COMPLIANT NEIGHBORHOODS ({len(compliant)} total)")
+        logger.info(f"{'='*80}")
         for idx, neighborhood in compliant.iterrows():
+            neighborhood_name = neighborhood.get("name", f"neighborhood_{idx}")
+            logger.info(f"\n[{idx + 1}/{len(compliant)}] Starting: {neighborhood_name}")
             try:
                 result = self.process_neighborhood(neighborhood, force=force)
                 if not result.empty:
@@ -1214,19 +1503,6 @@ class FeatureEngineer:
                     summary["failed_count"] += 1
             except Exception as e:
                 logger.error(f"Failed to process compliant neighborhood {neighborhood.get('name')}: {e}")
-                summary["failed_count"] += 1
-
-        # Process non-compliant neighborhoods
-        for idx, neighborhood in non_compliant.iterrows():
-            try:
-                result = self.process_neighborhood(neighborhood, force=force)
-                if not result.empty:
-                    summary["successful_count"] += 1
-                    summary["total_target_points"] += len(result)
-                else:
-                    summary["failed_count"] += 1
-            except Exception as e:
-                logger.error(f"Failed to process non-compliant neighborhood {neighborhood.get('name')}: {e}")
                 summary["failed_count"] += 1
 
         logger.info(f"Processing complete. Summary: {summary}")

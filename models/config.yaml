@@ -22,7 +22,7 @@ training:
   use_mixed_precision: false  # Can enable FP16 for memory savings
 
 features:
-  walk_15min_radius_meters: 1200  # 15-minute walk radius in meters (default: 1200m ≈ 1.2 km)
+  walk_15min_radius_meters: 1000  # 15-minute walk radius in meters (default: 1000m ≈ 1.0 km)
   grid_cell_size_meters: 100  # Size of grid cells for spatial context (default: 100m × 100m)
   target_point_sampling_interval_meters: 100  # Grid spacing for target points
   filter_by_network_distance: true  # Filter neighbors by network distance

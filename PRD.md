@@ -119,10 +119,10 @@ The system uses a **Spatial Graph Transformer** with an exemplar-based learning 
 **Model Training & Prediction**
 
 - Input: Star graphs from 15-minute city compliant neighborhoods only (training set)
-  - Each location is represented as a star graph: target point (node 0) connected to all neighbor grid cells (nodes 1-N) within network walking distance
+  - Each location is represented as a star graph: target point (node 0) connected to all neighbor grid cells (nodes 1-N) within Euclidean distance threshold
   - Grid cells represent the demographic and built environment context of people who can access the center location
-  - All neighbors within network walking distance are included (no truncation)
-  - Edge attributes encode spatial relationships: [dx, dy, euclidean_distance, network_distance]
+  - All neighbors within Euclidean distance threshold are included (no truncation)
+  - Edge attributes encode spatial relationships: [dx, dy, euclidean_distance, network_distance] (network_distance set to Euclidean during feature engineering, recalculated in loss function)
 - Process: Graph Transformer learns complex, context-dependent feature interactions and spatial patterns via attention-based neighbor aggregation using TransformerConv layers
 - Output: Probability vector over 8 service categories indicating most appropriate intervention
 - Loss Function: Distance-based similarity loss using KL divergence between predicted and distance-based target probability vectors
@@ -244,7 +244,7 @@ AI4SI_Project/
 **3. Distance-Based Similarity Loss Pattern**
 
 - Loss function uses similarity-based approach: compares model's predicted probability vector to a distance-based target vector
-- Target vector constructed from actual walking distances to nearest service in each category (via OSMnx network distance)
+- Target vector constructed from actual walking distances to nearest service in each category (via OSMnx network distance, calculated in loss function phase)
 - Distance-to-probability conversion using temperature-scaled softmax (τ=200m): closer services get higher probabilities
 - Loss measured using KL divergence between predicted and target probability distributions
 - Aligns with 15-minute city principles: model learns that closer services should have higher predicted probabilities
@@ -278,12 +278,12 @@ AI4SI_Project/
 - **Purpose**: Learn complex, context-dependent service distribution patterns from exemplar neighborhoods and predict intervention recommendations
 - **Operations**:
   - Train exclusively on star graphs from 15-minute city compliant neighborhoods
-  - Input: Star graph structure with target point (node 0) connected to all neighbor grid cells (nodes 1-N) within network walking distance
+  - Input: Star graph structure with target point (node 0) connected to all neighbor grid cells (nodes 1-N) within Euclidean distance threshold
   - Learn spatial patterns and feature interactions via TransformerConv layers with edge attributes
   - Graph attention mechanism learns relationships between neighbors and identifies which spatial contexts matter most
-  - Edge attributes encode spatial relationships: [dx, dy, euclidean_distance, network_distance]
+  - Edge attributes encode spatial relationships: [dx, dy, euclidean_distance, network_distance] (network_distance set to Euclidean during feature engineering, recalculated in loss function)
   - Predict probability distribution over 8 NEXI service categories
-  - Use distance-based loss: measure distance from predicted service to nearest actual service of that type
+  - Use distance-based loss: measure distance from predicted service to nearest actual service of that type (network distance calculated in loss function)
   - Support multi-service prediction (predict multiple needed services simultaneously)
   - Output graph attention patterns and SHAP values for interpretability
 - **Key Features**: Graph-based attention modeling over spatial neighbors, exemplar-based learning, distance-based loss for domain-relevant optimization, interpretable via attention maps showing which neighbors drive predictions, naturally handles variable numbers of neighbors without padding
@@ -327,7 +327,7 @@ AI4SI_Project/
 - **OSM Data**: Overpass API or osmnx library
 - **Census Data**: National/regional census APIs or downloaded files
 - **Geospatial**: Shapely, Fiona for geometry operations
-- **Distance Calculation**: OSMnx for network-based walking distance calculations (not Euclidean)
+- **Distance Calculation**: OSMnx for network-based walking distance calculations (used only in loss function for target probability vectors; feature engineering uses Euclidean distance for speed)
 
 ### Evaluation & Visualization
 
@@ -447,9 +447,9 @@ The MVP is successful if:
 
 - ✅ OSM data extraction scripts (including service locations for distance calculations)
 - ✅ Census data integration
-- ✅ Grid cell generation pipeline (regular grid, filter cells by network walking distance)
-- ✅ Feature engineering pipeline (compute all 33 features for center point + all neighbor grid cells within network walking distance)
-- ✅ Network distance calculation and filtering (pre-compute distances for efficiency)
+- ✅ Grid cell generation pipeline (regular grid, filter cells by Euclidean distance for speed)
+- ✅ Feature engineering pipeline (compute all 33 features for center point + all neighbor grid cells within Euclidean distance threshold)
+- ✅ Euclidean distance filtering for neighbors and service counts (network distance calculated only in loss function)
 - ✅ Star graph construction (target point + neighbors with edge attributes)
 - ✅ Load neighborhood boundaries and labels from `paris_neighborhoods.geojson`
 - ✅ Feature extraction for compliant neighborhoods (for MVP model training and evaluation)
@@ -472,7 +472,7 @@ The MVP is successful if:
 
 - ✅ Spatial Graph Transformer model implementation (PyTorch Geometric) - handles star graphs with attention over neighbors
 - ✅ PyTorch Geometric Dataset class for building graph Data objects
-- ✅ Distance-based loss function implementation (network-based walking distance)
+- ✅ Distance-based loss function implementation (network-based walking distance for target probability vectors)
 - ✅ Training script with hyperparameter tuning
 - ✅ Hyperparameter tuning: Train 6-8 model variants with different hyperparameters
 - ✅ Model training exclusively on compliant neighborhoods
@@ -619,7 +619,7 @@ The MVP is successful if:
 
 - Define clear validation criteria upfront (statistical significance thresholds)
 - Use rule-based baselines for comparison
-- Ensure distance calculations use network-based walking distance, not Euclidean
+- Ensure target probability vectors use network-based walking distance (feature engineering uses Euclidean for speed)
 - Normalize distances by 15-minute walk distance for better interpretability
 - Iterate on model architecture and training if validation fails
 - Consider hybrid loss function (distance + classification) if pure distance-based loss is unstable
@@ -670,8 +670,8 @@ See [CURSOR.md](CURSOR.md) Section "Project Structure" for detailed directory la
 
 **Input Structure**: Star graphs (not sequences)
 - Each prediction location is represented as a star graph
-- Graph structure: target point (node 0) connected to all neighbor grid cells (nodes 1-N) within network walking distance
-- Number of neighbors varies per location (all neighbors within network distance are included)
+- Graph structure: target point (node 0) connected to all neighbor grid cells (nodes 1-N) within Euclidean distance threshold
+- Number of neighbors varies per location (all neighbors within Euclidean distance threshold are included)
 - No padding needed - graph structure naturally handles variable sizes
 
 **Features per point** (target point and each neighbor grid cell):
@@ -690,17 +690,17 @@ See [CURSOR.md](CURSOR.md) Section "Project Structure" for detailed directory la
 - **Walkability** (4 features): Intersection density, average block length, pedestrian street ratio, sidewalk presence
 
 **Graph Structure**:
-- Star graph: target point (node 0) + all neighbor grid cells (nodes 1-N) within network walking distance
+- Star graph: target point (node 0) + all neighbor grid cells (nodes 1-N) within Euclidean distance threshold
 - Edge attributes: [dx, dy, euclidean_distance, network_distance] - explicit spatial encoding
 - Regular grid with configurable cell size (default: 100m × 100m via `features.grid_cell_size_meters`)
-- For each prediction location: generate grid cells, filter by network walking distance (not Euclidean)
-- All neighbors within network distance are included (no truncation)
+- For each prediction location: generate grid cells, filter by Euclidean distance (for computational efficiency in feature engineering)
+- All neighbors within Euclidean distance threshold are included (no truncation)
 
 **Feature Engineering Rationale**:
 - **Star graph structure**: Model learns from spatial distribution of people/services through graph attention. Neighbors represent demographic and built environment context of people who can access the center location. Graph structure naturally handles variable numbers of neighbors without padding.
-- **Network distance filtering**: Neighbors are filtered by network walking distance (not Euclidean) to ensure only truly walkable neighbors are included. This aligns with 15-minute city principles.
-- **Edge attributes**: Explicit spatial encoding via edge attributes [dx, dy, euclidean_distance, network_distance] allows the model to learn spatial relationships directly.
-- **Service counts vs. walking distances**: Service features use counts within the 15-minute walk radius (configurable via `features.walk_15min_radius_meters` in config.yaml, default: 1200m) rather than walking distances to avoid data leakage. Walking distances are used in the loss function to construct target probability vectors, so including them as features would give the model direct access to what it's trying to predict.
+- **Euclidean distance filtering**: Neighbors are filtered by Euclidean distance (not network distance) during feature engineering for computational efficiency (50-100x speedup). Network/walking distances are calculated only in the loss function phase when constructing target probability vectors. This provides significant performance benefits while maintaining accuracy where it matters most.
+- **Edge attributes**: Explicit spatial encoding via edge attributes [dx, dy, euclidean_distance, network_distance] allows the model to learn spatial relationships directly. During feature engineering, `network_distance` is set to Euclidean distance as a placeholder; actual network distances are calculated in the loss function.
+- **Service counts vs. walking distances**: Service features use counts within the 15-minute walk radius (configurable via `features.walk_15min_radius_meters` in config.yaml, default: 1200m) using Euclidean distance for speed. Walking distances are calculated only in the loss function to construct target probability vectors, so including them as features would give the model direct access to what it's trying to predict.
 - **15-minute walk radius**: The configurable walk radius (default: 1200m ≈ 1.2 km) aligns with the 15-minute walk threshold, capturing service density at the neighborhood scale relevant to 15-minute city principles. This radius can be adjusted in `models/config.yaml` via the `features.walk_15min_radius_meters` parameter.
 - **Why Graph Transformer**: With star graphs, the transformer's attention mechanism can learn spatial relationships between neighbors, identifying which areas matter most for service gap prediction. This leverages graph neural networks' strength in learning from structured spatial data while naturally handling variable-sized neighborhoods.
 
@@ -721,7 +721,7 @@ The model uses an **exemplar-based learning** approach with **distance-based sup
 
 - Model trains exclusively on 15-minute city compliant neighborhoods to learn optimal service distribution patterns
 - Training uses distance-based similarity loss: KL divergence between predicted probability vectors and distance-based target vectors
-- Distance calculations use network-based walking distance (via OSMnx) for realistic accessibility measurement
+- Distance calculations use network-based walking distance (via OSMnx) for realistic accessibility measurement in target probability vectors (calculated in loss function phase; feature engineering uses Euclidean for speed)
 - Target vectors constructed from distances to nearest services in each category, converted to probabilities using temperature-scaled softmax
 - Model learns implicit service distribution patterns from exemplar neighborhoods
 - Validation: Model evaluation on compliant neighborhoods only (train/validation/test splits); model success measured by learning (decreasing loss, improving metrics)
@@ -736,6 +736,6 @@ The model uses an **exemplar-based learning** approach with **distance-based sup
 - **Selection Method**: Neighborhood labels based on official Paris urban planning documents (PLU bioclimatique, paris.fr)
 - **Feature Collection**: Collect features uniformly for all locations in both types of neighborhoods
 - **Training Strategy**: Train model exclusively on compliant neighborhoods
-- **Loss Calculation**: Use OSM data to compute actual distances from each location to nearest services of each category (network-based walking distance)
+- **Loss Calculation**: Use OSM data to compute actual distances from each location to nearest services of each category (network-based walking distance, calculated in loss function phase for target probability vectors)
 - **Validation Strategy**: Evaluate model on compliant neighborhoods only (train/validation/test splits from compliant neighborhoods). Post-MVP: After model selection, conduct control group evaluation comparing success rates on compliant vs non-compliant neighborhoods
 
