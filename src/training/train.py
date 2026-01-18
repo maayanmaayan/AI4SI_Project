@@ -28,6 +28,7 @@ from src.training.dataset import (
     get_device,
     load_features_from_directory,
 )
+from src.training.data_filtering import filter_small_neighborhoods
 from src.training.loss import DistanceBasedKLLoss
 from src.training.model import create_model_from_config
 from src.utils.config import get_config
@@ -176,6 +177,7 @@ def train(
     checkpoint_dir: Optional[str] = None,
     experiment_dir: Optional[str] = None,
     resume_from: Optional[str] = None,
+    quick_test: bool = False,
 ) -> Dict:
     """Main training function.
 
@@ -223,6 +225,16 @@ def train(
 
     logger_experiment.info(f"Loading features from {features_dir}")
     features_df = load_features_from_directory(features_dir)
+    
+    # Quick test mode: filter to small neighborhoods
+    if quick_test:
+        logger_experiment.info("Quick test mode: filtering to small neighborhoods (<50 points, max 3 neighborhoods)")
+        features_df = filter_small_neighborhoods(
+            features_df,
+            max_points_per_neighborhood=50,
+            max_neighborhoods=3,
+        )
+        logger_experiment.info(f"Quick test: using {len(features_df)} points from {features_df['neighborhood_name'].nunique()} neighborhoods")
 
     # Create train/val/test splits
     train_ratio = config.get("data", {}).get("train_split", 0.7)

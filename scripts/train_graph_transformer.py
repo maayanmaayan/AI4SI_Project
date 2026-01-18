@@ -57,6 +57,11 @@ def main():
         help="Path to checkpoint to resume training from",
     )
     parser.add_argument(
+        "--quick-test",
+        action="store_true",
+        help="Quick test mode: use only 3 small neighborhoods with <50 points each",
+    )
+    parser.add_argument(
         "--log-level",
         type=str,
         default="INFO",
@@ -83,6 +88,7 @@ def main():
             checkpoint_dir=args.checkpoint_dir,
             experiment_dir=args.experiment_dir,
             resume_from=args.resume_from,
+            quick_test=args.quick_test,
         )
 
         print("\n" + "=" * 60)

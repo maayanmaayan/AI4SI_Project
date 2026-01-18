@@ -205,42 +205,94 @@ def plot_accuracy_curves(
 
 
 def plot_hyperparameter_comparison(
-    results: Dict[str, List[Dict]],
-    metric: str = "val_loss",
+    results: List[Dict],
+    metric: str = "best_val_loss",
     save_path: str = "plots/hyperparameter_comparison.png",
     title: str = "Hyperparameter Comparison",
 ) -> None:
     """Plot comparison of different hyperparameter settings.
 
     Args:
-        results: Dictionary mapping hyperparameter names to training histories.
-        metric: Metric to compare (e.g., "val_loss", "val_top1_accuracy").
+        results: List of result dictionaries from hyperparameter sweep, each with:
+            - model_id, model_name, description
+            - learning_rate, num_layers, temperature
+            - best_val_loss, test_metrics, etc.
+        metric: Metric to compare (e.g., "best_val_loss", "test_loss", "test_top1_accuracy").
         save_path: Path to save the plot.
         title: Plot title.
 
     Example:
-        >>> results = {
-        ...     "lr=0.001": [{"epoch": 1, "val_loss": 0.5}, ...],
-        ...     "lr=0.01": [{"epoch": 1, "val_loss": 0.6}, ...],
-        ... }
-        >>> plot_hyperparameter_comparison(results, metric="val_loss")
+        >>> results = [
+        ...     {"model_id": 1, "model_name": "baseline", "best_val_loss": 0.5, ...},
+        ...     {"model_id": 2, "model_name": "lower_lr", "best_val_loss": 0.6, ...},
+        ... ]
+        >>> plot_hyperparameter_comparison(results, metric="best_val_loss")
     """
-    fig, ax = plt.subplots(figsize=(12, 6))
-    fig.suptitle(title, fontsize=16, fontweight='bold')
+    # Filter out failed runs
+    valid_results = [r for r in results if "error" not in r]
+    
+    if not valid_results:
+        logger.warning("No valid results to plot")
+        return
 
-    colors = plt.cm.tab10(np.linspace(0, 1, len(results)))
+    # Extract metric values and labels
+    model_names = []
+    metric_values = []
+    
+    for result in valid_results:
+        # Create descriptive label
+        label_parts = [f"Model {result['model_id']}"]
+        if "description" in result:
+            label_parts.append(result["description"])
+        else:
+            label_parts.append(result.get("model_name", ""))
+        label = ": ".join(label_parts)
+        model_names.append(label)
+        
+        # Extract metric value
+        if metric == "best_val_loss":
+            metric_values.append(result.get("best_val_loss", float("inf")))
+        elif metric.startswith("test_"):
+            test_metrics = result.get("test_metrics", {})
+            metric_key = metric.replace("test_", "")
+            metric_values.append(test_metrics.get(metric_key, 0.0))
+        else:
+            metric_values.append(result.get(metric, 0.0))
 
-    for (name, history), color in zip(results.items(), colors):
-        if not history:
-            continue
-        df = pd.DataFrame(history)
-        if metric in df.columns:
-            ax.plot(df["epoch"], df[metric], label=name, color=color, linewidth=2)
+    # Create bar plot
+    fig, ax = plt.subplots(figsize=(14, 8))
+    fig.suptitle(f"{title} - {metric.replace('_', ' ').title()}", fontsize=16, fontweight='bold')
 
-    ax.set_xlabel("Epoch", fontsize=12)
-    ax.set_ylabel(metric.replace("_", " ").title(), fontsize=12)
-    ax.legend(fontsize=10)
-    ax.grid(True, alpha=0.3)
+    # Sort by metric value (best first for loss, worst first for accuracy)
+    if "loss" in metric.lower() or "kl" in metric.lower():
+        sorted_indices = sorted(range(len(metric_values)), key=lambda i: metric_values[i])
+    else:
+        sorted_indices = sorted(range(len(metric_values)), key=lambda i: metric_values[i], reverse=True)
+    
+    sorted_names = [model_names[i] for i in sorted_indices]
+    sorted_values = [metric_values[i] for i in sorted_indices]
+
+    # Create bar plot
+    bars = ax.barh(range(len(sorted_names)), sorted_values, color='steelblue', alpha=0.7, edgecolor='black')
+    
+    # Highlight best model
+    if "loss" in metric.lower() or "kl" in metric.lower():
+        best_idx = 0  # First (lowest) is best
+    else:
+        best_idx = 0  # First (highest) is best
+    bars[best_idx].set_color('gold')
+    bars[best_idx].set_edgecolor('red')
+    bars[best_idx].set_linewidth(2)
+
+    # Add value labels on bars
+    for i, (bar, value) in enumerate(zip(bars, sorted_values)):
+        ax.text(value, i, f" {value:.4f}", va='center', fontsize=9, fontweight='bold')
+
+    ax.set_yticks(range(len(sorted_names)))
+    ax.set_yticklabels(sorted_names, fontsize=10)
+    ax.set_xlabel(metric.replace("_", " ").title(), fontsize=12)
+    ax.set_ylabel("Model Configuration", fontsize=12)
+    ax.grid(True, alpha=0.3, axis='x')
 
     plt.tight_layout()
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
