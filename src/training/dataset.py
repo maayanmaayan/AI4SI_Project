@@ -155,11 +155,12 @@ class SpatialGraphDataset(Dataset):
             edge_attr = torch.empty((0, 4), dtype=torch.float32)
 
         # Create PyTorch Geometric Data object
+        # Note: y should be 2D [1, 8] for proper batching (PyG stacks 2D tensors, concatenates 1D)
         data = Data(
             x=x,  # [1 + num_neighbors, 33]
             edge_index=edge_index,  # [2, num_neighbors]
             edge_attr=edge_attr,  # [num_neighbors, 4]
-            y=target_prob_vector,  # [8] - target probability vector
+            y=target_prob_vector.unsqueeze(0),  # [1, 8] - target probability vector (2D for proper batching)
             target_id=row["target_id"],
             neighborhood_name=row["neighborhood_name"],
             num_nodes=1 + num_neighbors,
@@ -275,12 +276,33 @@ def create_train_val_test_splits(
     total_neighborhoods = len(unique_neighborhoods)
     n_train = int(total_neighborhoods * train_ratio)
     n_val = int(total_neighborhoods * val_ratio)
+    
+    # Ensure at least 1 neighborhood per split when possible
+    # This handles edge cases where rounding causes empty splits
+    if n_train == 0 and total_neighborhoods >= 1:
+        n_train = 1
+    if n_val == 0 and total_neighborhoods >= 2:
+        n_val = 1
+    if n_train + n_val >= total_neighborhoods:
+        # Not enough neighborhoods for all splits - adjust
+        n_train = max(1, total_neighborhoods - 2)  # Leave room for val and test
+        n_val = 1
     # Test gets remainder to handle rounding
 
     # Split neighborhoods
     train_neighborhoods = set(unique_neighborhoods[:n_train])
     val_neighborhoods = set(unique_neighborhoods[n_train : n_train + n_val])
     test_neighborhoods = set(unique_neighborhoods[n_train + n_val :])
+    
+    # Final check: ensure test is not empty if we have enough neighborhoods
+    if len(test_neighborhoods) == 0 and total_neighborhoods >= 3:
+        # Redistribute: take one from train if possible
+        if len(train_neighborhoods) > 1:
+            moved = train_neighborhoods.pop()
+            test_neighborhoods.add(moved)
+        elif len(val_neighborhoods) > 1:
+            moved = val_neighborhoods.pop()
+            test_neighborhoods.add(moved)
 
     # Filter DataFrame by neighborhood sets
     train_df = features_df[features_df["neighborhood_name"].isin(train_neighborhoods)].copy()
