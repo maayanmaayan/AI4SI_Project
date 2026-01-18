@@ -318,6 +318,8 @@ def set_random_seeds(seed: int) -> None:
     generator, and PyTorch (if available). This ensures reproducible results
     across runs.
 
+    Supports CUDA, MPS (Apple Silicon), and CPU devices.
+
     Args:
         seed: Random seed value.
 
@@ -334,6 +336,11 @@ def set_random_seeds(seed: int) -> None:
         if torch.cuda.is_available():
             torch.cuda.manual_seed(seed)
             torch.cuda.manual_seed_all(seed)
+        # MPS (Metal Performance Shaders) for Apple Silicon
+        # Note: MPS doesn't have separate seed functions, torch.manual_seed() is sufficient
+        if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            # torch.manual_seed() already covers MPS
+            pass
 
 
 def validate_feature_dataframe(df: pd.DataFrame, required_columns: List[str]) -> bool:

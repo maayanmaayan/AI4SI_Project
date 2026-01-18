@@ -19,7 +19,11 @@ training:
   num_epochs: 100
   early_stopping_patience: 10
   early_stopping_min_delta: 0.001
-  use_mixed_precision: false  # Can enable FP16 for memory savings
+  use_mixed_precision: true  # FP16 for memory savings (M2 optimization)
+  gradient_accumulation_steps: 1  # Can increase to 2-4 if needed for larger effective batch size
+  num_workers: 2  # DataLoader workers (2 optimal for M2 MacBook Air)
+  pin_memory: false  # Not needed for MPS (Metal Performance Shaders)
+  device: "auto"  # "auto" will select MPS if available, else CPU
 
 features:
   walk_15min_radius_meters: 1000  # 15-minute walk radius in meters (default: 1000m ≈ 1.0 km)
