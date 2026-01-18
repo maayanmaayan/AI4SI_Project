@@ -509,6 +509,54 @@ The MVP is successful if:
 - `weight_decay`: 0.0001
 - `activation`: gelu
 
+**Training Workflow**:
+
+The recommended training workflow follows a progressive validation approach, starting with quick tests and progressing to full training:
+
+1. **Hardware Feasibility Check** (`test_training_feasibility.py`):
+   - Purpose: Quick hardware validation (very fast, ~1-2 minutes)
+   - Validates: Data loading, basic forward/backward passes, memory usage
+   - Uses: Dummy model for speed (not the actual SpatialGraphTransformer)
+   - Command: `python scripts/test_training_feasibility.py`
+   - **Note**: Optional step - can be skipped if confident about hardware
+
+2. **Quick Test Training** (`train_graph_transformer.py --quick-test`):
+   - Purpose: Validate full training pipeline with real model on small dataset
+   - Validates: Complete training loop, checkpointing, evaluation, plotting with actual SpatialGraphTransformer
+   - Uses: Real model with 3 small neighborhoods (<50 points each)
+   - Time: ~10-30 minutes
+   - Command: `python scripts/train_graph_transformer.py --quick-test`
+   - **Fix any issues before proceeding**
+
+3. **Quick Hyperparameter Sweep** (`hyperparameter_sweep.py --quick-test`):
+   - Purpose: Compare all 7 model configurations quickly to identify promising hyperparameters
+   - Validates: All hyperparameter configurations work correctly
+   - Uses: Real model with small dataset (3 neighborhoods)
+   - Time: ~1-3.5 hours (7 models × 10-30 min each)
+   - Command: `python scripts/hyperparameter_sweep.py --quick-test`
+   - **Review results and fix any issues before full training**
+
+4. **Full Hyperparameter Sweep** (`hyperparameter_sweep.py`):
+   - Purpose: Final training of all configurations on full dataset
+   - Uses: Complete dataset (all compliant neighborhoods)
+   - Time: ~7-14 hours (7 models × 1-2 hours each)
+   - Command: `python scripts/hyperparameter_sweep.py`
+   - Best model selected based on validation KL divergence loss
+   - Results saved in `experiments/runs/sweep_{timestamp}/` with comparison plots
+
+**Why This Workflow?**:
+- **Progressive validation**: Catch issues early with quick tests before investing time in full training
+- **Efficient**: Quick tests use small datasets but real model architecture
+- **Systematic**: Compare all configurations systematically before selecting best model
+- **Safe**: Each step validates the previous one before proceeding
+
+**Alternative Single Model Training**:
+
+For training a single model configuration:
+- Full dataset: `python scripts/train_graph_transformer.py`
+- Quick test: `python scripts/train_graph_transformer.py --quick-test`
+- Resume training: `python scripts/train_graph_transformer.py --resume-from models/checkpoints/graph_transformer_best.pt`
+
 **Validation Criteria**:
 
 - Model correctly processes star graphs (handles variable numbers of neighbors, attention over neighbors with edge attributes)
