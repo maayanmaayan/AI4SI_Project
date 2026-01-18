@@ -402,7 +402,7 @@ The MVP is successful if:
 
 **Data Pipeline**:
 
-- ✅ Extract features for all locations in 6 neighborhoods
+- ✅ Extract features for all locations in 7 compliant neighborhoods
 - ✅ Generate grid cells and compute all 20+ features for center point + all grid cells within 15-minute walk radius
 - ✅ Handle variable-length sequences (different numbers of grid cells per location) with proper padding/masking
 - ✅ Create train/validation/test splits with proper stratification

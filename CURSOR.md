@@ -11,7 +11,7 @@ This project implements a Spatial Graph Transformer-based model that:
 - **Domain**: 15-minute city implementation using OpenStreetMap and Census data
 - **Learning Approach**: Exemplar-based learning - trains exclusively on 15-minute city compliant neighborhoods to learn optimal service distribution patterns
 - **Loss Function**: Distance-based loss measuring network-based walking distance from predicted service category to nearest actual service
-- **Validation**: Model success validated by significantly lower loss (shorter distances) on compliant neighborhoods compared to non-compliant ones
+- **Validation**: Model success validated by learning on compliant neighborhoods (decreasing loss, improving metrics). Post-MVP: comparison with non-compliant neighborhoods
 
 ## Tech Stack
 
@@ -128,9 +128,9 @@ mypy src/
 ### Data Sources
 - **OSM Data**: OpenStreetMap data for services, buildings, walkability features, and network-based distance calculations
 - **Census Data**: Demographics, socioeconomic indicators, population data
-- **Neighborhood Boundaries**: Geographic boundaries and compliance labels from `paris_neighborhoods.geojson` (6 neighborhoods: 3 compliant + 3 non-compliant)
+- **Neighborhood Boundaries**: Geographic boundaries and compliance labels from `paris_neighborhoods.geojson` (7 compliant neighborhoods used for MVP; non-compliant neighborhoods out of scope)
 - **Training Data**: Exclusively from 15-minute city compliant neighborhoods
-- **Test Data**: Includes both compliant and non-compliant neighborhoods for validation
+- **Test Data**: Train/validation/test splits from compliant neighborhoods only (MVP scope)
 - **Distance Calculations**: Network-based walking distance via OSMnx (not Euclidean)
 
 ### Feature Categories (20+ features per point)
@@ -170,8 +170,7 @@ mypy src/
 5. Extract service locations for distance-based loss calculations
 6. Data validation and quality checks
 7. Normalization/scaling
-8. Train/validation/test split from compliant neighborhoods only
-9. Test set includes both compliant and non-compliant neighborhoods for validation
+8. Train/validation/test split from compliant neighborhoods only (MVP scope: non-compliant neighborhoods out of scope)
 
 ## Model Architecture
 
@@ -185,7 +184,7 @@ mypy src/
   - Number of neighbors varies per location (all neighbors within network distance included)
   - No padding needed - graph structure naturally handles variable sizes
 - **Output**: Probability distribution over 8 NEXI service categories (supports multi-service prediction)
-- **Learning Approach**: Exemplar-based learning - learns optimal service distribution patterns directly from compliant neighborhoods by understanding spatial context via graph attention over neighbors, then generalizes to identify gaps in non-compliant neighborhoods
+- **Learning Approach**: Exemplar-based learning - learns optimal service distribution patterns directly from compliant neighborhoods by understanding spatial context via graph attention over neighbors. Post-MVP: generalize to identify gaps in non-compliant neighborhoods
 
 ### Training Configuration
 - **Model Type**: Graph Transformer using TransformerConv layers with edge attributes (multi-class classification head)
@@ -218,8 +217,8 @@ mypy src/
 - **Distance-Based Loss**: Network-based walking distance from predicted service category to nearest actual service
 - **Normalized Distance**: Distances normalized by the 15-minute walk radius (configurable via `features.walk_15min_radius_meters`, default: 1200m)
 - **15-Minute Alignment**: Percentage of predictions within 15-minute threshold
-- **Comparative Loss**: Loss measured on both compliant and non-compliant neighborhoods
-- **Statistical Validation**: t-test or Mann-Whitney U test to verify significantly lower loss on compliant neighborhoods
+- **Comparative Loss**: Loss measured on compliant neighborhoods only (MVP). Post-MVP: comparison with non-compliant neighborhoods
+- **Statistical Validation**: (Post-MVP: t-test or Mann-Whitney U test to verify significantly lower loss on compliant neighborhoods)
 
 ### Secondary Metrics (Classification)
 - **Accuracy, F1-score** (macro/micro), **Precision, Recall, Log Loss**
@@ -232,8 +231,8 @@ mypy src/
 - **Feature Importance**: Analysis of which features drive predictions
 
 ### Domain-Specific Validation
-- **Principle Alignment**: Validate that compliant neighborhoods have significantly lower loss (shorter distances)
-- **Comparative Analysis**: Statistical comparison of loss distributions between compliant and non-compliant neighborhoods
+- **Principle Alignment**: Validate model learning through decreasing loss and improving metrics on compliant neighborhoods (MVP)
+- **Comparative Analysis**: (Post-MVP: Statistical comparison of loss distributions between compliant and non-compliant neighborhoods)
 - **Intervention Probability Distributions**: Analyze predicted service category distributions
 
 ## Code Conventions
@@ -269,7 +268,7 @@ mypy src/
 - **Distance-Based Loss**: Use network-based walking distance via OSMnx
 - **Graph Structure**: Use star graphs with edge attributes for spatial encoding
 - **Variable-Sized Graphs**: Naturally handle different numbers of neighbors without padding
-- **Comparative Evaluation**: Always evaluate on both compliant and non-compliant neighborhoods
+- **Comparative Evaluation**: (Post-MVP: Evaluate on both compliant and non-compliant neighborhoods; MVP evaluates on compliant only)
 - **Statistical Validation**: Include statistical tests (t-test, Mann-Whitney U) for validation
 
 ## Logging
@@ -343,9 +342,9 @@ tests/
 ### Learning Approach
 - **Exemplar-Based Learning**: Model trains exclusively on 15-minute city compliant neighborhoods to learn optimal service distribution patterns
 - **Distance-Based Supervision**: Loss function measures network-based walking distance from predicted service category to nearest actual service of that type
-- **Pattern Learning**: Model learns implicit service distribution patterns directly from exemplar neighborhoods, then generalizes to identify gaps in non-compliant neighborhoods
-- **Reference-Based**: Compliant neighborhoods serve as reference structures for identifying gaps
-- **Validation**: Model success measured by significantly lower loss (shorter distances) on compliant neighborhoods compared to non-compliant ones, indicating learned recognition of optimal patterns
+- **Pattern Learning**: Model learns implicit service distribution patterns directly from exemplar neighborhoods (MVP: 7 compliant neighborhoods). Post-MVP: generalize to identify gaps in non-compliant neighborhoods
+- **Reference-Based**: Compliant neighborhoods serve as reference structures for identifying gaps (MVP scope)
+- **Validation**: Model success measured by learning (decreasing loss, improving metrics) on compliant neighborhoods (MVP). Post-MVP: comparison with non-compliant neighborhoods
 - **Multi-Service Prediction**: Optional capability to predict multiple needed services simultaneously for comprehensive gap analysis
 
 ### Timeline
@@ -431,10 +430,10 @@ Every feature, component, or enhancement should follow the Plan-Implement-Verify
 - ✅ Unit tests for individual functions/components
 - ✅ Integration tests for pipelines
 - ✅ Model tests (forward pass, output shapes, gradient flow)
-- ✅ Test on both compliant and non-compliant neighborhoods
+- ✅ Test on compliant neighborhoods only (MVP scope; non-compliant out of scope)
 
 **Validation Requirements:**
-- ✅ **Distance-Based Validation**: Measure loss on both neighborhood types
+- ✅ **Distance-Based Validation**: Measure loss on compliant neighborhoods only (MVP)
 - ✅ **Statistical Validation**: Perform t-test or Mann-Whitney U test
 - ✅ **Principle Validation**: Verify significantly lower loss on compliant neighborhoods
 - ✅ **15-Minute Alignment**: Check percentage within 15-minute threshold
@@ -494,8 +493,8 @@ Every feature, component, or enhancement should follow the Plan-Implement-Verify
 
 For any model or component that affects predictions:
 
-1. **Train on compliant neighborhoods only**
-2. **Evaluate on both compliant and non-compliant neighborhoods**
+1. **Train on compliant neighborhoods only** (MVP: 7 compliant neighborhoods)
+2. **Evaluate on compliant neighborhoods only** (MVP scope; non-compliant evaluation is post-MVP)
 3. **Compute distance-based loss for both groups**
 4. **Perform statistical test (t-test or Mann-Whitney U)**
 5. **Verify compliant neighborhoods have significantly lower loss**
