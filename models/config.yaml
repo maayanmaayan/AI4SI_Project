@@ -5,18 +5,18 @@ model:
   name: "spatial_graph_transformer"
   architecture: "graph_transformer"
   num_features: 33
-  hidden_dim: 128
-  num_layers: 3
+  hidden_dim: 32
+  num_layers: 2
   num_heads: 4
-  dropout: 0.1
+  dropout: 0.5
   num_classes: 8
   edge_dim: 4  # [dx, dy, euclidean_dist, network_dist]
   temperature: 2.0  # Temperature scaling for logits to prevent overconfidence (flattens probability distribution)
 
 training:
   batch_size: 16  # Reduced for graph model (can be larger with efficient batching)
-  learning_rate: 0.001
-  weight_decay: 0.0001
+  learning_rate: 0.0001
+  weight_decay: 0.001
   num_epochs: 100
   early_stopping_patience: 10
   early_stopping_min_delta: 0.001

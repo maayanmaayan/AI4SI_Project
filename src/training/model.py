@@ -108,10 +108,9 @@ class SpatialGraphTransformer(nn.Module):
         # Classification head: Single linear layer (selected for simplicity and efficiency)
         self.classifier = nn.Linear(hidden_dim, num_classes)
 
-        # GELU activation for transformer layers (selected for better transformer performance)
-        # Using torch.nn.functional.gelu for efficient activation between layers
-        # Note: GELU activation is applied in forward() method between transformer layers
-        # (see forward() method, line ~154: x = F.gelu(x))
+        # ReLU activation for transformer layers (simpler, more linear model for small datasets)
+        # Using torch.nn.functional.relu for efficient activation between layers
+        # Note: ReLU activation is applied in forward() method between transformer layers
 
         # Initialize weights
         self._init_weights()
@@ -144,7 +143,7 @@ class SpatialGraphTransformer(nn.Module):
         x = self.node_encoder(data.x)  # [N, hidden_dim]
         edge_emb = self.edge_encoder(data.edge_attr)  # [E, hidden_dim]
 
-        # Graph transformer layers with GELU activation between layers
+        # Graph transformer layers with ReLU activation between layers
         for i, (conv, norm) in enumerate(zip(self.conv_layers, self.layer_norms)):
             # Multi-head attention with edge attributes
             x_new = conv(x, data.edge_index, edge_emb)  # [N, hidden_dim * num_heads]
@@ -153,9 +152,9 @@ class SpatialGraphTransformer(nn.Module):
             x_new = self.dropout_layer(x_new)
             x = x + x_new  # Residual connection
 
-            # Apply GELU activation between layers (except after final layer)
+            # Apply ReLU activation between layers (except after final layer)
             if i < len(self.conv_layers) - 1:
-                x = F.gelu(x)  # GELU for better transformer performance
+                x = F.relu(x)  # ReLU for simpler, more linear model
 
         # Extract target node embeddings (node 0 in each graph)
         target_emb = self._extract_target_nodes(x, data.batch)
@@ -329,7 +328,7 @@ class TinySpatialGraphTransformer(nn.Module):
         x = self.node_encoder(data.x)  # [N, hidden_dim]
         edge_emb = self.edge_encoder(data.edge_attr)  # [E, hidden_dim]
 
-        # Graph transformer layers with GELU activation between layers
+        # Graph transformer layers with ReLU activation between layers
         for i, (conv, norm) in enumerate(zip(self.conv_layers, self.layer_norms)):
             # Multi-head attention with edge attributes
             x_new = conv(x, data.edge_index, edge_emb)  # [N, hidden_dim * num_heads]
@@ -338,9 +337,9 @@ class TinySpatialGraphTransformer(nn.Module):
             x_new = self.dropout_layer(x_new)
             x = x + x_new  # Residual connection
 
-            # Apply GELU activation between layers (except after final layer)
+            # Apply ReLU activation between layers (except after final layer)
             if i < len(self.conv_layers) - 1:
-                x = F.gelu(x)  # GELU for better transformer performance
+                x = F.relu(x)  # ReLU for simpler, more linear model
 
         # Extract target node embeddings (node 0 in each graph)
         target_emb = self._extract_target_nodes(x, data.batch)

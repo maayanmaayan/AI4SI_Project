@@ -425,7 +425,11 @@ def train(
             class_weights[i] = 1.0
     
     logger_experiment.info(f"Class counts: {class_counts.tolist()}")
-    logger_experiment.info(f"Class weights: {class_weights.tolist()}")
+    logger_experiment.info(f"Class weights (before damping): {class_weights.tolist()}")
+    
+    # Dampen class weights using sqrt to prevent over-correction
+    class_weights = torch.sqrt(class_weights)
+    logger_experiment.info(f"Class weights (after sqrt damping): {class_weights.tolist()}")
     
     # Move class weights to device
     class_weights = class_weights.to(device)
