@@ -4,7 +4,12 @@ import pytest
 import torch
 from torch_geometric.data import Data
 
-from src.training.model import SpatialGraphTransformer, create_model_from_config
+from src.training.model import (
+    SpatialGraphTransformer,
+    TinySpatialGraphTransformer,
+    create_model_from_config,
+    create_tiny_model_from_config,
+)
 
 
 def test_model_initialization():
@@ -16,6 +21,25 @@ def test_model_initialization():
     assert model.num_heads == 4
     assert model.num_classes == 8
     assert model.edge_dim == 4
+
+
+def test_tiny_model_initialization():
+    """Test tiny model initialization with default parameters."""
+    model = TinySpatialGraphTransformer()
+    assert model.hidden_dim == 16
+    assert model.num_layers == 1
+    assert model.num_heads == 2
+    assert model.dropout == 0.4
+    assert model.num_features == 33
+    assert model.num_classes == 8
+    assert model.edge_dim == 4
+
+
+def test_tiny_model_parameter_count():
+    """Test that tiny model has <10,000 parameters."""
+    model = TinySpatialGraphTransformer()
+    param_count = sum(p.numel() for p in model.parameters())
+    assert param_count < 10000, f"Parameter count {param_count} exceeds 10,000"
 
 
 def test_model_initialization_custom():
@@ -37,6 +61,32 @@ def test_model_initialization_custom():
 def test_forward_single_graph():
     """Test forward pass with single graph."""
     model = SpatialGraphTransformer(num_features=33, hidden_dim=64, num_layers=2)
+
+    # Create single graph: 1 target + 5 neighbors = 6 nodes
+    num_nodes = 6
+    num_edges = 5  # 5 neighbors connected to target (node 0)
+
+    x = torch.randn(num_nodes, 33)
+    edge_index = torch.tensor([
+        [1, 2, 3, 4, 5],  # Source: neighbors
+        [0, 0, 0, 0, 0],  # Target: center node
+    ], dtype=torch.long)
+    edge_attr = torch.randn(num_edges, 4)
+
+    data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
+
+    # Forward pass
+    logits = model(data)
+
+    # Check output shape: [1, 8] (single graph, 8 classes)
+    assert logits.shape == (1, 8)
+    assert not torch.isnan(logits).any()
+    assert not torch.isinf(logits).any()
+
+
+def test_tiny_model_forward_single_graph():
+    """Test tiny model forward pass with single graph."""
+    model = TinySpatialGraphTransformer()
 
     # Create single graph: 1 target + 5 neighbors = 6 nodes
     num_nodes = 6
@@ -94,6 +144,82 @@ def test_forward_batched_graphs():
         assert not torch.isnan(logits).any()
         assert not torch.isinf(logits).any()
         break
+
+
+def test_tiny_model_forward_batched_graphs():
+    """Test tiny model forward pass with batched graphs."""
+    model = TinySpatialGraphTransformer()
+
+    # Create batched graphs using PyTorch Geometric's batching
+    from torch_geometric.loader import DataLoader
+
+    graphs = []
+    for i in range(3):
+        num_nodes = 4 + i  # Variable number of nodes per graph
+        num_edges = num_nodes - 1  # All neighbors connect to target
+
+        x = torch.randn(num_nodes, 33)
+        edge_index = torch.tensor([
+            list(range(1, num_nodes)),  # Source: neighbors
+            [0] * (num_nodes - 1),  # Target: center node
+        ], dtype=torch.long)
+        edge_attr = torch.randn(num_edges, 4)
+
+        data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
+        graphs.append(data)
+
+    # Create DataLoader to batch graphs
+    loader = DataLoader(graphs, batch_size=3)
+
+    # Forward pass on batched data
+    for batch in loader:
+        logits = model(batch)
+
+        # Check output shape: [batch_size, 8]
+        assert logits.shape == (3, 8)
+        assert not torch.isnan(logits).any()
+        assert not torch.isinf(logits).any()
+        break
+
+
+def test_tiny_model_dropout():
+    """Test that dropout is applied correctly in tiny model."""
+    model = TinySpatialGraphTransformer(dropout=0.4)
+
+    # Create test graph
+    num_nodes = 5
+    num_edges = 4
+
+    x = torch.randn(num_nodes, 33)
+    edge_index = torch.tensor([
+        [1, 2, 3, 4],
+        [0, 0, 0, 0],
+    ], dtype=torch.long)
+    edge_attr = torch.randn(num_edges, 4)
+    data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
+
+    # Set model to training mode
+    model.train()
+    outputs_train = []
+    for _ in range(5):
+        logits = model(data)
+        outputs_train.append(logits.clone())
+
+    # Check that outputs differ (dropout introduces randomness during training)
+    # Use a small tolerance to account for numerical precision
+    all_same = all(torch.allclose(outputs_train[0], out, atol=1e-5) for out in outputs_train[1:])
+    assert not all_same, "Dropout should introduce randomness during training"
+
+    # Set model to eval mode
+    model.eval()
+    outputs_eval = []
+    for _ in range(5):
+        logits = model(data)
+        outputs_eval.append(logits.clone())
+
+    # Check that outputs are identical (dropout disabled in eval)
+    all_same_eval = all(torch.allclose(outputs_eval[0], out, atol=1e-5) for out in outputs_eval[1:])
+    assert all_same_eval, "Dropout should be disabled in eval mode"
 
 
 def test_output_shape():
@@ -184,6 +310,14 @@ def test_create_model_from_config():
     assert isinstance(model, SpatialGraphTransformer)
     assert model.num_features == 33
     assert model.num_classes == 8
+
+
+def test_create_tiny_model_from_config():
+    """Test tiny model creation from configuration."""
+    model = create_tiny_model_from_config()
+    assert isinstance(model, TinySpatialGraphTransformer)
+    param_count = sum(p.numel() for p in model.parameters())
+    assert param_count < 10000, f"Parameter count {param_count} exceeds 10,000"
 
 
 def test_empty_neighbors():

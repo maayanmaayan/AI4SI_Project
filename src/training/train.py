@@ -7,7 +7,7 @@ validation, checkpointing, and early stopping for the graph transformer model.
 import json
 import time
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import torch
 import torch.nn as nn
@@ -30,7 +30,7 @@ from src.training.dataset import (
 )
 from src.training.data_filtering import filter_small_neighborhoods
 from src.training.loss import DistanceBasedKLLoss
-from src.training.model import create_model_from_config
+from src.training.model import create_model_from_config, create_tiny_model_from_config
 from src.utils.config import get_config
 from src.utils.helpers import ensure_dir_exists, get_service_category_names, set_random_seeds
 from src.utils.logging import get_logger, setup_experiment_logging
@@ -178,6 +178,7 @@ def train(
     experiment_dir: Optional[str] = None,
     resume_from: Optional[str] = None,
     quick_test: bool = False,
+    use_tiny_model: bool = False,
 ) -> Dict:
     """Main training function.
 
@@ -271,7 +272,11 @@ def train(
     )
 
     # Create model
-    model = create_model_from_config(config)
+    if use_tiny_model:
+        logger_experiment.info("Using TinySpatialGraphTransformer for debugging")
+        model = create_tiny_model_from_config(config)
+    else:
+        model = create_model_from_config(config)
     model = model.to(device)
 
     # Create loss function
@@ -283,7 +288,7 @@ def train(
     optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     # Create learning rate scheduler
-    scheduler = ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=5, verbose=True)
+    scheduler = ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=5)
 
     # Training parameters
     num_epochs = training_config.get("num_epochs", 100)

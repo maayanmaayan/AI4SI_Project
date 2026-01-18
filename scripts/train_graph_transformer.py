@@ -62,6 +62,11 @@ def main():
         help="Quick test mode: use only 3 small neighborhoods with <50 points each",
     )
     parser.add_argument(
+        "--tiny-model",
+        action="store_true",
+        help="Use TinySpatialGraphTransformer for debugging",
+    )
+    parser.add_argument(
         "--log-level",
         type=str,
         default="INFO",
@@ -89,6 +94,7 @@ def main():
             experiment_dir=args.experiment_dir,
             resume_from=args.resume_from,
             quick_test=args.quick_test,
+            use_tiny_model=args.tiny_model,
         )
 
         print("\n" + "=" * 60)

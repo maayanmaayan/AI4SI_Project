@@ -23,7 +23,7 @@ def distance_based_kl_loss(
     predicted_logits: torch.Tensor,
     target_probabilities: torch.Tensor,
     reduction: str = "batchmean",
-    epsilon: float = 1e-8,
+    epsilon: float = 1e-9,
 ) -> torch.Tensor:
     """Compute KL divergence loss between predicted and target probability distributions.
     
@@ -48,7 +48,7 @@ def distance_based_kl_loss(
             - 'sum': Sum of all losses (not normalized). Returns scalar tensor.
             - 'mean': Average over all elements (batch × categories). Rarely used.
         epsilon: Small value for numerical stability. Target probabilities are clamped
-            to [epsilon, 1.0] to avoid log(0). Defaults to 1e-8.
+            to [epsilon, 1.0] to avoid log(0). Defaults to 1e-9.
     
     Returns:
         Loss tensor:
@@ -162,12 +162,12 @@ class DistanceBasedKLLoss(nn.Module):
         >>> print(f"Loss: {loss.item():.4f}")
     """
     
-    def __init__(self, reduction: str = "batchmean", epsilon: float = 1e-8):
+    def __init__(self, reduction: str = "batchmean", epsilon: float = 1e-9):
         """Initialize loss function.
         
         Args:
             reduction: Reduction mode ('batchmean', 'none', 'sum', 'mean').
-            epsilon: Numerical stability parameter.
+            epsilon: Numerical stability parameter. Defaults to 1e-9.
         """
         super().__init__()
         self.reduction = reduction
