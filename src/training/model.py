@@ -55,12 +55,13 @@ class SpatialGraphTransformer(nn.Module):
     def __init__(
         self,
         num_features: int = 33,
-        hidden_dim: int = 128,
+        hidden_dim: int = 64,
         num_layers: int = 3,
         num_heads: int = 4,
-        dropout: float = 0.1,
+        dropout: float = 0.3,
         num_classes: int = 8,
         edge_dim: int = 4,
+        temperature: float = 2.0,
     ):
         super().__init__()
 
@@ -71,6 +72,7 @@ class SpatialGraphTransformer(nn.Module):
         self.dropout = dropout
         self.num_classes = num_classes
         self.edge_dim = edge_dim
+        self.temperature = temperature
 
         # Node encoder: 33 features → hidden_dim
         self.node_encoder = nn.Linear(num_features, hidden_dim)
@@ -160,6 +162,11 @@ class SpatialGraphTransformer(nn.Module):
 
         # Classify
         logits = self.classifier(target_emb)  # [batch_size, num_classes]
+        
+        # Apply temperature scaling to prevent overconfidence
+        # Dividing logits by temperature flattens the probability distribution
+        # P_i = exp(z_i / T) / sum(exp(z_j / T))
+        logits = logits / self.temperature
 
         return logits
 
@@ -245,6 +252,7 @@ class TinySpatialGraphTransformer(nn.Module):
         dropout: float = 0.4,
         num_classes: int = 8,
         edge_dim: int = 4,
+        temperature: float = 2.0,
     ):
         super().__init__()
 
@@ -255,6 +263,7 @@ class TinySpatialGraphTransformer(nn.Module):
         self.dropout = dropout
         self.num_classes = num_classes
         self.edge_dim = edge_dim
+        self.temperature = temperature
 
         # Node encoder: 33 features → hidden_dim
         self.node_encoder = nn.Linear(num_features, hidden_dim)
@@ -338,6 +347,11 @@ class TinySpatialGraphTransformer(nn.Module):
 
         # Classify
         logits = self.classifier(target_emb)  # [batch_size, num_classes]
+        
+        # Apply temperature scaling to prevent overconfidence
+        # Dividing logits by temperature flattens the probability distribution
+        # P_i = exp(z_i / T) / sum(exp(z_j / T))
+        logits = logits / self.temperature
 
         return logits
 
@@ -408,6 +422,7 @@ def create_model_from_config(config: Optional[dict] = None) -> SpatialGraphTrans
         dropout=model_config.get("dropout", 0.1),
         num_classes=model_config.get("num_classes", 8),
         edge_dim=model_config.get("edge_dim", 4),
+        temperature=model_config.get("temperature", 2.0),
     )
 
     logger.info(
@@ -448,6 +463,7 @@ def create_tiny_model_from_config(config: Optional[dict] = None) -> TinySpatialG
         dropout=0.4,
         num_classes=8,
         edge_dim=4,
+        temperature=2.0,
     )
 
     param_count = sum(p.numel() for p in model.parameters())

@@ -125,6 +125,7 @@ The system uses a **Spatial Graph Transformer** with an exemplar-based learning 
   - Edge attributes encode spatial relationships: [dx, dy, euclidean_distance, network_distance] (network_distance set to Euclidean during feature engineering, recalculated in loss function)
 - Process: Graph Transformer learns complex, context-dependent feature interactions and spatial patterns via attention-based neighbor aggregation using TransformerConv layers
 - Output: Probability vector over 8 service categories indicating most appropriate intervention
+  - Temperature scaling applied to logits (default T=2.0) before softmax to prevent overconfidence and mode collapse
 - Loss Function: Distance-based similarity loss using KL divergence between predicted and distance-based target probability vectors
 - Learning Approach: Model learns optimal service distribution patterns directly from compliant neighborhoods by understanding spatial context through graph structure
 - Validation: Model evaluation on compliant neighborhoods only (train/validation/test splits from compliant neighborhoods)
@@ -282,11 +283,13 @@ AI4SI_Project/
   - Learn spatial patterns and feature interactions via TransformerConv layers with edge attributes
   - Graph attention mechanism learns relationships between neighbors and identifies which spatial contexts matter most
   - Edge attributes encode spatial relationships: [dx, dy, euclidean_distance, network_distance] (network_distance set to Euclidean during feature engineering, recalculated in loss function)
+  - Edge attributes normalized to [0, 1] range during dataset loading for numerical stability (divides by max radius 1000m)
   - Predict probability distribution over 8 NEXI service categories
+  - **Temperature scaling**: Model output logits are scaled by temperature parameter (default: 2.0) before softmax to prevent overconfidence and mode collapse, encouraging the model to learn softer probability distributions rather than collapsing to single-class predictions
   - Use distance-based loss: measure distance from predicted service to nearest actual service of that type (network distance calculated in loss function)
   - Support multi-service prediction (predict multiple needed services simultaneously)
   - Output graph attention patterns and SHAP values for interpretability
-- **Key Features**: Graph-based attention modeling over spatial neighbors, exemplar-based learning, distance-based loss for domain-relevant optimization, interpretable via attention maps showing which neighbors drive predictions, naturally handles variable numbers of neighbors without padding
+- **Key Features**: Graph-based attention modeling over spatial neighbors, exemplar-based learning, distance-based loss for domain-relevant optimization, temperature scaling to prevent overconfidence, normalized edge attributes for numerical stability, interpretable via attention maps showing which neighbors drive predictions, naturally handles variable numbers of neighbors without padding
 
 **3. Validation System**
 
@@ -668,7 +671,8 @@ For training a single model configuration:
 - Define clear validation criteria upfront (statistical significance thresholds)
 - Use rule-based baselines for comparison
 - Ensure target probability vectors use network-based walking distance (feature engineering uses Euclidean for speed)
-- Normalize distances by 15-minute walk distance for better interpretability
+- Normalize edge attribute distances to [0, 1] range during dataset loading for numerical stability
+- Apply temperature scaling to model logits (default T=2.0) to prevent overconfidence and mode collapse
 - Iterate on model architecture and training if validation fails
 - Consider hybrid loss function (distance + classification) if pure distance-based loss is unstable
 - Document any discrepancies and analyze causes
@@ -740,6 +744,7 @@ See [CURSOR.md](CURSOR.md) Section "Project Structure" for detailed directory la
 **Graph Structure**:
 - Star graph: target point (node 0) + all neighbor grid cells (nodes 1-N) within Euclidean distance threshold
 - Edge attributes: [dx, dy, euclidean_distance, network_distance] - explicit spatial encoding
+  - **Normalized to [0, 1] range**: All distance values (dx, dy, euclidean_distance, network_distance) are normalized by dividing by maximum radius (1000m) during dataset loading to prevent large values from dominating the network and ensure numerical stability
 - Regular grid with configurable cell size (default: 100m × 100m via `features.grid_cell_size_meters`)
 - For each prediction location: generate grid cells, filter by Euclidean distance (for computational efficiency in feature engineering)
 - All neighbors within Euclidean distance threshold are included (no truncation)
@@ -747,7 +752,7 @@ See [CURSOR.md](CURSOR.md) Section "Project Structure" for detailed directory la
 **Feature Engineering Rationale**:
 - **Star graph structure**: Model learns from spatial distribution of people/services through graph attention. Neighbors represent demographic and built environment context of people who can access the center location. Graph structure naturally handles variable numbers of neighbors without padding.
 - **Euclidean distance filtering**: Neighbors are filtered by Euclidean distance (not network distance) during feature engineering for computational efficiency (50-100x speedup). Network/walking distances are calculated only in the loss function phase when constructing target probability vectors. This provides significant performance benefits while maintaining accuracy where it matters most.
-- **Edge attributes**: Explicit spatial encoding via edge attributes [dx, dy, euclidean_distance, network_distance] allows the model to learn spatial relationships directly. During feature engineering, `network_distance` is set to Euclidean distance as a placeholder; actual network distances are calculated in the loss function.
+- **Edge attributes**: Explicit spatial encoding via edge attributes [dx, dy, euclidean_distance, network_distance] allows the model to learn spatial relationships directly. During feature engineering, `network_distance` is set to Euclidean distance as a placeholder; actual network distances are calculated in the loss function. All edge attributes are normalized to [0, 1] range during dataset loading (divided by max radius 1000m) to prevent large distance values from dominating the network and ensure numerical stability.
 - **Service counts vs. walking distances**: Service features use counts within the 15-minute walk radius (configurable via `features.walk_15min_radius_meters` in config.yaml, default: 1200m) using Euclidean distance for speed. Walking distances are calculated only in the loss function to construct target probability vectors, so including them as features would give the model direct access to what it's trying to predict.
 - **15-minute walk radius**: The configurable walk radius (default: 1200m ≈ 1.2 km) aligns with the 15-minute walk threshold, capturing service density at the neighborhood scale relevant to 15-minute city principles. This radius can be adjusted in `models/config.yaml` via the `features.walk_15min_radius_meters` parameter.
 - **Why Graph Transformer**: With star graphs, the transformer's attention mechanism can learn spatial relationships between neighbors, identifying which areas matter most for service gap prediction. This leverages graph neural networks' strength in learning from structured spatial data while naturally handling variable-sized neighborhoods.

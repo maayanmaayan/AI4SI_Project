@@ -102,6 +102,8 @@ def plot_training_curves(
     ax3.legend()
     ax3.grid(True, alpha=0.3)
     ax3.set_ylim([0, 1])
+    
+    # Add Top-3 Accuracy subplot if needed (update axes layout)
 
     # Plot 4: Learning Rate
     ax4 = axes[1, 1]
@@ -182,10 +184,19 @@ def plot_accuracy_curves(
     fig, ax = plt.subplots(figsize=(12, 6))
     fig.suptitle(title, fontsize=16, fontweight='bold')
 
+    # Training accuracies
+    if "train_top1_accuracy" in df.columns:
+        ax.plot(df["epoch"], df["train_top1_accuracy"], label="Train Top-1", color="red", linewidth=2, marker='o', markersize=4)
+    if "train_top3_accuracy" in df.columns:
+        ax.plot(df["epoch"], df["train_top3_accuracy"], label="Train Top-3", color="pink", linewidth=2, marker='s', markersize=4)
+    
+    # Validation accuracies
     if "val_top1_accuracy" in df.columns:
         ax.plot(df["epoch"], df["val_top1_accuracy"], label="Val Top-1", color="blue", linewidth=2, marker='o', markersize=4)
     if "val_top3_accuracy" in df.columns:
         ax.plot(df["epoch"], df["val_top3_accuracy"], label="Val Top-3", color="green", linewidth=2, marker='s', markersize=4)
+    
+    # Test accuracies
     if "test_top1_accuracy" in df.columns:
         ax.plot(df["epoch"], df["test_top1_accuracy"], label="Test Top-1", color="orange", linewidth=2, linestyle="--", marker='o', markersize=4)
     if "test_top3_accuracy" in df.columns:

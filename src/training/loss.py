@@ -24,6 +24,8 @@ def distance_based_kl_loss(
     target_probabilities: torch.Tensor,
     reduction: str = "batchmean",
     epsilon: float = 1e-9,
+    label_smoothing: float = 0.0,
+    class_weights: Optional[torch.Tensor] = None,
 ) -> torch.Tensor:
     """Compute KL divergence loss between predicted and target probability distributions.
     
@@ -49,6 +51,12 @@ def distance_based_kl_loss(
             - 'mean': Average over all elements (batch × categories). Rarely used.
         epsilon: Small value for numerical stability. Target probabilities are clamped
             to [epsilon, 1.0] to avoid log(0). Defaults to 1e-9.
+        label_smoothing: Label smoothing factor (0.0 to 1.0). If > 0, smooths target
+            probabilities by mixing with uniform distribution: (1-α)*target + α*uniform.
+            Defaults to 0.0 (no smoothing).
+        class_weights: Optional tensor of shape [8] with weights for each class. If provided,
+            per-sample losses are weighted by the dominant class (argmax of target probabilities).
+            Defaults to None (no weighting).
     
     Returns:
         Loss tensor:
@@ -103,6 +111,13 @@ def distance_based_kl_loss(
             f"target_probabilities {target_probabilities.shape}"
         )
     
+    # Apply label smoothing if specified
+    if label_smoothing > 0.0:
+        # Smooth target probabilities: (1-α)*target + α*uniform
+        num_classes = target_probabilities.shape[-1]
+        uniform_dist = torch.ones_like(target_probabilities) / num_classes
+        target_probabilities = (1.0 - label_smoothing) * target_probabilities + label_smoothing * uniform_dist
+    
     # Apply log-softmax to predictions (KL divergence requires log-probabilities)
     log_predicted = F.log_softmax(predicted_logits, dim=-1)
     
@@ -132,12 +147,38 @@ def distance_based_kl_loss(
         loss_per_category = F.kl_div(log_predicted, target_normalized, reduction="none")
         # Sum over categories to get per-sample losses: [batch_size]
         loss = loss_per_category.sum(dim=-1)
+        
+        # Apply class weights if provided
+        if class_weights is not None:
+            # Get dominant class (argmax) for each sample
+            dominant_classes = target_probabilities.argmax(dim=-1)  # [batch_size]
+            # Weight each sample's loss by its dominant class weight
+            sample_weights = class_weights[dominant_classes]  # [batch_size]
+            loss = loss * sample_weights
+        
         # If input was unbatched, remove batch dimension
         if was_unbatched:
             loss = loss.squeeze(0)
     else:
-        # For other reduction modes, use F.kl_div directly
-        loss = F.kl_div(log_predicted, target_normalized, reduction=reduction)
+        # For other reduction modes, compute per-sample losses first, then reduce
+        loss_per_category = F.kl_div(log_predicted, target_normalized, reduction="none")
+        loss_per_sample = loss_per_category.sum(dim=-1)  # [batch_size]
+        
+        # Apply class weights if provided
+        if class_weights is not None:
+            dominant_classes = target_probabilities.argmax(dim=-1)  # [batch_size]
+            sample_weights = class_weights[dominant_classes]  # [batch_size]
+            loss_per_sample = loss_per_sample * sample_weights
+        
+        # Apply reduction
+        if reduction == "batchmean":
+            loss = loss_per_sample.mean()
+        elif reduction == "mean":
+            loss = loss_per_category.mean()
+        elif reduction == "sum":
+            loss = loss_per_sample.sum()
+        else:
+            raise ValueError(f"Unknown reduction mode: {reduction}")
     
     return loss
 
@@ -146,12 +187,14 @@ class DistanceBasedKLLoss(nn.Module):
     """PyTorch Module wrapper for distance-based KL divergence loss.
     
     This class provides a stateful loss function that can be used in training loops.
-    It wraps the functional loss function and allows configuration of reduction mode
-    and epsilon parameter.
+    It wraps the functional loss function and allows configuration of reduction mode,
+    epsilon parameter, label smoothing, and class weights.
     
     Args:
         reduction: Reduction mode for loss computation. Defaults to "batchmean".
-        epsilon: Small value for numerical stability. Defaults to 1e-8.
+        epsilon: Small value for numerical stability. Defaults to 1e-9.
+        label_smoothing: Label smoothing factor (0.0 to 1.0). Defaults to 0.0.
+        class_weights: Optional tensor of shape [8] with weights for each class. Defaults to None.
     
     Example:
         >>> import torch
@@ -162,16 +205,26 @@ class DistanceBasedKLLoss(nn.Module):
         >>> print(f"Loss: {loss.item():.4f}")
     """
     
-    def __init__(self, reduction: str = "batchmean", epsilon: float = 1e-9):
+    def __init__(
+        self, 
+        reduction: str = "batchmean", 
+        epsilon: float = 1e-9,
+        label_smoothing: float = 0.0,
+        class_weights: Optional[torch.Tensor] = None,
+    ):
         """Initialize loss function.
         
         Args:
             reduction: Reduction mode ('batchmean', 'none', 'sum', 'mean').
             epsilon: Numerical stability parameter. Defaults to 1e-9.
+            label_smoothing: Label smoothing factor (0.0 to 1.0). Defaults to 0.0.
+            class_weights: Optional tensor of shape [8] with weights for each class. Defaults to None.
         """
         super().__init__()
         self.reduction = reduction
         self.epsilon = epsilon
+        self.label_smoothing = label_smoothing
+        self.class_weights = class_weights
     
     def forward(
         self, predicted_logits: torch.Tensor, target_probabilities: torch.Tensor
@@ -186,7 +239,12 @@ class DistanceBasedKLLoss(nn.Module):
             Loss tensor (scalar or per-sample depending on reduction mode).
         """
         return distance_based_kl_loss(
-            predicted_logits, target_probabilities, self.reduction, self.epsilon
+            predicted_logits, 
+            target_probabilities, 
+            self.reduction, 
+            self.epsilon,
+            self.label_smoothing,
+            self.class_weights,
         )
 
 

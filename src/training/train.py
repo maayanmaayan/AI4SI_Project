@@ -9,6 +9,7 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional
 
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.optim import AdamW
@@ -115,6 +116,142 @@ def load_checkpoint(
     return checkpoint
 
 
+def compute_class_distribution(
+    model: nn.Module,
+    dataloader: DataLoader,
+    device: torch.device,
+    num_classes: int = 8,
+) -> List[float]:
+    """Compute class distribution from model predictions by averaging probability vectors.
+    
+    This computes the mean probability distribution across all samples, which better
+    captures the model's confidence distribution and helps detect mode collapse.
+    
+    Args:
+        model: Model to evaluate.
+        dataloader: DataLoader for computing distribution.
+        device: Device to run on.
+        num_classes: Number of classes (default: 8).
+    
+    Returns:
+        List of probabilities [prob_class_0, prob_class_1, ..., prob_class_7] where
+        each value is the average probability mass assigned to that class across all samples.
+    """
+    model.eval()
+    total_prob_sum = torch.zeros(num_classes, dtype=torch.float32)
+    total_samples = 0
+    
+    with torch.no_grad():
+        for batch in dataloader:
+            batch = batch.to(device)
+            logits = model(batch)
+            predicted_probs = torch.softmax(logits, dim=-1)  # [batch_size, 8]
+            
+            # Sum probabilities across all samples
+            total_prob_sum += predicted_probs.sum(dim=0).cpu()
+            total_samples += batch.num_graphs
+    
+    # Average probabilities (mean across all samples)
+    if total_samples > 0:
+        distribution = (total_prob_sum / total_samples).tolist()
+    else:
+        distribution = [0.0] * num_classes
+    
+    return distribution
+
+
+def compute_true_class_distribution(
+    dataset: SpatialGraphDataset,
+    num_classes: int = 8,
+) -> List[float]:
+    """Compute true class distribution by averaging target probability vectors.
+    
+    This computes the mean probability distribution across all samples in the dataset,
+    which represents the true expected distribution over classes.
+    
+    Args:
+        dataset: Dataset to compute distribution from.
+        num_classes: Number of classes (default: 8).
+    
+    Returns:
+        List of probabilities [prob_class_0, prob_class_1, ..., prob_class_7] where
+        each value is the average probability mass assigned to that class across all samples.
+    """
+    total_prob_sum = torch.zeros(num_classes, dtype=torch.float32)
+    total_samples = len(dataset)
+    
+    for idx in range(total_samples):
+        data = dataset[idx]
+        target_prob_vector = data.y.squeeze(0)  # [8]
+        # Sum probability vectors across all samples
+        total_prob_sum += target_prob_vector
+    
+    # Average probabilities (mean across all samples)
+    if total_samples > 0:
+        distribution = (total_prob_sum / total_samples).tolist()
+    else:
+        distribution = [0.0] * num_classes
+    
+    return distribution
+
+
+def update_prediction_distribution_json(
+    json_path: Path,
+    true_distribution: List[float],
+    epoch: int,
+    predicted_distribution: List[float],
+) -> None:
+    """Update or create JSON file with prediction distributions.
+    
+    Args:
+        json_path: Path to JSON file.
+        true_distribution: True class distribution (list of 8 probabilities).
+        epoch: Current epoch number.
+        predicted_distribution: Predicted class distribution (list of 8 probabilities).
+    """
+    # Load existing data if file exists
+    if json_path.exists():
+        try:
+            with open(json_path, "r") as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, IOError):
+            data = {"true_distribution": true_distribution, "predictions": []}
+    else:
+        data = {"true_distribution": true_distribution, "predictions": []}
+    
+    # Ensure true_distribution is set (in case file was created differently)
+    data["true_distribution"] = true_distribution
+    
+    # Add new prediction entry
+    prediction_entry = {
+        "epoch": epoch,
+        "distribution": predicted_distribution,
+    }
+    
+    # Check if epoch already exists, replace it; otherwise append
+    predictions = data.get("predictions", [])
+    existing_idx = None
+    for i, pred in enumerate(predictions):
+        if pred.get("epoch") == epoch:
+            existing_idx = i
+            break
+    
+    if existing_idx is not None:
+        predictions[existing_idx] = prediction_entry
+    else:
+        predictions.append(prediction_entry)
+    
+    data["predictions"] = predictions
+    
+    # Sort predictions by epoch
+    data["predictions"].sort(key=lambda x: x["epoch"])
+    
+    # Write updated data
+    json_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(json_path, "w") as f:
+        json.dump(data, f, indent=2)
+
+
 def train_epoch(
     model: nn.Module,
     train_loader: DataLoader,
@@ -122,7 +259,7 @@ def train_epoch(
     loss_fn: nn.Module,
     device: torch.device,
     use_mixed_precision: bool = False,
-) -> float:
+) -> Dict[str, float]:
     """Train model for one epoch.
 
     Args:
@@ -134,10 +271,14 @@ def train_epoch(
         use_mixed_precision: Whether to use mixed precision training.
 
     Returns:
-        Average training loss for the epoch.
+        Dictionary with average training metrics: loss, top1_accuracy, top3_accuracy.
     """
+    from src.evaluation.metrics import compute_top_k_accuracy
+    
     model.train()
     total_loss = 0.0
+    total_top1 = 0.0
+    total_top3 = 0.0
     num_samples = 0
 
     # Mixed precision scaler
@@ -153,22 +294,38 @@ def train_epoch(
             with torch.cuda.amp.autocast():
                 logits = model(batch)
                 loss = loss_fn(logits, batch.y)
-
-            scaler.scale(loss).backward()
-            scaler.step(optimizer)
-            scaler.update()
         else:
             # Standard precision
             logits = model(batch)
             loss = loss_fn(logits, batch.y)
+
+        # Compute accuracies
+        predicted_probs = torch.softmax(logits, dim=-1)
+        top1 = compute_top_k_accuracy(predicted_probs, batch.y, k=1)
+        top3 = compute_top_k_accuracy(predicted_probs, batch.y, k=3)
+
+        if use_mixed_precision and scaler is not None:
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+        else:
             loss.backward()
             optimizer.step()
 
         total_loss += loss.item() * batch.num_graphs
+        total_top1 += top1 * batch.num_graphs
+        total_top3 += top3 * batch.num_graphs
         num_samples += batch.num_graphs
 
     avg_loss = total_loss / num_samples if num_samples > 0 else 0.0
-    return avg_loss
+    avg_top1 = total_top1 / num_samples if num_samples > 0 else 0.0
+    avg_top3 = total_top3 / num_samples if num_samples > 0 else 0.0
+    
+    return {
+        "loss": avg_loss,
+        "top1_accuracy": avg_top1,
+        "top3_accuracy": avg_top3,
+    }
 
 
 def train(
@@ -246,10 +403,45 @@ def train(
         features_df, train_ratio, val_ratio, test_ratio, random_seed
     )
 
+    # Calculate class weights from full training dataset
+    logger_experiment.info("Calculating class weights from training dataset...")
+    num_classes = 8
+    class_counts = torch.zeros(num_classes, dtype=torch.long)
+    
+    # Count instances of each class (dominant class per sample)
+    for idx in range(len(train_df)):
+        target_prob_vector = np.asarray(train_df.iloc[idx]["target_prob_vector"])
+        dominant_class = int(np.argmax(target_prob_vector))
+        class_counts[dominant_class] += 1
+    
+    total_samples = len(train_df)
+    # Calculate weights: Weight_i = Total Samples / Samples in Class i
+    class_weights = torch.zeros(num_classes, dtype=torch.float32)
+    for i in range(num_classes):
+        if class_counts[i] > 0:
+            class_weights[i] = float(total_samples) / float(class_counts[i])
+        else:
+            # If class has no samples, use weight of 1.0 (shouldn't happen)
+            class_weights[i] = 1.0
+    
+    logger_experiment.info(f"Class counts: {class_counts.tolist()}")
+    logger_experiment.info(f"Class weights: {class_weights.tolist()}")
+    
+    # Move class weights to device
+    class_weights = class_weights.to(device)
+
     # Create datasets
     train_dataset = SpatialGraphDataset(train_df)
     val_dataset = SpatialGraphDataset(val_df)
     test_dataset = SpatialGraphDataset(test_df)
+    
+    # Calculate true class distribution from training dataset (once at start)
+    logger_experiment.info("Computing true class distribution from training dataset...")
+    true_distribution = compute_true_class_distribution(train_dataset, num_classes=8)
+    logger_experiment.info(f"True distribution: {[f'{p:.4f}' for p in true_distribution]}")
+    
+    # Set up prediction distribution JSON file path
+    prediction_dist_json_path = experiment_dir / "prediction_distributions.json"
 
     # Create data loaders
     training_config = config.get("training", {})
@@ -279,8 +471,12 @@ def train(
         model = create_model_from_config(config)
     model = model.to(device)
 
-    # Create loss function
-    loss_fn = DistanceBasedKLLoss(reduction="batchmean")
+    # Create loss function with label smoothing (0.1) and class weights
+    loss_fn = DistanceBasedKLLoss(
+        reduction="batchmean",
+        label_smoothing=0.1,
+        class_weights=class_weights,
+    )
 
     # Create optimizer
     learning_rate = training_config.get("learning_rate", 0.001)
@@ -313,69 +509,154 @@ def train(
     # Training loop
     patience_counter = 0
     # training_history initialized above if resuming, otherwise empty list
+    
+    # Initialize checkpoint directory
+    if checkpoint_dir is None:
+        checkpoint_dir = config.get("paths", {}).get("checkpoints_dir", "./models/checkpoints")
+    checkpoint_dir = Path(checkpoint_dir)
 
+    # Initialize prediction distribution JSON file with true distribution
+    prediction_dist_json_path.parent.mkdir(parents=True, exist_ok=True)
+    initial_data = {
+        "true_distribution": true_distribution,
+        "predictions": []
+    }
+    with open(prediction_dist_json_path, "w") as f:
+        json.dump(initial_data, f, indent=2)
+    logger_experiment.info(f"Initialized prediction distribution file: {prediction_dist_json_path}")
+    
     logger_experiment.info("Starting training loop")
+    # Track last validation metrics for epochs without validation
+    last_val_metrics = None
+    last_val_loss = float("inf")
+    
     for epoch in range(start_epoch, num_epochs):
         epoch_start_time = time.time()
 
         # Training phase
-        train_loss = train_epoch(
+        train_metrics = train_epoch(
             model, train_loader, optimizer, loss_fn, device, use_mixed_precision
         )
+        train_loss = train_metrics["loss"]
+        train_top1 = train_metrics["top1_accuracy"]
+        train_top3 = train_metrics["top3_accuracy"]
 
-        # Validation phase
-        val_metrics = evaluate_model(model, val_loader, loss_fn, device)
-        val_loss = val_metrics["loss"]
-
-        # Learning rate scheduling
-        scheduler.step(val_loss)
-
-        # Log metrics
-        epoch_time = time.time() - epoch_start_time
-        logger_experiment.info(
-            f"Epoch {epoch + 1}/{num_epochs} ({epoch_time:.2f}s): "
-            f"train_loss={train_loss:.4f}, val_loss={val_loss:.4f}, "
-            f"val_kl={val_metrics['kl_divergence']:.4f}, "
-            f"val_top1={val_metrics['top1_accuracy']:.4f}"
-        )
-
-        # Evaluate on test set every epoch (for tracking)
-        test_metrics_epoch = evaluate_model(model, test_loader, loss_fn, device)
+        # Validation phase: only every 5 epochs or on epoch 1 (for immediate feedback)
+        should_validate = (epoch + 1) % 5 == 0 or epoch == 0
+        
+        if should_validate:
+            val_metrics = evaluate_model(model, val_loader, loss_fn, device)
+            val_loss = val_metrics["loss"]
+            last_val_metrics = val_metrics
+            last_val_loss = val_loss
+            
+            # Learning rate scheduling (only on validation epochs)
+            scheduler.step(val_loss)
+            
+            # Log metrics with validation
+            epoch_time = time.time() - epoch_start_time
+            logger_experiment.info(
+                f"Epoch {epoch + 1}/{num_epochs} ({epoch_time:.2f}s): "
+                f"train_loss={train_loss:.4f}, train_top1={train_top1:.4f}, train_top3={train_top3:.4f}, "
+                f"val_loss={val_loss:.4f}, val_kl={val_metrics['kl_divergence']:.4f}, "
+                f"val_top1={val_metrics['top1_accuracy']:.4f}, val_top3={val_metrics['top3_accuracy']:.4f}"
+            )
+            
+            # Evaluate on test set on validation epochs
+            test_metrics_epoch = evaluate_model(model, test_loader, loss_fn, device)
+        else:
+            # Use last validation metrics for logging
+            val_metrics = last_val_metrics
+            val_loss = last_val_loss
+            
+            # Log metrics without validation (use last known values)
+            epoch_time = time.time() - epoch_start_time
+            logger_experiment.info(
+                f"Epoch {epoch + 1}/{num_epochs} ({epoch_time:.2f}s): "
+                f"train_loss={train_loss:.4f}, train_top1={train_top1:.4f}, train_top3={train_top3:.4f}, "
+                f"val_loss={val_loss:.4f} (last), val_kl=N/A, val_top1=N/A, val_top3=N/A"
+            )
+            
+            # Skip test evaluation on non-validation epochs
+            test_metrics_epoch = None
         
         # Save training history
-        training_history.append({
+        history_entry = {
             "epoch": epoch + 1,
             "train_loss": train_loss,
+            "train_top1_accuracy": train_top1,
+            "train_top3_accuracy": train_top3,
             "val_loss": val_loss,
-            "val_kl_divergence": val_metrics["kl_divergence"],
-            "val_top1_accuracy": val_metrics["top1_accuracy"],
-            "val_top3_accuracy": val_metrics["top3_accuracy"],
-            "test_loss": test_metrics_epoch["loss"],
-            "test_kl_divergence": test_metrics_epoch["kl_divergence"],
-            "test_top1_accuracy": test_metrics_epoch["top1_accuracy"],
-            "test_top3_accuracy": test_metrics_epoch["top3_accuracy"],
             "learning_rate": optimizer.param_groups[0]["lr"],
-        })
-
-        # Checkpointing
-        if checkpoint_dir is None:
-            checkpoint_dir = config.get("paths", {}).get("checkpoints_dir", "./models/checkpoints")
-        checkpoint_path = Path(checkpoint_dir) / "graph_transformer_best.pt"
-
-        if val_loss < best_val_loss - early_stopping_min_delta:
-            best_val_loss = val_loss
-            patience_counter = 0
-            save_checkpoint(
-                model, optimizer, epoch, best_val_loss, checkpoint_path, config,
-                scheduler=scheduler, training_history=training_history
-            )
-            logger_experiment.info(f"New best validation loss: {best_val_loss:.4f}")
+        }
+        
+        # Add validation metrics if available
+        if val_metrics is not None:
+            history_entry.update({
+                "val_kl_divergence": val_metrics["kl_divergence"],
+                "val_top1_accuracy": val_metrics["top1_accuracy"],
+                "val_top3_accuracy": val_metrics["top3_accuracy"],
+            })
         else:
-            patience_counter += 1
+            history_entry.update({
+                "val_kl_divergence": None,
+                "val_top1_accuracy": None,
+                "val_top3_accuracy": None,
+            })
+        
+        # Add test metrics if available (only on validation epochs)
+        if test_metrics_epoch is not None:
+            history_entry.update({
+                "test_loss": test_metrics_epoch["loss"],
+                "test_kl_divergence": test_metrics_epoch["kl_divergence"],
+                "test_top1_accuracy": test_metrics_epoch["top1_accuracy"],
+                "test_top3_accuracy": test_metrics_epoch["top3_accuracy"],
+            })
+        else:
+            history_entry.update({
+                "test_loss": None,
+                "test_kl_divergence": None,
+                "test_top1_accuracy": None,
+                "test_top3_accuracy": None,
+            })
+        
+        training_history.append(history_entry)
+
+        # Update prediction distribution JSON every 5 epochs (same as validation)
+        if should_validate:
+            logger_experiment.info(f"Computing prediction distribution for epoch {epoch + 1}...")
+            predicted_distribution = compute_class_distribution(
+                model, val_loader, device, num_classes=8
+            )
+            update_prediction_distribution_json(
+                prediction_dist_json_path,
+                true_distribution,
+                epoch + 1,
+                predicted_distribution,
+            )
+            logger_experiment.info(
+                f"Epoch {epoch + 1} prediction distribution: {[f'{p:.4f}' for p in predicted_distribution]}"
+            )
+            logger_experiment.info(f"Updated prediction distributions to {prediction_dist_json_path}")
+
+        # Checkpointing (only on validation epochs)
+        if should_validate:
+            checkpoint_path = checkpoint_dir / "graph_transformer_best.pt"
+
+            if val_loss < best_val_loss - early_stopping_min_delta:
+                best_val_loss = val_loss
+                patience_counter = 0
+                save_checkpoint(
+                    model, optimizer, epoch, best_val_loss, checkpoint_path, config,
+                    scheduler=scheduler, training_history=training_history
+                )
+                logger_experiment.info(f"New best validation loss: {best_val_loss:.4f}")
+            else:
+                patience_counter += 1
         
         # Save periodic checkpoint every 10 epochs (in addition to best model)
         if (epoch + 1) % 10 == 0:
-            periodic_checkpoint_path = Path(checkpoint_dir) / f"graph_transformer_epoch_{epoch + 1}.pt"
+            periodic_checkpoint_path = checkpoint_dir / f"graph_transformer_epoch_{epoch + 1}.pt"
             save_checkpoint(
                 model, optimizer, epoch, best_val_loss, periodic_checkpoint_path, config,
                 scheduler=scheduler, training_history=training_history

@@ -137,13 +137,16 @@ class SpatialGraphDataset(Dataset):
             )  # [2, num_neighbors]
 
             # Build edge attributes: [dx, dy, euclidean_dist, network_dist]
+            # Normalize distances to 0-1 range to prevent large values from dominating the network
+            # Max radius is 1000m (walk_15min_radius_meters), so divide by 1000
+            MAX_DISTANCE_METERS = 1000.0
             edge_attr = torch.tensor(
                 [
                     [
-                        neighbor["dx"],
-                        neighbor["dy"],
-                        neighbor["euclidean_distance"],
-                        neighbor["network_distance"],
+                        neighbor["dx"] / MAX_DISTANCE_METERS,
+                        neighbor["dy"] / MAX_DISTANCE_METERS,
+                        neighbor["euclidean_distance"] / MAX_DISTANCE_METERS,
+                        neighbor["network_distance"] / MAX_DISTANCE_METERS,
                     ]
                     for neighbor in neighbor_data
                 ],
