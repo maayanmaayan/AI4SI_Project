@@ -8,11 +8,19 @@ import './index.css'
 function App() {
   const [predictionResult, setPredictionResult] = useState<PredictionResult | null>(null)
   const [modalVisible, setModalVisible] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleLocationSelected = (location: { lat: number; lng: number }) => {
-    const result = getMockPrediction(location)
-    setPredictionResult(result)
+    if (isLoading) return
+    setIsLoading(true)
     setModalVisible(true)
+
+    // Simulate a short model inference time for realism
+    setTimeout(() => {
+      const result = getMockPrediction(location)
+      setPredictionResult(result)
+      setIsLoading(false)
+    }, 1800)
   }
 
   const handleCategoryChange = (categoryId: PredictionResult['selectedCategoryId']) => {
@@ -22,11 +30,13 @@ function App() {
 
   const handleClose = () => {
     setModalVisible(false)
+    setIsLoading(false)
   }
 
   return (
     <div
       style={{
+        position: 'relative',
         width: '100vw',
         height: '100vh',
         margin: 0,
@@ -43,6 +53,7 @@ function App() {
       <PredictionModal
         visible={modalVisible}
         predictionResult={predictionResult}
+        isLoading={isLoading}
         onClose={handleClose}
         onCategoryChange={handleCategoryChange}
       />

@@ -6,6 +6,7 @@ import { exportRecommendationToPdf } from '../utils/pdfExport'
 interface PredictionModalProps {
   visible: boolean
   predictionResult: PredictionResult | null
+  isLoading?: boolean
   onClose: () => void
   onCategoryChange: (categoryId: ServiceCategoryId) => void
 }
@@ -112,10 +113,70 @@ function ImpactBar({
 export function PredictionModal({
   visible,
   predictionResult,
+  isLoading = false,
   onClose,
   onCategoryChange,
 }: PredictionModalProps) {
-  if (!visible || !predictionResult) return null
+  if (!visible) return null
+
+  // Show loading state
+  if (isLoading || !predictionResult) {
+    return (
+      <div
+        role="dialog"
+        aria-modal="true"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }}
+        onClick={onClose}
+      >
+        <div
+          style={{
+            backgroundColor: '#ffffff',
+            borderRadius: 16,
+            padding: 48,
+            maxWidth: 400,
+            width: '90%',
+            boxShadow: '0 18px 45px rgba(15, 23, 42, 0.18)',
+            color: '#0f172a',
+            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              border: '4px solid rgba(79, 70, 229, 0.2)',
+              borderTop: '4px solid #6366f1',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              marginBottom: 16,
+            }}
+          />
+          <div
+            style={{
+              fontSize: 14,
+              color: '#64748b',
+              textAlign: 'center',
+            }}
+          >
+            Calculating recommendation for this location...
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const { location, probabilities, selectedCategoryId } = predictionResult
 
