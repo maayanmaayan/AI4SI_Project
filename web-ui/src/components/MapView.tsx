@@ -8,6 +8,8 @@ import { SERVICE_CATEGORIES, type ServiceCategoryId } from '../constants/service
 
 interface MapViewProps {
   onLocationSelected: (location: { lat: number; lng: number }) => void
+  selectedLocation?: { lat: number; lng: number } | null
+  selectedCategoryId?: ServiceCategoryId | null
 }
 
 interface ServiceFeature {
@@ -95,7 +97,7 @@ function categoryColor(categoryId: ServiceCategoryId): string {
   return SERVICE_CATEGORIES.find((c) => c.id === categoryId)?.color ?? '#666666'
 }
 
-export function MapView({ onLocationSelected }: MapViewProps) {
+export function MapView({ onLocationSelected, selectedLocation, selectedCategoryId }: MapViewProps) {
   const [services, setServices] = useState<ServiceGeoJson | null>(null)
 
   useEffect(() => {
@@ -120,7 +122,7 @@ export function MapView({ onLocationSelected }: MapViewProps) {
         zoom={mapConfig.zoom}
         minZoom={mapConfig.minZoom}
         maxZoom={mapConfig.maxZoom}
-        style={{ width: '100%', height: '100%', borderRadius: 16, overflow: 'hidden' }}
+        style={{ width: '100%', height: '100%' }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -139,22 +141,73 @@ export function MapView({ onLocationSelected }: MapViewProps) {
 
         {services?.features.map((feature, idx) => {
           const [lng, lat] = feature.geometry.coordinates
-          const color = categoryColor(feature.properties.categoryId)
+          const categoryId = feature.properties.categoryId
+          const color = categoryColor(categoryId)
+          const emoji = SERVICE_CATEGORIES.find((c) => c.id === categoryId)?.iconEmoji ?? '•'
 
           const icon = new L.DivIcon({
             className: 'service-marker',
             html: `<div style="
-              background:${color};
-              width:18px;
-              height:18px;
+              position: relative;
+              width:28px;
+              height:28px;
               border-radius:50%;
+              background:${color};
               border:2px solid white;
-              box-shadow:0 0 4px rgba(0,0,0,0.3);
-            "></div>`,
+              box-shadow:0 0 8px rgba(0,0,0,0.35);
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              font-size:16px;
+            ">
+              <span>${emoji}</span>
+            </div>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 28],
           })
 
           return <Marker key={idx} position={[lat, lng]} icon={icon} />
         })}
+
+        {selectedLocation && (
+          <Marker
+            position={[selectedLocation.lat, selectedLocation.lng]}
+            icon={
+              new L.DivIcon({
+                className: 'selected-location-marker',
+                html: `<div style="
+                  position: relative;
+                  width:34px;
+                  height:34px;
+                  border-radius:50%;
+                  background: white;
+                  border:3px solid ${
+                    selectedCategoryId
+                      ? categoryColor(selectedCategoryId)
+                      : '#0f172a'
+                  };
+                  box-shadow:0 0 10px rgba(15,23,42,0.45);
+                  display:flex;
+                  align-items:center;
+                  justify-content:center;
+                ">
+                  <div style="
+                    width:16px;
+                    height:16px;
+                    border-radius:50%;
+                    background:${
+                      selectedCategoryId
+                        ? categoryColor(selectedCategoryId)
+                        : '#0f172a'
+                    };
+                  "></div>
+                </div>`,
+                iconSize: [34, 34],
+                iconAnchor: [17, 34],
+              })
+            }
+          />
+        )}
 
         <ClickHandler
           onInsideClick={(latlng) =>

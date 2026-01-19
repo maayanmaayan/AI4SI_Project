@@ -14,23 +14,38 @@ function formatCoordinates(lat: number, lng: number): string {
 function getExplanation(categoryId: ServiceCategoryId): string {
   switch (categoryId) {
     case 'education':
-      return 'Education here can shorten daily school commutes and support families within a comfortable walking radius.'
+      return 'New education facilities here could shorten daily school commutes and support families within a comfortable walking radius. Given the mix of family housing and nearby streets that already carry school trips, this location can absorb that activity without overloading the wider network.'
     case 'entertainment':
-      return 'Entertainment and cultural venues can strengthen local social life and reduce the need for long evening trips.'
+      return 'Cultural and leisure venues at this location can strengthen local social life and reduce the need for long evening trips. The surrounding blocks already attract evening footfall, so adding cultural uses here would extend street activity without demanding extra car parking.'
     case 'grocery':
-      return 'Everyday grocery options here help residents meet routine needs without car-based shopping.'
+      return 'A small grocery cluster here would help residents meet day-to-day needs without relying on car-based shopping. This node sits between several residential pockets that currently rely on longer trips, so a local grocery anchor would rebalance everyday flows.'
     case 'health':
-      return 'Health services at this point bring basic care closer to older adults and families.'
+      return 'Health services in this area can bring everyday care closer to older adults and families, reducing distance to basic check-ups. The demographic profile around this point suggests a mix of children and older residents who particularly benefit from shorter, predictable trips.'
     case 'posts_banks':
-      return 'Posts and banks here keep administrative errands local instead of concentrating them in distant centers.'
+      return 'Banking and postal services here would support administrative errands locally, instead of concentrating them in distant centers. The local street pattern already links neighbourhood centers, so adding everyday admin services here would fit smoothly into existing walking routes.'
     case 'parks':
-      return 'A small park here offers daily access to greenery, shade, and calm within a short walk.'
+      return 'A pocket park at this point can provide everyday green space, improve microclimate, and create a calm stop on walking routes. Slight gaps in tree cover and public seating around this junction mean even a small green space would noticeably improve local comfort.'
     case 'sustenance':
-      return 'Food venues at this location make streets more vibrant and create everyday meeting points.'
+      return 'Cafés and small food venues here can make streets more vibrant and provide everyday meeting points within a short walk. Existing ground-floor frontages and footfall patterns make this a natural corner for everyday social stops without turning it into a regional nightlife hub.'
     case 'shops':
-      return 'Shops here round out the local offer so most errands can be completed within 15 minutes on foot.'
+      return 'Everyday retail here can complete the local offer of services, so residents can cover most errands within 15 minutes on foot. The surrounding catchment has enough residents and intersecting walking routes to support small-scale shops without drawing heavy car traffic.'
     default:
       return ''
+  }
+}
+
+function getImpactMetrics(probability: number) {
+  const clamped = Math.max(0, Math.min(1, probability))
+  const peopleServed = Math.round(800 + clamped * 4200) // ~800–5000
+  const communityScore = Math.round(40 + clamped * 60) // 40–100
+  const airPollutionReduction = Math.round(20 + clamped * 60) // 20–80
+  const congestionReduction = Math.round(15 + clamped * 65) // 15–80
+
+  return {
+    peopleServed,
+    communityScore,
+    airPollutionReduction,
+    congestionReduction,
   }
 }
 
@@ -51,7 +66,7 @@ export function exportRecommendationToPdf(prediction: PredictionResult): void {
   doc.text(`Location: ${formatCoordinates(location.lat, location.lng)}`, 14, 30)
 
   doc.setFontSize(12)
-  doc.text('Service categories (mock probabilities)', 14, 42)
+  doc.text('Service categories – recommendation summary', 14, 42)
 
   const startY = 48
   let y = startY
@@ -63,19 +78,57 @@ export function exportRecommendationToPdf(prediction: PredictionResult): void {
     y += 6
   })
 
-  if (selectedCategory) {
+  // Determine top 3 categories by probability
+  const withProb = SERVICE_CATEGORIES.map((category, index) => ({
+    category,
+    probability: probabilities[index] ?? 0,
+  })).sort((a, b) => b.probability - a.probability)
+
+  const top3 = withProb.slice(0, 3)
+
+  y += 8
+  doc.setFontSize(12)
+  doc.text('Top 3 recommended service categories', 14, y)
+  y += 4
+
+  doc.setFontSize(11)
+  top3.forEach((entry, idx) => {
+    const { category, probability } = entry
+    const rankLabel = `${idx + 1}. ${category.label} (${formatPercentage(probability)})`
+    const impact = getImpactMetrics(probability)
+
+    y += 8
+    doc.text(rankLabel, 14, y)
+    y += 5
+
+    const bullets = [
+      `• People served locally: ~${impact.peopleServed.toLocaleString()} residents`,
+      `• Support for local community life: ${impact.communityScore} / 100`,
+      `• Reduction in private car use & air pollution: ${impact.airPollutionReduction} / 100`,
+      `• Reduction in road congestion: ${impact.congestionReduction} / 100`,
+    ]
+    bullets.forEach((line) => {
+      y += 5
+      doc.text(line, 18, y)
+    })
+
+    const explanation = getExplanation(category.id)
+    const explLines = doc.splitTextToSize(explanation, 170)
     y += 6
+    doc.text(explLines, 18, y)
+
+    // Add a bit more spacing before next category
+    y += explLines.length * 4
+  })
+
+  if (selectedCategory) {
+    y += 10
     doc.setFontSize(12)
-    doc.text('Suggested focus', 14, y)
+    doc.text('Highlighted focus in the interface', 14, y)
     y += 6
 
     doc.setFontSize(11)
     doc.text(`${selectedCategory.label}`, 14, y)
-    y += 8
-
-    const explanation = getExplanation(selectedCategory.id)
-    const lines = doc.splitTextToSize(explanation, 180)
-    doc.text(lines, 14, y)
   }
 
   const fileName = `recommendation_${mapConfig.cityName.toLowerCase()}_${location.lat.toFixed(

@@ -9,7 +9,13 @@ import { MapView } from '../components/MapView'
 describe('MapView', () => {
   it('renders without crashing and accepts a callback', () => {
     const onLocationSelected = vi.fn()
-    const { container } = render(<MapView onLocationSelected={onLocationSelected} />)
+    const { container } = render(
+      <MapView
+        onLocationSelected={onLocationSelected}
+        selectedLocation={{ lat: 31.78, lng: 35.22 }}
+        selectedCategoryId={null}
+      />,
+    )
 
     expect(container.querySelector('.leaflet-container')).toBeTruthy()
   })

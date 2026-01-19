@@ -8,7 +8,27 @@
     },
     {
       "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.216, 31.784] },
+      "properties": { "categoryId": "education" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.228, 31.776] },
+      "properties": { "categoryId": "education" }
+    },
+    {
+      "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [35.24, 31.78] },
+      "properties": { "categoryId": "health" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.236, 31.777] },
+      "properties": { "categoryId": "health" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.244, 31.782] },
       "properties": { "categoryId": "health" }
     },
     {
@@ -18,8 +38,68 @@
     },
     {
       "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.225, 31.781] },
+      "properties": { "categoryId": "grocery" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.235, 31.779] },
+      "properties": { "categoryId": "grocery" }
+    },
+    {
+      "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [35.23, 31.785] },
       "properties": { "categoryId": "parks" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.222, 31.787] },
+      "properties": { "categoryId": "parks" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.238, 31.783] },
+      "properties": { "categoryId": "parks" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.227, 31.773] },
+      "properties": { "categoryId": "entertainment" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.241, 31.776] },
+      "properties": { "categoryId": "entertainment" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.219, 31.779] },
+      "properties": { "categoryId": "posts_banks" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.233, 31.783] },
+      "properties": { "categoryId": "posts_banks" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.221, 31.775] },
+      "properties": { "categoryId": "sustenance" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.237, 31.781] },
+      "properties": { "categoryId": "sustenance" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.229, 31.786] },
+      "properties": { "categoryId": "shops" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.243, 31.779] },
+      "properties": { "categoryId": "shops" }
     }
   ]
 }
