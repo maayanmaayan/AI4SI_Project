@@ -430,7 +430,9 @@ def train(
     
     # Dampen class weights using sqrt to prevent over-correction
     class_weights = torch.sqrt(class_weights)
-    logger_experiment.info(f"Class weights (after sqrt damping): {class_weights.tolist()}")
+    # Cap weights at 3.0 to prevent over-prediction of rare classes
+    class_weights = torch.clamp(class_weights, max=3.0)
+    logger_experiment.info(f"Class weights (after sqrt damping and capping at 3.0): {class_weights.tolist()}")
     
     # Move class weights to device
     class_weights = class_weights.to(device)
@@ -438,6 +440,7 @@ def train(
     # Create datasets
     # Apply realistic data augmentation only to the training set.
     # Validation and test sets remain untouched for clean evaluation.
+    training_config = config.get("training", {})
     aug_config = training_config.get("augmentation", {})
     aug_enabled = aug_config.get("enabled", True)
     if aug_enabled:
@@ -449,8 +452,14 @@ def train(
             subsample_ratio=aug_config.get("subsample_ratio", 0.8),
             distance_noise_std=aug_config.get("distance_noise_std", 0.02),
         )
+        logger_experiment.info(
+            f"Data augmentation enabled: feature_noise (p=0.8, std={aug_config.get('feature_noise_std', 0.01)}), "
+            f"neighbor_subsampling (p=0.5, ratio={aug_config.get('subsample_ratio', 0.8)}), "
+            f"edge_noise (p=0.3, std={aug_config.get('distance_noise_std', 0.02)})"
+        )
     else:
         train_transform = None
+        logger_experiment.info("Data augmentation disabled")
     train_dataset = SpatialGraphDataset(train_df, transform=train_transform)
     val_dataset = SpatialGraphDataset(val_df)
     test_dataset = SpatialGraphDataset(test_df)
@@ -491,11 +500,21 @@ def train(
         model = create_model_from_config(config)
     model = model.to(device)
 
-    # Create loss function with label smoothing (0.1) and class weights
+    # Create loss function with label smoothing, class weights, and entropy regularization
+    loss_config = config.get("loss", {})
+    label_smoothing = loss_config.get("label_smoothing", 0.1)
+    entropy_weight = loss_config.get("entropy_weight", 0.1)
+    min_entropy = loss_config.get("min_entropy", 1.0)
     loss_fn = DistanceBasedKLLoss(
         reduction="batchmean",
-        label_smoothing=0.1,
+        label_smoothing=label_smoothing,
         class_weights=class_weights,
+        entropy_weight=entropy_weight,
+        min_entropy=min_entropy,
+    )
+    logger_experiment.info(
+        f"Loss function: label_smoothing={label_smoothing}, class_weights capped at 3.0, "
+        f"entropy_weight={entropy_weight}, min_entropy={min_entropy}"
     )
 
     # Create optimizer

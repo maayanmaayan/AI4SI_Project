@@ -8,6 +8,7 @@ based on spatial features and network accessibility.
 
 from typing import Optional
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -119,12 +120,20 @@ class SpatialGraphTransformer(nn.Module):
         """Initialize model weights using Xavier/Glorot uniform initialization.
 
         This ensures reproducible training and better convergence.
+        The classifier is initialized to output near-uniform logits to prevent
+        early mode collapse.
         """
         for module in self.modules():
             if isinstance(module, nn.Linear):
                 nn.init.xavier_uniform_(module.weight)
                 if module.bias is not None:
-                    nn.init.zeros_(module.bias)
+                    if module == self.classifier:
+                        # Initialize classifier bias to output near-uniform logits
+                        # For uniform distribution: log(1/num_classes) ≈ -log(num_classes)
+                        # This helps prevent early mode collapse
+                        nn.init.constant_(module.bias, -np.log(self.num_classes))
+                    else:
+                        nn.init.zeros_(module.bias)
 
     def forward(self, data: Data) -> torch.Tensor:
         """Forward pass through the model.

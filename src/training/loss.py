@@ -26,6 +26,8 @@ def distance_based_kl_loss(
     epsilon: float = 1e-9,
     label_smoothing: float = 0.0,
     class_weights: Optional[torch.Tensor] = None,
+    entropy_weight: float = 0.1,
+    min_entropy: float = 1.0,
 ) -> torch.Tensor:
     """Compute KL divergence loss between predicted and target probability distributions.
     
@@ -57,6 +59,10 @@ def distance_based_kl_loss(
         class_weights: Optional tensor of shape [8] with weights for each class. If provided,
             per-sample losses are weighted by the dominant class (argmax of target probabilities).
             Defaults to None (no weighting).
+        entropy_weight: Weight for entropy regularization term. Penalizes low-entropy (one-hot)
+            predictions. Higher values encourage more uniform distributions. Defaults to 0.1.
+        min_entropy: Minimum entropy threshold. Predictions with entropy below this will be
+            penalized. Defaults to 1.0 (encourages at least some distribution spread).
     
     Returns:
         Loss tensor:
@@ -121,6 +127,15 @@ def distance_based_kl_loss(
     # Apply log-softmax to predictions (KL divergence requires log-probabilities)
     log_predicted = F.log_softmax(predicted_logits, dim=-1)
     
+    # Compute predicted probabilities for entropy calculation
+    predicted_probs = F.softmax(predicted_logits, dim=-1)
+    
+    # Compute entropy regularization: penalize low entropy (one-hot predictions)
+    # Entropy H(p) = -sum(p_i * log(p_i))
+    # We penalize when entropy < min_entropy
+    entropy = -(predicted_probs * log_predicted).sum(dim=-1)  # [batch_size]
+    entropy_penalty = torch.clamp(min_entropy - entropy, min=0.0)  # Only penalize if below threshold
+    
     # Clamp target probabilities for numerical stability
     # This prevents log(0) when computing KL divergence
     target_clamped = torch.clamp(target_probabilities, min=epsilon, max=1.0)
@@ -156,6 +171,11 @@ def distance_based_kl_loss(
             sample_weights = class_weights[dominant_classes]  # [batch_size]
             loss = loss * sample_weights
         
+        # Add entropy regularization penalty
+        if entropy_weight > 0.0:
+            entropy_penalty_weighted = entropy_penalty * entropy_weight
+            loss = loss + entropy_penalty_weighted
+        
         # If input was unbatched, remove batch dimension
         if was_unbatched:
             loss = loss.squeeze(0)
@@ -169,6 +189,11 @@ def distance_based_kl_loss(
             dominant_classes = target_probabilities.argmax(dim=-1)  # [batch_size]
             sample_weights = class_weights[dominant_classes]  # [batch_size]
             loss_per_sample = loss_per_sample * sample_weights
+        
+        # Add entropy regularization penalty
+        if entropy_weight > 0.0:
+            entropy_penalty_weighted = entropy_penalty * entropy_weight
+            loss_per_sample = loss_per_sample + entropy_penalty_weighted
         
         # Apply reduction
         if reduction == "batchmean":
@@ -211,6 +236,8 @@ class DistanceBasedKLLoss(nn.Module):
         epsilon: float = 1e-9,
         label_smoothing: float = 0.0,
         class_weights: Optional[torch.Tensor] = None,
+        entropy_weight: float = 0.1,
+        min_entropy: float = 1.0,
     ):
         """Initialize loss function.
         
@@ -219,12 +246,18 @@ class DistanceBasedKLLoss(nn.Module):
             epsilon: Numerical stability parameter. Defaults to 1e-9.
             label_smoothing: Label smoothing factor (0.0 to 1.0). Defaults to 0.0.
             class_weights: Optional tensor of shape [8] with weights for each class. Defaults to None.
+            entropy_weight: Weight for entropy regularization. Penalizes one-hot predictions.
+                Defaults to 0.1.
+            min_entropy: Minimum entropy threshold. Predictions below this are penalized.
+                Defaults to 1.0.
         """
         super().__init__()
         self.reduction = reduction
         self.epsilon = epsilon
         self.label_smoothing = label_smoothing
         self.class_weights = class_weights
+        self.entropy_weight = entropy_weight
+        self.min_entropy = min_entropy
     
     def forward(
         self, predicted_logits: torch.Tensor, target_probabilities: torch.Tensor
@@ -245,6 +278,8 @@ class DistanceBasedKLLoss(nn.Module):
             self.epsilon,
             self.label_smoothing,
             self.class_weights,
+            self.entropy_weight,
+            self.min_entropy,
         )
 
 

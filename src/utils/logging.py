@@ -114,8 +114,34 @@ def setup_experiment_logging(experiment_dir: str) -> logging.Logger:
     # Ensure experiment directory exists
     experiment_path.mkdir(parents=True, exist_ok=True)
 
-    # Setup logging with file handler
-    setup_logging(log_level="INFO", log_file=str(log_file))
+    # Get root logger
+    root_logger = logging.getLogger()
+    
+    # Check if logging was already configured
+    global _logging_configured
+    if _logging_configured:
+        # Logging already configured, just add file handler
+        log_path = Path(log_file)
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Check if file handler already exists for this file
+        file_handler_exists = any(
+            isinstance(h, logging.FileHandler) and h.baseFilename == str(log_path.absolute())
+            for h in root_logger.handlers
+        )
+        
+        if not file_handler_exists:
+            formatter = logging.Formatter(
+                "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s",
+                datefmt="%Y-%m-%d %H:%M:%S",
+            )
+            file_handler = logging.FileHandler(log_file, encoding="utf-8")
+            file_handler.setLevel(logging.INFO)
+            file_handler.setFormatter(formatter)
+            root_logger.addHandler(file_handler)
+    else:
+        # First time setup, configure logging with file handler
+        setup_logging(log_level="INFO", log_file=str(log_file))
 
     # Return experiment-specific logger
     return get_logger("experiment")
