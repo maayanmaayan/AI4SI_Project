@@ -731,7 +731,7 @@ See [CURSOR.md](CURSOR.md) Section "Project Structure" for detailed directory la
 - **Demographics** (17 features): Population density, SES index, car ownership rate, children per capita (estimated), elderly ratio (estimated), unemployment rate, student ratio, walking ratio, cycling ratio, public transport ratio, two-wheelers ratio, car commute ratio, retired ratio, permanent employment ratio, temporary employment ratio, median income, poverty rate
 - **Built Form** (4 features): Building density, building count, average building levels, floor area per capita
 - **Services** (8 features): Counts per category within the 15-minute walk radius from that point's perspective (configurable via `features.walk_15min_radius_meters` in config.yaml):
-  - `count_education_15min`: Number of education services within the 15-minute walk radius
+  - `count_  _15min`: Number of education services within the 15-minute walk radius
   - `count_entertainment_15min`: Number of entertainment services within the 15-minute walk radius
   - `count_grocery_15min`: Number of grocery services within the 15-minute walk radius
   - `count_health_15min`: Number of health services within the 15-minute walk radius
