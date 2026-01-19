@@ -29,6 +29,7 @@ from src.training.dataset import (
     get_device,
     load_features_from_directory,
 )
+from src.training.data_augmentation import create_augmentation_transform
 from src.training.data_filtering import filter_small_neighborhoods
 from src.training.loss import DistanceBasedKLLoss
 from src.training.model import create_model_from_config, create_tiny_model_from_config
@@ -435,7 +436,22 @@ def train(
     class_weights = class_weights.to(device)
 
     # Create datasets
-    train_dataset = SpatialGraphDataset(train_df)
+    # Apply realistic data augmentation only to the training set.
+    # Validation and test sets remain untouched for clean evaluation.
+    aug_config = training_config.get("augmentation", {})
+    aug_enabled = aug_config.get("enabled", True)
+    if aug_enabled:
+        train_transform = create_augmentation_transform(
+            enable_feature_noise=True,
+            enable_neighbor_subsampling=True,
+            enable_edge_noise=True,
+            feature_noise_std=aug_config.get("feature_noise_std", 0.01),
+            subsample_ratio=aug_config.get("subsample_ratio", 0.8),
+            distance_noise_std=aug_config.get("distance_noise_std", 0.02),
+        )
+    else:
+        train_transform = None
+    train_dataset = SpatialGraphDataset(train_df, transform=train_transform)
     val_dataset = SpatialGraphDataset(val_df)
     test_dataset = SpatialGraphDataset(test_df)
     

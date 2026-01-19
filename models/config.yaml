@@ -25,6 +25,11 @@ training:
   num_workers: 2  # DataLoader workers (2 optimal for M2 MacBook Air)
   pin_memory: false  # Not needed for MPS (Metal Performance Shaders)
   device: "auto"  # "auto" will select MPS if available, else CPU
+  augmentation:
+    enabled: true            # Toggle training-time augmentation on/off
+    feature_noise_std: 0.01  # Std dev for feature noise (≈1%)
+    subsample_ratio: 0.8     # Fraction of neighbors to keep
+    distance_noise_std: 0.02 # Std dev for edge distance noise (≈2%)
 
 features:
   walk_15min_radius_meters: 1000  # 15-minute walk radius in meters (default: 1000m ≈ 1.0 km)

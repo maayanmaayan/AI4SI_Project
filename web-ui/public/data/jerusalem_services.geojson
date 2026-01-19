@@ -1,0 +1,26 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.22, 31.78] },
+      "properties": { "categoryId": "education" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.24, 31.78] },
+      "properties": { "categoryId": "health" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.23, 31.775] },
+      "properties": { "categoryId": "grocery" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.23, 31.785] },
+      "properties": { "categoryId": "parks" }
+    }
+  ]
+}
+
