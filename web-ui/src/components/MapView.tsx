@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { MapContainer, TileLayer, Polygon, Marker, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Polygon, Marker, useMapEvents, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import type { LatLngExpression, LatLngTuple } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -10,6 +10,17 @@ interface MapViewProps {
   onLocationSelected: (location: { lat: number; lng: number }) => void
   selectedLocation?: { lat: number; lng: number } | null
   selectedCategoryId?: ServiceCategoryId | null
+  searchCenter?: { lat: number; lng: number } | null
+}
+
+function MapCenterUpdater({ center }: { center: { lat: number; lng: number } | null }) {
+  const map = useMap()
+  useEffect(() => {
+    if (center) {
+      map.setView([center.lat, center.lng], 15, { animate: true, duration: 0.5 })
+    }
+  }, [center, map])
+  return null
 }
 
 interface ServiceFeature {
@@ -97,7 +108,12 @@ function categoryColor(categoryId: ServiceCategoryId): string {
   return SERVICE_CATEGORIES.find((c) => c.id === categoryId)?.color ?? '#666666'
 }
 
-export function MapView({ onLocationSelected, selectedLocation, selectedCategoryId }: MapViewProps) {
+export function MapView({
+  onLocationSelected,
+  selectedLocation,
+  selectedCategoryId,
+  searchCenter,
+}: MapViewProps) {
   const [services, setServices] = useState<ServiceGeoJson | null>(null)
 
   useEffect(() => {
@@ -124,6 +140,7 @@ export function MapView({ onLocationSelected, selectedLocation, selectedCategory
         maxZoom={mapConfig.maxZoom}
         style={{ width: '100%', height: '100%' }}
       >
+        <MapCenterUpdater center={searchCenter ?? null} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
