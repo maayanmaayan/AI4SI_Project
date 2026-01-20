@@ -31,6 +31,7 @@ def distance_based_kl_loss(
     entropy_penalty_type: str = "linear",
     maxsup_weight: float = 0.0,
     maxsup_threshold: float = 0.0,
+    focal_gamma: float = 0.0,
 ) -> torch.Tensor:
     """Compute KL divergence loss between predicted and target probability distributions.
     
@@ -73,6 +74,8 @@ def distance_based_kl_loss(
             logit to prevent overconfident predictions. Defaults to 0.0 (disabled).
         maxsup_threshold: Threshold for MaxSup - only suppress if max logit exceeds this value.
             Defaults to 0.0 (always apply if maxsup_weight > 0).
+        focal_gamma: Gamma parameter for Focal Loss. If > 0, weights loss by (1-p)^gamma
+            to focus on hard samples. Defaults to 0.0 (standard KL divergence).
     
     Returns:
         Loss tensor:
@@ -190,19 +193,24 @@ def distance_based_kl_loss(
     # F.kl_div expects: (log-probabilities, probabilities, reduction)
     # Note: With reduction='none', F.kl_div returns [batch_size, num_categories]
     # We need to sum over categories to get per-sample losses
+    
+    # Get per-category losses: [batch_size, 8]
+    loss_per_category = F.kl_div(log_predicted, target_normalized, reduction="none")
+    
+    # Apply Focal weighting if gamma > 0
+    # Soft Focal Loss: (1 - predicted_prob)^gamma * KL_per_category
+    if focal_gamma > 0.0:
+        focal_weight = torch.pow(1.0 - predicted_probs, focal_gamma)
+        loss_per_category = focal_weight * loss_per_category
+    
+    # Apply Alpha (class weights) per category
+    if class_weights is not None:
+        # Broadcasting class_weights [8] across [batch_size, 8]
+        loss_per_category = loss_per_category * class_weights
+    
     if reduction == "none":
-        # Get per-category losses: [batch_size, 8]
-        loss_per_category = F.kl_div(log_predicted, target_normalized, reduction="none")
         # Sum over categories to get per-sample losses: [batch_size]
         loss = loss_per_category.sum(dim=-1)
-        
-        # Apply class weights if provided
-        if class_weights is not None:
-            # Get dominant class (argmax) for each sample
-            dominant_classes = target_probabilities.argmax(dim=-1)  # [batch_size]
-            # Weight each sample's loss by its dominant class weight
-            sample_weights = class_weights[dominant_classes]  # [batch_size]
-            loss = loss * sample_weights
         
         # Add entropy regularization penalty
         if entropy_weight > 0.0:
@@ -219,14 +227,7 @@ def distance_based_kl_loss(
             loss = loss.squeeze(0)
     else:
         # For other reduction modes, compute per-sample losses first, then reduce
-        loss_per_category = F.kl_div(log_predicted, target_normalized, reduction="none")
         loss_per_sample = loss_per_category.sum(dim=-1)  # [batch_size]
-        
-        # Apply class weights if provided
-        if class_weights is not None:
-            dominant_classes = target_probabilities.argmax(dim=-1)  # [batch_size]
-            sample_weights = class_weights[dominant_classes]  # [batch_size]
-            loss_per_sample = loss_per_sample * sample_weights
         
         # Add entropy regularization penalty
         if entropy_weight > 0.0:
@@ -284,6 +285,7 @@ class DistanceBasedKLLoss(nn.Module):
         entropy_penalty_type: str = "linear",
         maxsup_weight: float = 0.0,
         maxsup_threshold: float = 0.0,
+        focal_gamma: float = 0.0,
     ):
         """Initialize loss function.
         
@@ -302,6 +304,8 @@ class DistanceBasedKLLoss(nn.Module):
                 Defaults to 0.0 (disabled).
             maxsup_threshold: Threshold for MaxSup - only suppress if max logit exceeds this.
                 Defaults to 0.0 (always apply if maxsup_weight > 0).
+            focal_gamma: Gamma parameter for Focal Loss. If > 0, weights loss by (1-p)^gamma
+                to focus on hard samples. Defaults to 0.0.
         """
         super().__init__()
         self.reduction = reduction
@@ -313,6 +317,7 @@ class DistanceBasedKLLoss(nn.Module):
         self.entropy_penalty_type = entropy_penalty_type
         self.maxsup_weight = maxsup_weight
         self.maxsup_threshold = maxsup_threshold
+        self.focal_gamma = focal_gamma
     
     def forward(
         self, predicted_logits: torch.Tensor, target_probabilities: torch.Tensor
@@ -338,6 +343,7 @@ class DistanceBasedKLLoss(nn.Module):
             self.entropy_penalty_type,
             self.maxsup_weight,
             self.maxsup_threshold,
+            self.focal_gamma,
         )
 
 

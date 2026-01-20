@@ -528,6 +528,7 @@ def train(
     entropy_penalty_type = loss_config.get("entropy_penalty_type", "linear")
     maxsup_weight = loss_config.get("maxsup_weight", 0.0)
     maxsup_threshold = loss_config.get("maxsup_threshold", 0.0)
+    focal_gamma = loss_config.get("focal_gamma", 0.0)
     loss_fn = DistanceBasedKLLoss(
         reduction="batchmean",
         label_smoothing=label_smoothing,
@@ -537,11 +538,12 @@ def train(
         entropy_penalty_type=entropy_penalty_type,
         maxsup_weight=maxsup_weight,
         maxsup_threshold=maxsup_threshold,
+        focal_gamma=focal_gamma,
     )
     logger_experiment.info(
         f"Loss function: label_smoothing={label_smoothing}, class_weights capped at 3.0, "
         f"entropy_weight={entropy_weight}, min_entropy={min_entropy}, entropy_penalty_type={entropy_penalty_type}, "
-        f"maxsup_weight={maxsup_weight}, maxsup_threshold={maxsup_threshold}"
+        f"maxsup_weight={maxsup_weight}, maxsup_threshold={maxsup_threshold}, focal_gamma={focal_gamma}"
     )
 
     # Create optimizer with separate weight decay for final layer

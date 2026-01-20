@@ -128,12 +128,16 @@ def create_config_for_model(base_config: dict, model_config: dict) -> dict:
     if "model" not in config:
         config["model"] = {}
     
-    # Set regularization parameters to best values from overnight experiments
-    config["loss"]["entropy_weight"] = 0.5
-    config["loss"]["min_entropy"] = 0.5
+    # Set regularization parameters to balanced values to prevent mode collapse
+    config["loss"]["entropy_weight"] = 0.1  # Reduced to allow model to "commit" to features
+    config["loss"]["min_entropy"] = 0.1
     config["loss"]["maxsup_weight"] = 0.0
     config["model"]["temperature"] = 2.0  # Model logit temperature
+    config["model"]["use_logit_norm"] = True  # Critical for training stability
     config["model"]["logit_norm"] = 2.0
+    
+    # Ensure 30 epochs as requested to allow time to break out of majority-class trap
+    config["training"]["num_epochs"] = 30
 
     return config
 

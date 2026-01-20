@@ -48,11 +48,12 @@ loss:
   use_network_distance: true  # Use OSMnx network distance, not Euclidean
   missing_service_penalty: 2400  # Distance (meters) to use when service category is missing
   label_smoothing: 0.0  # Label smoothing disabled - targets are already smooth probability distributions, not one-hot
-  entropy_weight: 5.0  # Weight for entropy regularization (penalizes one-hot predictions, encourages distribution spread)
-  min_entropy: 1.5  # Minimum entropy threshold - predictions below this are penalized (max entropy for 8 classes ≈ 2.08)
+  entropy_weight: 0.0  # Disabled to let the model be confident
+  min_entropy: 0.1  # Minimum entropy threshold - predictions below this are penalized (max entropy for 8 classes ≈ 2.08)
   entropy_penalty_type: "linear"  # "linear" or "quadratic" - linear is the standard approach from literature
-  maxsup_weight: 0.1  # MaxSup: weight for maximum logit suppression penalty (suppresses overconfident predictions)
+  maxsup_weight: 0.0  # MaxSup: weight for maximum logit suppression penalty (suppresses overconfident predictions)
   maxsup_threshold: 0.0  # MaxSup: only suppress if max logit exceeds this threshold (0.0 = always apply)
+  focal_gamma: 5.0  # Extreme Focal Loss: very high gamma to force model away from flat distributions
 
 data:
   train_split: 0.7
