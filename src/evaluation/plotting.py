@@ -5,6 +5,7 @@ model performance, and spatial predictions. All plots are saved to disk without
 displaying them on screen.
 """
 
+import ast
 import json
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -19,6 +20,228 @@ import torch
 from src.utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+def _extract_prob_arrays(
+    df: pd.DataFrame,
+    predicted_col: str = "predicted_probs",
+    target_col: str = "target_probs",
+) -> tuple[Optional[np.ndarray], Optional[np.ndarray], pd.DataFrame]:
+    """Extract predicted/target probability arrays from a predictions DataFrame.
+
+    Returns arrays and a filtered DataFrame with only rows that parsed correctly.
+    """
+    if predicted_col not in df.columns or target_col not in df.columns:
+        logger.warning("Prediction probability columns not found in DataFrame")
+        return None, None, df
+
+    parsed_pred = []
+    parsed_target = []
+    valid_rows = []
+
+    for _, row in df.iterrows():
+        pred_val = row[predicted_col]
+        target_val = row[target_col]
+
+        try:
+            if isinstance(pred_val, str):
+                pred_val = ast.literal_eval(pred_val)
+            if isinstance(target_val, str):
+                target_val = ast.literal_eval(target_val)
+
+            pred_arr = np.asarray(pred_val, dtype=float)
+            target_arr = np.asarray(target_val, dtype=float)
+
+            if pred_arr.ndim != 1 or target_arr.ndim != 1:
+                raise ValueError("Probability arrays must be 1D")
+
+            parsed_pred.append(pred_arr)
+            parsed_target.append(target_arr)
+            valid_rows.append(True)
+        except Exception:
+            valid_rows.append(False)
+
+    if not parsed_pred:
+        logger.warning("No valid probability rows found for plotting")
+        return None, None, df
+
+    valid_df = df.loc[valid_rows].reset_index(drop=True)
+    return np.vstack(parsed_pred), np.vstack(parsed_target), valid_df
+
+
+def plot_per_class_accuracy(
+    predictions_df: pd.DataFrame,
+    category_names: List[str],
+    save_path: str,
+    title: str = "Per-Class Accuracy (Test)",
+) -> None:
+    """Plot per-class accuracy (recall) based on target classes."""
+    if predictions_df.empty:
+        logger.warning("Empty predictions, skipping per-class accuracy plot")
+        return
+
+    if "predicted_class" not in predictions_df.columns or "target_class" not in predictions_df.columns:
+        logger.warning("Missing predicted_class/target_class columns, skipping per-class accuracy plot")
+        return
+
+    num_classes = len(category_names)
+    accuracies = []
+    counts = []
+
+    for class_idx in range(num_classes):
+        class_rows = predictions_df[predictions_df["target_class"] == class_idx]
+        counts.append(len(class_rows))
+        if len(class_rows) == 0:
+            accuracies.append(0.0)
+        else:
+            correct = (class_rows["predicted_class"] == class_idx).mean()
+            accuracies.append(float(correct))
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    bars = ax.bar(range(num_classes), accuracies, color="steelblue", alpha=0.8, edgecolor="black")
+    ax.set_xticks(range(num_classes))
+    ax.set_xticklabels(category_names, rotation=45, ha="right", fontsize=9)
+    ax.set_ylim([0, 1])
+    ax.set_ylabel("Accuracy (Recall)", fontsize=12)
+    ax.set_title(title, fontsize=14, fontweight="bold")
+    ax.grid(True, alpha=0.3, axis="y")
+
+    for i, (bar, count) in enumerate(zip(bars, counts)):
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.02, f"n={count}",
+                ha="center", va="bottom", fontsize=8)
+
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+    logger.info(f"Saved per-class accuracy to {save_path}")
+
+
+def plot_reliability_diagram(
+    predictions_df: pd.DataFrame,
+    save_path: str,
+    title: str = "Calibration (Reliability Diagram)",
+    n_bins: int = 10,
+) -> None:
+    """Plot reliability diagram and compute ECE."""
+    pred_probs, _, valid_df = _extract_prob_arrays(predictions_df)
+    if pred_probs is None or valid_df.empty:
+        logger.warning("No valid probabilities for calibration plot")
+        return
+
+    confidences = pred_probs.max(axis=1)
+    predictions = pred_probs.argmax(axis=1)
+    targets = valid_df["target_class"].to_numpy()
+    correct = (predictions == targets).astype(float)
+
+    bins = np.linspace(0.0, 1.0, n_bins + 1)
+    bin_indices = np.digitize(confidences, bins, right=True) - 1
+    bin_acc = []
+    bin_conf = []
+    bin_count = []
+
+    for b in range(n_bins):
+        mask = bin_indices == b
+        if mask.sum() == 0:
+            bin_acc.append(0.0)
+            bin_conf.append((bins[b] + bins[b + 1]) / 2)
+            bin_count.append(0)
+        else:
+            bin_acc.append(correct[mask].mean())
+            bin_conf.append(confidences[mask].mean())
+            bin_count.append(mask.sum())
+
+    bin_acc = np.array(bin_acc)
+    bin_conf = np.array(bin_conf)
+    bin_count = np.array(bin_count)
+
+    ece = np.sum((bin_count / max(1, len(confidences))) * np.abs(bin_acc - bin_conf))
+
+    fig, ax = plt.subplots(figsize=(7, 7))
+    ax.plot([0, 1], [0, 1], linestyle="--", color="gray", linewidth=2, label="Perfect calibration")
+    ax.bar(bin_conf, bin_acc, width=1.0 / n_bins, alpha=0.7, edgecolor="black", color="steelblue")
+    ax.set_xlabel("Confidence", fontsize=12)
+    ax.set_ylabel("Accuracy", fontsize=12)
+    ax.set_title(title, fontsize=14, fontweight="bold")
+    ax.set_xlim([0, 1])
+    ax.set_ylim([0, 1])
+    ax.grid(True, alpha=0.3)
+    ax.text(0.05, 0.9, f"ECE = {ece:.4f}", fontsize=11, bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5))
+
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+    logger.info(f"Saved reliability diagram to {save_path}")
+
+
+def plot_prediction_entropy(
+    predictions_df: pd.DataFrame,
+    save_path: str,
+    title: str = "Prediction vs Target Entropy",
+) -> None:
+    """Plot entropy distributions for predicted and target probabilities."""
+    pred_probs, target_probs, _ = _extract_prob_arrays(predictions_df)
+    if pred_probs is None or target_probs is None:
+        logger.warning("No valid probabilities for entropy plot")
+        return
+
+    pred_entropy = -np.sum(pred_probs * np.log(pred_probs + 1e-12), axis=1)
+    target_entropy = -np.sum(target_probs * np.log(target_probs + 1e-12), axis=1)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.hist(pred_entropy, bins=30, alpha=0.7, label="Predicted Entropy", color="steelblue", edgecolor="black")
+    ax.hist(target_entropy, bins=30, alpha=0.6, label="Target Entropy", color="orange", edgecolor="black")
+    ax.axvline(pred_entropy.mean(), color="blue", linestyle="--", linewidth=2, label=f"Pred mean: {pred_entropy.mean():.3f}")
+    ax.axvline(target_entropy.mean(), color="darkorange", linestyle="--", linewidth=2, label=f"Target mean: {target_entropy.mean():.3f}")
+    ax.set_xlabel("Entropy", fontsize=12)
+    ax.set_ylabel("Frequency", fontsize=12)
+    ax.set_title(title, fontsize=14, fontweight="bold")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+    logger.info(f"Saved prediction entropy plot to {save_path}")
+
+
+def plot_neighborhood_accuracy(
+    predictions_df: pd.DataFrame,
+    save_path: str,
+    title: str = "Accuracy by Neighborhood",
+    top_n: int = 20,
+) -> None:
+    """Plot accuracy by neighborhood (top N by sample count)."""
+    if predictions_df.empty or "neighborhood_name" not in predictions_df.columns:
+        logger.warning("No neighborhood data available, skipping neighborhood accuracy plot")
+        return
+
+    grouped = predictions_df.groupby("neighborhood_name").apply(
+        lambda x: pd.Series(
+            {
+                "accuracy": float((x["predicted_class"] == x["target_class"]).mean()),
+                "count": len(x),
+            }
+        )
+    )
+
+    grouped = grouped.sort_values("count", ascending=False).head(top_n)
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.bar(grouped.index, grouped["accuracy"], color="steelblue", alpha=0.8, edgecolor="black")
+    ax.set_xticklabels(grouped.index, rotation=45, ha="right", fontsize=8)
+    ax.set_ylim([0, 1])
+    ax.set_ylabel("Accuracy", fontsize=12)
+    ax.set_title(title, fontsize=14, fontweight="bold")
+    ax.grid(True, alpha=0.3, axis="y")
+
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+    logger.info(f"Saved neighborhood accuracy plot to {save_path}")
 
 
 def ensure_plots_dir(plots_dir: str = "plots") -> Path:
@@ -213,6 +436,66 @@ def plot_accuracy_curves(
     plt.close()
 
     logger.info(f"Saved accuracy curves to {save_path}")
+
+
+def plot_top3_accuracy_curve(
+    history: List[Dict],
+    save_path: str,
+    title: str = "Top-3 Accuracy",
+) -> None:
+    """Plot top-3 accuracy curves over epochs (train/val/test only)."""
+    if not history:
+        logger.warning("Empty history, skipping top-3 accuracy plot")
+        return
+
+    df = pd.DataFrame(history)
+
+    fig, ax = plt.subplots(figsize=(12, 6.5))
+    fig.suptitle(title, fontsize=18, fontweight='bold')
+
+    epoch_col = df.get("epoch")
+    if epoch_col is None:
+        logger.warning("No epoch column found, skipping top-3 accuracy plot")
+        return
+
+    # Keep presentation clean with distinct, colorblind-friendly palette
+    if "train_top3_accuracy" in df.columns:
+        ax.plot(df["epoch"], df["train_top3_accuracy"], label="Train Top-3", color="#D55E00", linewidth=2.5)
+    if "val_top3_accuracy" in df.columns:
+        ax.plot(df["epoch"], df["val_top3_accuracy"], label="Val Top-3", color="#0072B2", linewidth=2.5)
+    if "test_top3_accuracy" in df.columns:
+        ax.plot(df["epoch"], df["test_top3_accuracy"], label="Test Top-3", color="#009E73", linewidth=2.5)
+
+    # Highlight final test value if available
+    if "test_top3_accuracy" in df.columns:
+        last_valid = df["test_top3_accuracy"].dropna()
+        if not last_valid.empty:
+            last_epoch = df.loc[last_valid.index[-1], "epoch"]
+            last_value = last_valid.iloc[-1]
+            ax.scatter([last_epoch], [last_value], color="#009E73", s=60, zorder=5)
+            ax.annotate(
+                f"Final Test Top-3 = {last_value:.3f}",
+                xy=(last_epoch, last_value),
+                xytext=(last_epoch, min(0.95, last_value + 0.08)),
+                arrowprops=dict(arrowstyle="->", lw=1.5, color="#444"),
+                fontsize=11,
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="white", edgecolor="#ccc", alpha=0.9),
+            )
+
+    ax.set_xlabel("Epoch", fontsize=12)
+    ax.set_ylabel("Top-3 Accuracy", fontsize=12)
+    ax.set_ylim([0, 1])
+    ax.legend(fontsize=11, frameon=True, facecolor="white", edgecolor="#ccc")
+    ax.grid(True, alpha=0.25)
+
+    # Subtitle with simple interpretation
+    ax.set_title("Top-3 = correct answer appears in the top three suggestions", fontsize=11, color="#555")
+
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+    logger.info(f"Saved top-3 accuracy plot to {save_path}")
 
 
 def plot_hyperparameter_comparison(
@@ -534,6 +817,13 @@ def plot_training_summary(
         history,
         str(plots_path / f"{experiment_name}_accuracy_curves.png"),
         title=f"{experiment_name.replace('_', ' ').title()} - Accuracy Curves",
+    )
+
+    # Top-3 accuracy only (presentation-friendly)
+    plot_top3_accuracy_curve(
+        history,
+        str(plots_path / f"{experiment_name}_top3_accuracy.png"),
+        title=f"{experiment_name.replace('_', ' ').title()} - Top-3 Accuracy",
     )
 
     logger.info(f"Saved all training summary plots to {plots_path}")

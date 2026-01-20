@@ -1,0 +1,17 @@
+{
+  "name": "no_maxsup",
+  "description": "MAXSUP TEST: Disable MaxSup penalty (0.1\u21920.0) - Test MaxSup impact alone",
+  "start_time": "2026-01-20T06:48:01.187239",
+  "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+  "modifications": {
+    "loss": {
+      "maxsup_weight": 0.0
+    }
+  },
+  "end_time": "2026-01-20T07:09:32.277000",
+  "elapsed_time_seconds": 1291.0849359035492,
+  "return_code": 0,
+  "success": true,
+  "best_val_loss": 0.3718,
+  "test_kl_divergence": 0.3962
+}

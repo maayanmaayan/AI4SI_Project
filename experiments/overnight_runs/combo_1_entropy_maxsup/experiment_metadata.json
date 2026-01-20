@@ -1,0 +1,19 @@
+{
+  "name": "combo_1_entropy_maxsup",
+  "description": "\u2b50\u2b50 KEY COMBINATION: Reduce entropy (0.5) + disable MaxSup - Two most important fixes",
+  "start_time": "2026-01-20T00:58:54.169321",
+  "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+  "modifications": {
+    "loss": {
+      "entropy_weight": 0.5,
+      "min_entropy": 0.5,
+      "maxsup_weight": 0.0
+    }
+  },
+  "end_time": "2026-01-20T01:20:23.764045",
+  "elapsed_time_seconds": 1289.5925061702728,
+  "return_code": 0,
+  "success": true,
+  "best_val_loss": 0.3718,
+  "test_kl_divergence": 0.3962
+}

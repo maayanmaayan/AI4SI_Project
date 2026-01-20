@@ -1,0 +1,18 @@
+{
+  "name": "baseline_reduced_entropy",
+  "description": "\u2b50 SIMPLEST FIX: Reduce entropy_weight 5.0\u21920.5, min_entropy 1.5\u21920.5 - Single most important change",
+  "start_time": "2026-01-20T01:20:23.786151",
+  "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+  "modifications": {
+    "loss": {
+      "entropy_weight": 0.5,
+      "min_entropy": 0.5
+    }
+  },
+  "end_time": "2026-01-20T01:41:50.493927",
+  "elapsed_time_seconds": 1286.702889919281,
+  "return_code": 0,
+  "success": true,
+  "best_val_loss": 0.3874,
+  "test_kl_divergence": 0.3977
+}

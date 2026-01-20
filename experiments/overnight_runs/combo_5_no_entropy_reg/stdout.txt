@@ -1,0 +1,12 @@
+
+============================================================
+Training Complete!
+============================================================
+Best validation loss: 0.3981
+Total epochs: 30
+Test loss: 0.7759
+Test KL divergence: 0.3464
+Test top-1 accuracy: 0.3484
+Results saved to: /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_5_no_entropy_reg/run
+Checkpoint saved to: models/checkpoints/graph_transformer_best.pt
+============================================================

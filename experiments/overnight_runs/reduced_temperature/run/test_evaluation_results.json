@@ -1,0 +1,18 @@
+{
+  "split": "test",
+  "metrics": {
+    "loss": 0.7758435979686336,
+    "kl_divergence": 0.3463304373774567,
+    "top1_accuracy": 0.34838274932614555,
+    "top3_accuracy": 0.97911051212938,
+    "num_samples": 1484
+  },
+  "num_samples": 1484,
+  "per_sample_stats": {
+    "mean_loss": 0.34633045018000425,
+    "std_loss": 0.28136431945210005,
+    "mean_kl_divergence": 0.3463305099754321,
+    "std_kl_divergence": 0.2813643206294894,
+    "accuracy": 0.34838274932614555
+  }
+}

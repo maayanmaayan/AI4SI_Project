@@ -173,6 +173,32 @@ def _convert_env_value(value: str) -> Any:
     return value
 
 
+def save_config(config: Dict[str, Any], config_path: str) -> None:
+    """Save configuration dictionary to YAML file.
+
+    Args:
+        config: Configuration dictionary to save.
+        config_path: Path to YAML file to save configuration to.
+
+    Raises:
+        IOError: If the file cannot be written.
+
+    Example:
+        >>> config = {"model": {"name": "test"}, "training": {"lr": 0.001}}
+        >>> save_config(config, "models/config_test.yaml")
+    """
+    config_file = Path(config_path)
+    config_file.parent.mkdir(parents=True, exist_ok=True)
+
+    try:
+        with open(config_file, "w", encoding="utf-8") as f:
+            yaml.dump(config, f, default_flow_style=False, sort_keys=False, indent=2)
+    except IOError as e:
+        raise IOError(f"Failed to write configuration file: {e}") from e
+
+    logger.info(f"Saved configuration to {config_path}")
+
+
 def _validate_config(config: Dict[str, Any]) -> None:
     """Validate that required configuration sections exist.
 

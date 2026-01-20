@@ -1,0 +1,82 @@
+model:
+  name: spatial_graph_transformer
+  architecture: graph_transformer
+  num_features: 33
+  hidden_dim: 32
+  num_layers: 2
+  num_heads: 4
+  dropout: 0.5
+  num_classes: 8
+  edge_dim: 4
+  temperature: 4.0
+  use_logit_norm: true
+  logit_norm: 1.0
+training:
+  batch_size: 16
+  learning_rate: 0.0001
+  weight_decay: 0.001
+  num_epochs: 30
+  early_stopping_patience: 5
+  early_stopping_min_delta: 0.0005
+  use_mixed_precision: true
+  gradient_accumulation_steps: 1
+  num_workers: 2
+  pin_memory: false
+  device: auto
+  max_grad_norm: 1.0
+  final_layer_weight_decay: 0.01
+  augmentation:
+    enabled: true
+    feature_noise_std: 0.01
+    subsample_ratio: 0.8
+    distance_noise_std: 0.02
+features:
+  walk_15min_radius_meters: 1000
+  grid_cell_size_meters: 100
+  target_point_sampling_interval_meters: 50
+  filter_by_network_distance: true
+  include_all_within_radius: true
+loss:
+  type: distance_similarity
+  temperature: 200
+  use_network_distance: true
+  missing_service_penalty: 2400
+  label_smoothing: 0.0
+  entropy_weight: 0.5
+  min_entropy: 0.5
+  entropy_penalty_type: linear
+  maxsup_weight: 0.0
+  maxsup_threshold: 0.0
+data:
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+  random_seed: 2024
+  train_only_on_compliant: true
+evaluation:
+  statistical_test: mann_whitney
+  significance_level: 0.05
+  min_samples_for_test: 10
+paths:
+  data_root: ./data
+  neighborhoods_geojson: ./paris_neighborhoods.geojson
+  checkpoints_dir: ./models/checkpoints
+  experiments_dir: ./experiments/runs
+osm_extraction:
+  buffer_meters: 100
+  network_type: walk
+  simplify: true
+  cache_results: true
+  retry_attempts: 3
+  retry_delay: 5
+  min_services_warning: 5
+census_extraction:
+  cache_results: true
+  retry_attempts: 3
+  retry_delay: 5
+  paris_geocode: '75056'
+  iris_level: IRIS
+  min_data_warning: 10
+? ''
+: cf_user_text_encoding: 0x1F5:0x0:0x0
+  cfbundleidentifier: com.todesktop.230313mzl4w4u92

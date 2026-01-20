@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/Users/maayanchen/Code/University/AI4SI_Project/scripts/hyperparameter_sweep.py", line 30, in <module>
+    from src.training.train import train
+  File "/Users/maayanchen/Code/University/AI4SI_Project/src/training/train.py", line 13, in <module>
+    import torch
+  File "/Users/maayanchen/Code/University/AI4SI_Project/.venv/lib/python3.14/site-packages/torch/__init__.py", line 2204, in <module>
+    from torch import (
+    ...<30 lines>...
+    )
+  File "/Users/maayanchen/Code/University/AI4SI_Project/.venv/lib/python3.14/site-packages/torch/profiler/__init__.py", line 17, in <module>
+    from torch._environment import is_fbcode
+  File "<frozen importlib._bootstrap>", line 1371, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1342, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 938, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 758, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 895, in get_code
+  File "<frozen importlib._bootstrap_external>", line 953, in get_data
+PermissionError: [Errno 1] Operation not permitted: '/Users/maayanchen/Code/University/AI4SI_Project/.venv/lib/python3.14/site-packages/torch/_environment.py'

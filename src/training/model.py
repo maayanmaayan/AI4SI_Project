@@ -63,6 +63,8 @@ class SpatialGraphTransformer(nn.Module):
         num_classes: int = 8,
         edge_dim: int = 4,
         temperature: float = 2.0,
+        use_logit_norm: bool = True,
+        logit_norm: float = 1.0,
     ):
         super().__init__()
 
@@ -74,6 +76,8 @@ class SpatialGraphTransformer(nn.Module):
         self.num_classes = num_classes
         self.edge_dim = edge_dim
         self.temperature = temperature
+        self.use_logit_norm = use_logit_norm
+        self.logit_norm = logit_norm
 
         # Node encoder: 33 features → hidden_dim
         self.node_encoder = nn.Linear(num_features, hidden_dim)
@@ -171,6 +175,15 @@ class SpatialGraphTransformer(nn.Module):
         # Classify
         logits = self.classifier(target_emb)  # [batch_size, num_classes]
         
+        # Apply LogitNorm: normalize logits to constant norm to prevent logit explosion
+        # This constrains logit magnitude, preventing extreme softmax outputs
+        # Reference: "Mitigating Neural Network Overconfidence with Logit Normalization" (ICML 2022)
+        if self.use_logit_norm:
+            # Compute L2 norm of logits
+            logit_norms = torch.norm(logits, p=2, dim=-1, keepdim=True)  # [batch_size, 1]
+            # Normalize to target norm (avoid division by zero)
+            logits = logits / (logit_norms + 1e-8) * self.logit_norm
+        
         # Apply temperature scaling to prevent overconfidence
         # Dividing logits by temperature flattens the probability distribution
         # P_i = exp(z_i / T) / sum(exp(z_j / T))
@@ -261,6 +274,8 @@ class TinySpatialGraphTransformer(nn.Module):
         num_classes: int = 8,
         edge_dim: int = 4,
         temperature: float = 2.0,
+        use_logit_norm: bool = True,
+        logit_norm: float = 1.0,
     ):
         super().__init__()
 
@@ -272,6 +287,8 @@ class TinySpatialGraphTransformer(nn.Module):
         self.num_classes = num_classes
         self.edge_dim = edge_dim
         self.temperature = temperature
+        self.use_logit_norm = use_logit_norm
+        self.logit_norm = logit_norm
 
         # Node encoder: 33 features → hidden_dim
         self.node_encoder = nn.Linear(num_features, hidden_dim)
@@ -356,6 +373,15 @@ class TinySpatialGraphTransformer(nn.Module):
         # Classify
         logits = self.classifier(target_emb)  # [batch_size, num_classes]
         
+        # Apply LogitNorm: normalize logits to constant norm to prevent logit explosion
+        # This constrains logit magnitude, preventing extreme softmax outputs
+        # Reference: "Mitigating Neural Network Overconfidence with Logit Normalization" (ICML 2022)
+        if self.use_logit_norm:
+            # Compute L2 norm of logits
+            logit_norms = torch.norm(logits, p=2, dim=-1, keepdim=True)  # [batch_size, 1]
+            # Normalize to target norm (avoid division by zero)
+            logits = logits / (logit_norms + 1e-8) * self.logit_norm
+        
         # Apply temperature scaling to prevent overconfidence
         # Dividing logits by temperature flattens the probability distribution
         # P_i = exp(z_i / T) / sum(exp(z_j / T))
@@ -431,6 +457,8 @@ def create_model_from_config(config: Optional[dict] = None) -> SpatialGraphTrans
         num_classes=model_config.get("num_classes", 8),
         edge_dim=model_config.get("edge_dim", 4),
         temperature=model_config.get("temperature", 2.0),
+        use_logit_norm=model_config.get("use_logit_norm", True),
+        logit_norm=model_config.get("logit_norm", 1.0),
     )
 
     logger.info(
@@ -463,6 +491,8 @@ def create_tiny_model_from_config(config: Optional[dict] = None) -> TinySpatialG
         config = get_config()
 
     # Tiny model uses hardcoded parameters (ignores config for consistency)
+    # But still use logit norm settings from config if available
+    model_config = config.get("model", {}) if config else {}
     model = TinySpatialGraphTransformer(
         num_features=33,
         hidden_dim=16,
@@ -472,6 +502,8 @@ def create_tiny_model_from_config(config: Optional[dict] = None) -> TinySpatialG
         num_classes=8,
         edge_dim=4,
         temperature=2.0,
+        use_logit_norm=model_config.get("use_logit_norm", True),
+        logit_norm=model_config.get("logit_norm", 1.0),
     )
 
     param_count = sum(p.numel() for p in model.parameters())

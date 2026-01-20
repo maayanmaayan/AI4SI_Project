@@ -1,0 +1,22 @@
+{
+  "name": "combo_3_mild",
+  "description": "MILD REDUCTIONS: entropy_weight 2.0, temperature 3.0, logit_norm 1.5 - Safer conservative approach",
+  "start_time": "2026-01-20T01:41:50.863251",
+  "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+  "modifications": {
+    "loss": {
+      "entropy_weight": 2.0,
+      "min_entropy": 1.0
+    },
+    "model": {
+      "temperature": 3.0,
+      "logit_norm": 1.5
+    }
+  },
+  "end_time": "2026-01-20T03:40:56.922274",
+  "elapsed_time_seconds": 7146.053539991379,
+  "return_code": 0,
+  "success": true,
+  "best_val_loss": 0.3827,
+  "test_kl_divergence": 0.3722
+}

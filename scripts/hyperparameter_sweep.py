@@ -4,6 +4,13 @@
 This script trains multiple model configurations as specified in the PRD,
 compares their performance, and generates comparison plots.
 
+NOTE: This script tests ARCHITECTURE/TRAINING hyperparameters (learning_rate, 
+num_layers, loss.temperature). For REGULARIZATION hyperparameters (entropy_weight,
+model.temperature, logit_norm), see run_overnight_experiments.py.
+
+The script uses the best regularization settings from overnight experiments
+(combo_2_all_reductions) as the baseline.
+
 Usage:
     python scripts/hyperparameter_sweep.py [--quick-test] [--config CONFIG_PATH]
 """
@@ -12,6 +19,7 @@ import argparse
 import json
 import sys
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List
 
@@ -26,45 +34,49 @@ from src.evaluation.plotting import plot_hyperparameter_comparison
 
 logger = get_logger(__name__)
 
-# Model configurations from PRD.md
+# Model configurations for architecture/training hyperparameter sweep
+# Uses best regularization settings from overnight experiments (combo_2_all_reductions)
+# Baseline learning_rate: 0.0001 (from config.yaml)
+# Baseline num_layers: 2 (from config.yaml)
+# Baseline loss.temperature: 200 (distance loss temperature, not model temperature)
 MODEL_CONFIGURATIONS = [
     {
         "id": 1,
         "name": "baseline",
-        "description": "Baseline (current config)",
-        "learning_rate": 0.001,
-        "num_layers": 3,
+        "description": "Baseline (current config with optimal regularization)",
+        "learning_rate": 0.0001,  # Matches config.yaml baseline
+        "num_layers": 2,  # Matches config.yaml baseline
         "temperature": 200,
     },
     {
         "id": 2,
         "name": "lower_lr",
         "description": "Lower learning rate",
-        "learning_rate": 0.0005,
-        "num_layers": 3,
+        "learning_rate": 0.00005,
+        "num_layers": 2,
         "temperature": 200,
     },
     {
         "id": 3,
         "name": "higher_lr",
         "description": "Higher learning rate",
-        "learning_rate": 0.002,
-        "num_layers": 3,
+        "learning_rate": 0.0002,
+        "num_layers": 2,
         "temperature": 200,
     },
     {
         "id": 4,
         "name": "shallow",
         "description": "Fewer layers (shallow)",
-        "learning_rate": 0.001,
-        "num_layers": 2,
+        "learning_rate": 0.0001,
+        "num_layers": 1,
         "temperature": 200,
     },
     {
         "id": 5,
         "name": "deeper",
         "description": "More layers (deeper)",
-        "learning_rate": 0.001,
+        "learning_rate": 0.0001,
         "num_layers": 4,
         "temperature": 200,
     },
@@ -72,17 +84,17 @@ MODEL_CONFIGURATIONS = [
         "id": 6,
         "name": "lower_temp",
         "description": "Lower temperature (sharper target distribution)",
-        "learning_rate": 0.001,
-        "num_layers": 3,
+        "learning_rate": 0.0001,
+        "num_layers": 2,
         "temperature": 150,
     },
     {
         "id": 7,
         "name": "higher_temp",
         "description": "Higher temperature (smoother target distribution)",
-        "learning_rate": 0.001,
-        "num_layers": 3,
-        "temperature": 250,
+        "learning_rate": 0.0001,
+        "num_layers": 2,
+        "temperature": 300,
     },
 ]
 
@@ -105,8 +117,23 @@ def create_config_for_model(base_config: dict, model_config: dict) -> dict:
     # Update training hyperparameters
     config["training"]["learning_rate"] = model_config["learning_rate"]
 
-    # Update loss hyperparameters
+    # Update loss hyperparameters (distance loss temperature, not model temperature)
     config["loss"]["temperature"] = model_config["temperature"]
+    
+    # Apply best regularization settings from overnight experiments (combo_2_all_reductions)
+    # These were found to be optimal: entropy_weight=0.5, min_entropy=0.5, 
+    # maxsup_weight=0.0, model.temperature=2.0, logit_norm=2.0
+    if "loss" not in config:
+        config["loss"] = {}
+    if "model" not in config:
+        config["model"] = {}
+    
+    # Set regularization parameters to best values from overnight experiments
+    config["loss"]["entropy_weight"] = 0.5
+    config["loss"]["min_entropy"] = 0.5
+    config["loss"]["maxsup_weight"] = 0.0
+    config["model"]["temperature"] = 2.0  # Model logit temperature
+    config["model"]["logit_norm"] = 2.0
 
     return config
 
@@ -161,14 +188,40 @@ def run_hyperparameter_sweep(
         logger.info(f"Description: {model_config['description']}")
         logger.info(f"Learning Rate: {model_config['learning_rate']}")
         logger.info(f"Layers: {model_config['num_layers']}")
-        logger.info(f"Temperature: {model_config['temperature']}")
+        logger.info(f"Loss Temperature: {model_config['temperature']}m (distance-to-probability)")
+        logger.info(f"Regularization: entropy_weight=0.5, model.temperature=2.0, logit_norm=2.0")
         logger.info("=" * 80)
 
         # Create configuration for this model
         config = create_config_for_model(base_config, model_config)
 
-        # Create experiment directory for this model
-        experiment_dir = sweep_dir / f"model_{model_config['id']}_{model_config['name']}"
+        # Create experiment directory for this model (meaningful name)
+        experiment_dir = sweep_dir / model_config["name"]
+        experiment_dir.mkdir(parents=True, exist_ok=True)
+        metadata_path = experiment_dir / "experiment_metadata.json"
+        start_ts = time.time()
+        start_time = datetime.utcnow().isoformat()
+        metadata = {
+            "name": model_config["name"],
+            "description": model_config.get("description", ""),
+            "start_time": start_time,
+            "base_config_path": base_config_path or "default (get_config)",
+            "sweep_dir": str(sweep_dir),
+            "model_config": {
+                "learning_rate": model_config["learning_rate"],
+                "num_layers": model_config["num_layers"],
+                "loss_temperature": model_config["temperature"],
+            },
+            "regularization": {
+                "entropy_weight": 0.5,
+                "min_entropy": 0.5,
+                "maxsup_weight": 0.0,
+                "model_temperature": 2.0,
+                "logit_norm": 2.0,
+            },
+        }
+        with open(metadata_path, "w") as f:
+            json.dump(metadata, f, indent=2)
 
         try:
             # Train model
@@ -200,6 +253,20 @@ def run_hyperparameter_sweep(
                 best_val_loss = result["best_val_loss"]
                 best_model = result
 
+            # Update metadata on success
+            end_time = datetime.utcnow().isoformat()
+            metadata.update(
+                {
+                    "end_time": end_time,
+                    "elapsed_seconds": time.time() - start_ts,
+                    "success": True,
+                    "best_val_loss": result["best_val_loss"],
+                    "test_metrics": result["test_metrics"],
+                }
+            )
+            with open(metadata_path, "w") as f:
+                json.dump(metadata, f, indent=2)
+
             logger.info(f"✓ Model {model_config['id']} completed: val_loss={result['best_val_loss']:.4f}")
 
         except Exception as e:
@@ -211,6 +278,17 @@ def run_hyperparameter_sweep(
                     "error": str(e),
                 }
             )
+            end_time = datetime.utcnow().isoformat()
+            metadata.update(
+                {
+                    "end_time": end_time,
+                    "elapsed_seconds": time.time() - start_ts,
+                    "success": False,
+                    "error": str(e),
+                }
+            )
+            with open(metadata_path, "w") as f:
+                json.dump(metadata, f, indent=2)
 
     # Save sweep results
     results_path = sweep_dir / "sweep_results.json"

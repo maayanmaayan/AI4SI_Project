@@ -21,6 +21,10 @@ from src.evaluation.plotting import (
     plot_training_summary,
     plot_neighbor_distribution,
     plot_target_probability_distribution,
+    plot_per_class_accuracy,
+    plot_reliability_diagram,
+    plot_prediction_entropy,
+    plot_neighborhood_accuracy,
 )
 from src.evaluation.save_predictions import save_predictions, save_evaluation_results
 from src.training.dataset import (
@@ -260,6 +264,7 @@ def train_epoch(
     loss_fn: nn.Module,
     device: torch.device,
     use_mixed_precision: bool = False,
+    max_grad_norm: Optional[float] = None,
 ) -> Dict[str, float]:
     """Train model for one epoch.
 
@@ -304,13 +309,28 @@ def train_epoch(
         predicted_probs = torch.softmax(logits, dim=-1)
         top1 = compute_top_k_accuracy(predicted_probs, batch.y, k=1)
         top3 = compute_top_k_accuracy(predicted_probs, batch.y, k=3)
+        
+        # Monitor logit magnitudes to detect explosion (for debugging mode collapse)
+        # Log max logit, min logit, and logit range periodically
+        if num_samples == 0:  # First batch only
+            max_logit = logits.max().item()
+            min_logit = logits.min().item()
+            logit_range = max_logit - min_logit
+            logger.debug(f"Logit stats: max={max_logit:.2f}, min={min_logit:.2f}, range={logit_range:.2f}")
 
         if use_mixed_precision and scaler is not None:
             scaler.scale(loss).backward()
+            # Gradient clipping to prevent logit explosion
+            if max_grad_norm is not None:
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
             scaler.step(optimizer)
             scaler.update()
         else:
             loss.backward()
+            # Gradient clipping to prevent logit explosion
+            if max_grad_norm is not None:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
             optimizer.step()
 
         total_loss += loss.item() * batch.num_graphs
@@ -500,27 +520,54 @@ def train(
         model = create_model_from_config(config)
     model = model.to(device)
 
-    # Create loss function with label smoothing, class weights, and entropy regularization
+    # Create loss function with label smoothing, class weights, entropy regularization, and MaxSup
     loss_config = config.get("loss", {})
     label_smoothing = loss_config.get("label_smoothing", 0.1)
     entropy_weight = loss_config.get("entropy_weight", 0.1)
     min_entropy = loss_config.get("min_entropy", 1.0)
+    entropy_penalty_type = loss_config.get("entropy_penalty_type", "linear")
+    maxsup_weight = loss_config.get("maxsup_weight", 0.0)
+    maxsup_threshold = loss_config.get("maxsup_threshold", 0.0)
     loss_fn = DistanceBasedKLLoss(
         reduction="batchmean",
         label_smoothing=label_smoothing,
         class_weights=class_weights,
         entropy_weight=entropy_weight,
         min_entropy=min_entropy,
+        entropy_penalty_type=entropy_penalty_type,
+        maxsup_weight=maxsup_weight,
+        maxsup_threshold=maxsup_threshold,
     )
     logger_experiment.info(
         f"Loss function: label_smoothing={label_smoothing}, class_weights capped at 3.0, "
-        f"entropy_weight={entropy_weight}, min_entropy={min_entropy}"
+        f"entropy_weight={entropy_weight}, min_entropy={min_entropy}, entropy_penalty_type={entropy_penalty_type}, "
+        f"maxsup_weight={maxsup_weight}, maxsup_threshold={maxsup_threshold}"
     )
 
-    # Create optimizer
+    # Create optimizer with separate weight decay for final layer
     learning_rate = training_config.get("learning_rate", 0.001)
     weight_decay = training_config.get("weight_decay", 0.0001)
-    optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    final_layer_weight_decay = training_config.get("final_layer_weight_decay", 0.0)
+    
+    # Separate parameters: final layer gets extra weight decay to prevent overconfidence
+    if final_layer_weight_decay > 0.0 and hasattr(model, "classifier"):
+        # Get final layer parameters
+        final_layer_params = list(model.classifier.parameters())
+        # Get all other parameters
+        other_params = [p for name, p in model.named_parameters() if "classifier" not in name]
+        
+        # Create parameter groups with different weight decay
+        param_groups = [
+            {"params": other_params, "weight_decay": weight_decay},
+            {"params": final_layer_params, "weight_decay": weight_decay + final_layer_weight_decay},
+        ]
+        optimizer = AdamW(param_groups, lr=learning_rate)
+        logger_experiment.info(
+            f"Optimizer: using separate weight decay - base={weight_decay}, "
+            f"final_layer={weight_decay + final_layer_weight_decay}"
+        )
+    else:
+        optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     # Create learning rate scheduler
     scheduler = ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=5)
@@ -530,11 +577,13 @@ def train(
     early_stopping_patience = training_config.get("early_stopping_patience", 10)
     early_stopping_min_delta = training_config.get("early_stopping_min_delta", 0.001)
     use_mixed_precision = training_config.get("use_mixed_precision", False)
+    max_grad_norm = training_config.get("max_grad_norm", None)  # Gradient clipping (None = disabled)
 
     # Resume from checkpoint if specified
     start_epoch = 0
     best_val_loss = float("inf")
     training_history = []
+    patience_counter = 0
     if resume_from is not None:
         checkpoint = load_checkpoint(Path(resume_from), model, optimizer, scheduler)
         start_epoch = checkpoint["epoch"] + 1
@@ -543,10 +592,31 @@ def train(
         if "training_history" in checkpoint:
             training_history = checkpoint["training_history"]
             logger_experiment.info(f"Loaded {len(training_history)} epochs of training history")
+            
+            # Calculate patience_counter from training history (count validation epochs without improvement)
+            # Validation runs every 5 epochs or on epoch 1
+            last_improvement_epoch = 0
+            for entry in training_history:
+                epoch_num = entry["epoch"]
+                val_loss = entry.get("val_loss")
+                if val_loss is not None and val_loss < float("inf"):
+                    # This is a validation epoch
+                    if val_loss < best_val_loss - early_stopping_min_delta:
+                        # Found improvement - reset counter
+                        last_improvement_epoch = epoch_num
+                        patience_counter = 0
+                    else:
+                        # No improvement - increment counter (only if this is after last improvement)
+                        if epoch_num > last_improvement_epoch:
+                            patience_counter += 1
+            
+            logger_experiment.info(
+                f"Calculated patience_counter from history: {patience_counter}/{early_stopping_patience} "
+                f"(last improvement at epoch {last_improvement_epoch if last_improvement_epoch > 0 else 'never'})"
+            )
         logger_experiment.info(f"Resuming from epoch {start_epoch}")
 
     # Training loop
-    patience_counter = 0
     # training_history initialized above if resuming, otherwise empty list
     
     # Initialize checkpoint directory
@@ -574,7 +644,7 @@ def train(
 
         # Training phase
         train_metrics = train_epoch(
-            model, train_loader, optimizer, loss_fn, device, use_mixed_precision
+            model, train_loader, optimizer, loss_fn, device, use_mixed_precision, max_grad_norm
         )
         train_loss = train_metrics["loss"]
         train_top1 = train_metrics["top1_accuracy"]
@@ -689,9 +759,13 @@ def train(
                     model, optimizer, epoch, best_val_loss, checkpoint_path, config,
                     scheduler=scheduler, training_history=training_history
                 )
-                logger_experiment.info(f"New best validation loss: {best_val_loss:.4f}")
+                logger_experiment.info(f"New best validation loss: {best_val_loss:.4f} (patience counter reset to 0)")
             else:
                 patience_counter += 1
+                logger_experiment.info(
+                    f"No improvement (val_loss: {val_loss:.4f} >= best: {best_val_loss:.4f} - {early_stopping_min_delta:.4f}). "
+                    f"Patience counter: {patience_counter}/{early_stopping_patience}"
+                )
         
         # Save periodic checkpoint every 10 epochs (in addition to best model)
         if (epoch + 1) % 10 == 0:
@@ -702,11 +776,11 @@ def train(
             )
             logger_experiment.debug(f"Saved periodic checkpoint at epoch {epoch + 1}")
 
-        # Early stopping
+        # Early stopping (check every epoch, but patience_counter only increments on validation epochs)
         if patience_counter >= early_stopping_patience:
             logger_experiment.info(
                 f"Early stopping triggered after {epoch + 1} epochs "
-                f"(patience: {early_stopping_patience})"
+                f"(patience: {early_stopping_patience} validation epochs without improvement)"
             )
             break
 
@@ -790,6 +864,61 @@ def train(
         )
     except Exception as e:
         logger_experiment.warning(f"Failed to plot target probability distribution: {e}")
+
+    # Explainability plots from predictions (test/val)
+    try:
+        if test_predictions_df is not None:
+            category_names = get_service_category_names()
+            plot_per_class_accuracy(
+                test_predictions_df,
+                category_names,
+                save_path=str(plots_dir / "test_per_class_accuracy.png"),
+                title="Test Per-Class Accuracy",
+            )
+            plot_reliability_diagram(
+                test_predictions_df,
+                save_path=str(plots_dir / "test_calibration_reliability.png"),
+                title="Test Calibration (Reliability Diagram)",
+            )
+            plot_prediction_entropy(
+                test_predictions_df,
+                save_path=str(plots_dir / "test_prediction_entropy.png"),
+                title="Test Prediction vs Target Entropy",
+            )
+            plot_neighborhood_accuracy(
+                test_predictions_df,
+                save_path=str(plots_dir / "test_neighborhood_accuracy.png"),
+                title="Test Accuracy by Neighborhood (Top 20)",
+            )
+    except Exception as e:
+        logger_experiment.warning(f"Failed to plot test explainability metrics: {e}")
+
+    try:
+        if val_predictions_df is not None:
+            category_names = get_service_category_names()
+            plot_per_class_accuracy(
+                val_predictions_df,
+                category_names,
+                save_path=str(plots_dir / "val_per_class_accuracy.png"),
+                title="Validation Per-Class Accuracy",
+            )
+            plot_reliability_diagram(
+                val_predictions_df,
+                save_path=str(plots_dir / "val_calibration_reliability.png"),
+                title="Validation Calibration (Reliability Diagram)",
+            )
+            plot_prediction_entropy(
+                val_predictions_df,
+                save_path=str(plots_dir / "val_prediction_entropy.png"),
+                title="Validation Prediction vs Target Entropy",
+            )
+            plot_neighborhood_accuracy(
+                val_predictions_df,
+                save_path=str(plots_dir / "val_neighborhood_accuracy.png"),
+                title="Validation Accuracy by Neighborhood (Top 20)",
+            )
+    except Exception as e:
+        logger_experiment.warning(f"Failed to plot validation explainability metrics: {e}")
 
     # Save final summary
     summary = {

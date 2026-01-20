@@ -1,0 +1,197 @@
+{
+  "start_time": "2026-01-19T23:59:58.278695",
+  "end_time": "2026-01-20T07:53:13.087591",
+  "total_elapsed_seconds": 28394.80888915062,
+  "total_experiments": 9,
+  "completed": 9,
+  "failed": 0,
+  "experiments": [
+    {
+      "name": "combo_6_balanced",
+      "description": "\u2b50 BALANCED (BEST BET): entropy_weight 1.0, no MaxSup, temperature 2.5, logit_norm 1.8 - Moderate changes, safe approach",
+      "start_time": "2026-01-19T23:59:58.284212",
+      "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+      "modifications": {
+        "loss": {
+          "entropy_weight": 1.0,
+          "min_entropy": 0.8,
+          "maxsup_weight": 0.0
+        },
+        "model": {
+          "temperature": 2.5,
+          "logit_norm": 1.8
+        }
+      },
+      "end_time": "2026-01-20T00:37:22.371658",
+      "elapsed_time_seconds": 2244.0796191692352,
+      "return_code": 0,
+      "success": true,
+      "best_val_loss": 0.357,
+      "test_kl_divergence": 0.3504
+    },
+    {
+      "name": "combo_2_all_reductions",
+      "description": "\u2b50\u2b50 ALL RECOMMENDED CHANGES: entropy (0.5), no MaxSup, temperature (2.0), logit_norm (2.0) - All fixes together",
+      "start_time": "2026-01-20T00:37:22.420838",
+      "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+      "modifications": {
+        "loss": {
+          "entropy_weight": 0.5,
+          "min_entropy": 0.5,
+          "maxsup_weight": 0.0
+        },
+        "model": {
+          "temperature": 2.0,
+          "logit_norm": 2.0
+        }
+      },
+      "end_time": "2026-01-20T00:58:54.128510",
+      "elapsed_time_seconds": 1291.7019801139832,
+      "return_code": 0,
+      "success": true,
+      "best_val_loss": 0.3802,
+      "test_kl_divergence": 0.3365
+    },
+    {
+      "name": "combo_1_entropy_maxsup",
+      "description": "\u2b50\u2b50 KEY COMBINATION: Reduce entropy (0.5) + disable MaxSup - Two most important fixes",
+      "start_time": "2026-01-20T00:58:54.169321",
+      "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+      "modifications": {
+        "loss": {
+          "entropy_weight": 0.5,
+          "min_entropy": 0.5,
+          "maxsup_weight": 0.0
+        }
+      },
+      "end_time": "2026-01-20T01:20:23.764045",
+      "elapsed_time_seconds": 1289.5925061702728,
+      "return_code": 0,
+      "success": true,
+      "best_val_loss": 0.3718,
+      "test_kl_divergence": 0.3962
+    },
+    {
+      "name": "baseline_reduced_entropy",
+      "description": "\u2b50 SIMPLEST FIX: Reduce entropy_weight 5.0\u21920.5, min_entropy 1.5\u21920.5 - Single most important change",
+      "start_time": "2026-01-20T01:20:23.786151",
+      "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+      "modifications": {
+        "loss": {
+          "entropy_weight": 0.5,
+          "min_entropy": 0.5
+        }
+      },
+      "end_time": "2026-01-20T01:41:50.493927",
+      "elapsed_time_seconds": 1286.702889919281,
+      "return_code": 0,
+      "success": true,
+      "best_val_loss": 0.3874,
+      "test_kl_divergence": 0.3977
+    },
+    {
+      "name": "combo_3_mild",
+      "description": "MILD REDUCTIONS: entropy_weight 2.0, temperature 3.0, logit_norm 1.5 - Safer conservative approach",
+      "start_time": "2026-01-20T01:41:50.863251",
+      "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+      "modifications": {
+        "loss": {
+          "entropy_weight": 2.0,
+          "min_entropy": 1.0
+        },
+        "model": {
+          "temperature": 3.0,
+          "logit_norm": 1.5
+        }
+      },
+      "end_time": "2026-01-20T03:40:56.922274",
+      "elapsed_time_seconds": 7146.053539991379,
+      "return_code": 0,
+      "success": true,
+      "best_val_loss": 0.3827,
+      "test_kl_divergence": 0.3722
+    },
+    {
+      "name": "reduced_temperature",
+      "description": "TEMPERATURE FIX: Reduce temperature 4.0\u21922.0, increase logit_norm 1.0\u21922.0 - Test temperature impact",
+      "start_time": "2026-01-20T03:40:56.953659",
+      "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+      "modifications": {
+        "model": {
+          "temperature": 2.0,
+          "logit_norm": 2.0
+        }
+      },
+      "end_time": "2026-01-20T06:48:01.166650",
+      "elapsed_time_seconds": 11224.16324710846,
+      "return_code": 0,
+      "success": true,
+      "best_val_loss": 0.398,
+      "test_kl_divergence": 0.3463
+    },
+    {
+      "name": "no_maxsup",
+      "description": "MAXSUP TEST: Disable MaxSup penalty (0.1\u21920.0) - Test MaxSup impact alone",
+      "start_time": "2026-01-20T06:48:01.187239",
+      "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+      "modifications": {
+        "loss": {
+          "maxsup_weight": 0.0
+        }
+      },
+      "end_time": "2026-01-20T07:09:32.277000",
+      "elapsed_time_seconds": 1291.0849359035492,
+      "return_code": 0,
+      "success": true,
+      "best_val_loss": 0.3718,
+      "test_kl_divergence": 0.3962
+    },
+    {
+      "name": "combo_4_aggressive",
+      "description": "\u26a0\ufe0f AGGRESSIVE: entropy_weight 0.1, temperature 1.5, logit_norm 3.0, higher LR - Might overfit, test limits",
+      "start_time": "2026-01-20T07:09:32.317980",
+      "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+      "modifications": {
+        "loss": {
+          "entropy_weight": 0.1,
+          "min_entropy": 0.3,
+          "maxsup_weight": 0.0
+        },
+        "model": {
+          "temperature": 1.5,
+          "logit_norm": 3.0
+        },
+        "training": {
+          "learning_rate": 0.0002
+        }
+      },
+      "end_time": "2026-01-20T07:31:44.299279",
+      "elapsed_time_seconds": 1331.9735269546509,
+      "return_code": 0,
+      "success": true,
+      "best_val_loss": 0.4496,
+      "test_kl_divergence": 0.326
+    },
+    {
+      "name": "combo_5_no_entropy_reg",
+      "description": "\u26a0\ufe0f NO ENTROPY REG: Completely disable entropy regularization (0.0) - Test if entropy reg is the main issue",
+      "start_time": "2026-01-20T07:31:44.322737",
+      "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+      "modifications": {
+        "loss": {
+          "entropy_weight": 0.0
+        },
+        "model": {
+          "temperature": 2.0,
+          "logit_norm": 2.0
+        }
+      },
+      "end_time": "2026-01-20T07:53:13.084490",
+      "elapsed_time_seconds": 1288.7572581768036,
+      "return_code": 0,
+      "success": true,
+      "best_val_loss": 0.3981,
+      "test_kl_divergence": 0.3464
+    }
+  ]
+}

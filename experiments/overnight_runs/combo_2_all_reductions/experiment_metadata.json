@@ -1,0 +1,23 @@
+{
+  "name": "combo_2_all_reductions",
+  "description": "\u2b50\u2b50 ALL RECOMMENDED CHANGES: entropy (0.5), no MaxSup, temperature (2.0), logit_norm (2.0) - All fixes together",
+  "start_time": "2026-01-20T00:37:22.420838",
+  "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+  "modifications": {
+    "loss": {
+      "entropy_weight": 0.5,
+      "min_entropy": 0.5,
+      "maxsup_weight": 0.0
+    },
+    "model": {
+      "temperature": 2.0,
+      "logit_norm": 2.0
+    }
+  },
+  "end_time": "2026-01-20T00:58:54.128510",
+  "elapsed_time_seconds": 1291.7019801139832,
+  "return_code": 0,
+  "success": true,
+  "best_val_loss": 0.3802,
+  "test_kl_divergence": 0.3365
+}

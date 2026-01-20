@@ -1,0 +1,26 @@
+{
+  "name": "combo_4_aggressive",
+  "description": "\u26a0\ufe0f AGGRESSIVE: entropy_weight 0.1, temperature 1.5, logit_norm 3.0, higher LR - Might overfit, test limits",
+  "start_time": "2026-01-20T07:09:32.317980",
+  "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+  "modifications": {
+    "loss": {
+      "entropy_weight": 0.1,
+      "min_entropy": 0.3,
+      "maxsup_weight": 0.0
+    },
+    "model": {
+      "temperature": 1.5,
+      "logit_norm": 3.0
+    },
+    "training": {
+      "learning_rate": 0.0002
+    }
+  },
+  "end_time": "2026-01-20T07:31:44.299279",
+  "elapsed_time_seconds": 1331.9735269546509,
+  "return_code": 0,
+  "success": true,
+  "best_val_loss": 0.4496,
+  "test_kl_divergence": 0.326
+}

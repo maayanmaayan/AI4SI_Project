@@ -1,0 +1,14 @@
+{
+  "best_val_loss": 0.3980631921198461,
+  "total_epochs": 30,
+  "test_metrics": {
+    "loss": 0.7759330746619849,
+    "kl_divergence": 0.3463609641934983,
+    "top1_accuracy": 0.34838274932614555,
+    "top3_accuracy": 0.97911051212938,
+    "num_samples": 1484
+  },
+  "experiment_dir": "/Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_5_no_entropy_reg/run",
+  "checkpoint_path": "models/checkpoints/graph_transformer_best.pt",
+  "plots_dir": "/Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_5_no_entropy_reg/run/plots"
+}

@@ -1,0 +1,21 @@
+{
+  "name": "combo_5_no_entropy_reg",
+  "description": "\u26a0\ufe0f NO ENTROPY REG: Completely disable entropy regularization (0.0) - Test if entropy reg is the main issue",
+  "start_time": "2026-01-20T07:31:44.322737",
+  "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+  "modifications": {
+    "loss": {
+      "entropy_weight": 0.0
+    },
+    "model": {
+      "temperature": 2.0,
+      "logit_norm": 2.0
+    }
+  },
+  "end_time": "2026-01-20T07:53:13.084490",
+  "elapsed_time_seconds": 1288.7572581768036,
+  "return_code": 0,
+  "success": true,
+  "best_val_loss": 0.3981,
+  "test_kl_divergence": 0.3464
+}

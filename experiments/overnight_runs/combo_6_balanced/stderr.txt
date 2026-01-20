@@ -1,0 +1,104 @@
+[2026-01-20 00:00:00] [INFO] [experiment] Starting training
+[2026-01-20 00:00:00] [INFO] [experiment] Using device: mps
+[2026-01-20 00:00:00] [INFO] [experiment] Loading features from data/processed/features/compliant
+[2026-01-20 00:00:00] [INFO] [src.training.dataset] Found 7 target_points.parquet files in data/processed/features/compliant
+[2026-01-20 00:00:01] [INFO] [src.training.dataset] Combined 3636 total rows from 7 files, 7 unique neighborhoods
+[2026-01-20 00:00:01] [INFO] [src.training.dataset] Created splits: Train=1844 rows (4 neighborhoods), Val=308 rows (1 neighborhoods), Test=1484 rows (2 neighborhoods)
+[2026-01-20 00:00:01] [INFO] [experiment] Calculating class weights from training dataset...
+[2026-01-20 00:00:01] [INFO] [experiment] Class counts: [487, 60, 478, 208, 27, 64, 479, 41]
+[2026-01-20 00:00:01] [INFO] [experiment] Class weights (before damping): [3.786447525024414, 30.733333587646484, 3.857740640640259, 8.865385055541992, 68.29629516601562, 28.8125, 3.849686861038208, 44.975608825683594]
+[2026-01-20 00:00:01] [INFO] [experiment] Class weights (after sqrt damping and capping at 3.0): [1.945879578590393, 3.0, 1.9641132354736328, 2.9774796962738037, 3.0, 3.0, 1.962061882019043, 3.0]
+[2026-01-20 00:00:01] [INFO] [experiment] Data augmentation enabled: feature_noise (p=0.8, std=0.01), neighbor_subsampling (p=0.5, ratio=0.8), edge_noise (p=0.3, std=0.02)
+[2026-01-20 00:00:01] [INFO] [experiment] Computing true class distribution from training dataset...
+[2026-01-20 00:00:03] [INFO] [experiment] True distribution: ['0.1571', '0.0913', '0.1712', '0.1383', '0.0718', '0.0792', '0.1926', '0.0985']
+[2026-01-20 00:00:03] [INFO] [experiment] Created datasets: Train=1844, Val=308, Test=1484
+[2026-01-20 00:00:03] [INFO] [src.training.model] Created SpatialGraphTransformer: 47,752 parameters
+[2026-01-20 00:00:03] [INFO] [experiment] Loss function: label_smoothing=0.0, class_weights capped at 3.0, entropy_weight=1.0, min_entropy=0.8, entropy_penalty_type=linear, maxsup_weight=0.0, maxsup_threshold=0.0
+[2026-01-20 00:00:03] [INFO] [experiment] Optimizer: using separate weight decay - base=0.001, final_layer=0.011
+[2026-01-20 00:00:03] [INFO] [experiment] Initialized prediction distribution file: /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/prediction_distributions.json
+[2026-01-20 00:00:03] [INFO] [experiment] Starting training loop
+[2026-01-20 00:00:53] [INFO] [experiment] Epoch 1/30 (49.55s): train_loss=0.6420, train_top1=0.0146, train_top3=0.8308, val_loss=0.4690, val_kl=0.2144, val_top1=0.0260, val_top3=0.8994
+[2026-01-20 00:01:17] [INFO] [experiment] Computing prediction distribution for epoch 1...
+[2026-01-20 00:01:31] [INFO] [experiment] Epoch 1 prediction distribution: ['0.1119', '0.1416', '0.1544', '0.1126', '0.1668', '0.0770', '0.0962', '0.1395']
+[2026-01-20 00:01:31] [INFO] [experiment] Updated prediction distributions to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/prediction_distributions.json
+[2026-01-20 00:01:31] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 00:01:31] [INFO] [experiment] New best validation loss: 0.4690 (patience counter reset to 0)
+[2026-01-20 00:02:03] [INFO] [experiment] Epoch 2/30 (31.52s): train_loss=0.6039, train_top1=0.1990, train_top3=0.8411, val_loss=0.4690 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:02:34] [INFO] [experiment] Epoch 3/30 (30.81s): train_loss=0.5627, train_top1=0.2706, train_top3=0.8921, val_loss=0.4690 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:03:05] [INFO] [experiment] Epoch 4/30 (31.57s): train_loss=0.5252, train_top1=0.2581, train_top3=0.9116, val_loss=0.4690 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:03:52] [INFO] [experiment] Epoch 5/30 (46.99s): train_loss=0.4894, train_top1=0.2576, train_top3=0.9691, val_loss=0.3749, val_kl=0.1676, val_top1=0.2305, val_top3=0.9610
+[2026-01-20 00:04:16] [INFO] [experiment] Computing prediction distribution for epoch 5...
+[2026-01-20 00:04:32] [INFO] [experiment] Epoch 5 prediction distribution: ['0.1557', '0.1192', '0.1578', '0.1284', '0.1129', '0.0763', '0.1531', '0.0966']
+[2026-01-20 00:04:32] [INFO] [experiment] Updated prediction distributions to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/prediction_distributions.json
+[2026-01-20 00:04:32] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 00:04:32] [INFO] [experiment] New best validation loss: 0.3749 (patience counter reset to 0)
+[2026-01-20 00:05:02] [INFO] [experiment] Epoch 6/30 (30.75s): train_loss=0.4635, train_top1=0.2554, train_top3=0.9854, val_loss=0.3749 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:05:31] [INFO] [experiment] Epoch 7/30 (28.94s): train_loss=0.4454, train_top1=0.2636, train_top3=0.9859, val_loss=0.3749 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:06:00] [INFO] [experiment] Epoch 8/30 (28.40s): train_loss=0.4357, train_top1=0.2554, train_top3=0.9881, val_loss=0.3749 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:06:29] [INFO] [experiment] Epoch 9/30 (29.67s): train_loss=0.4268, train_top1=0.2538, train_top3=0.9892, val_loss=0.3749 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:07:13] [INFO] [experiment] Epoch 10/30 (44.12s): train_loss=0.4240, train_top1=0.2641, train_top3=0.9881, val_loss=0.3707, val_kl=0.1646, val_top1=0.4156, val_top3=0.9610
+[2026-01-20 00:07:38] [INFO] [experiment] Computing prediction distribution for epoch 10...
+[2026-01-20 00:07:53] [INFO] [experiment] Epoch 10 prediction distribution: ['0.1636', '0.1127', '0.1411', '0.1285', '0.0959', '0.0892', '0.1787', '0.0901']
+[2026-01-20 00:07:53] [INFO] [experiment] Updated prediction distributions to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/prediction_distributions.json
+[2026-01-20 00:07:53] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 00:07:53] [INFO] [experiment] New best validation loss: 0.3707 (patience counter reset to 0)
+[2026-01-20 00:07:53] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_epoch_10.pt
+[2026-01-20 00:08:24] [INFO] [experiment] Epoch 11/30 (30.73s): train_loss=0.4216, train_top1=0.2587, train_top3=0.9875, val_loss=0.3707 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:08:54] [INFO] [experiment] Epoch 12/30 (30.00s): train_loss=0.4197, train_top1=0.2630, train_top3=0.9897, val_loss=0.3707 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:09:22] [INFO] [experiment] Epoch 13/30 (28.45s): train_loss=0.4178, train_top1=0.2614, train_top3=0.9967, val_loss=0.3707 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:09:52] [INFO] [experiment] Epoch 14/30 (29.75s): train_loss=0.4176, train_top1=0.2636, train_top3=0.9967, val_loss=0.3707 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:10:37] [INFO] [experiment] Epoch 15/30 (44.68s): train_loss=0.4163, train_top1=0.2625, train_top3=0.9967, val_loss=0.3656, val_kl=0.1621, val_top1=0.4156, val_top3=0.9610
+[2026-01-20 00:11:00] [INFO] [experiment] Computing prediction distribution for epoch 15...
+[2026-01-20 00:11:15] [INFO] [experiment] Epoch 15 prediction distribution: ['0.1602', '0.1095', '0.1373', '0.1326', '0.0907', '0.0936', '0.1843', '0.0918']
+[2026-01-20 00:11:15] [INFO] [experiment] Updated prediction distributions to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/prediction_distributions.json
+[2026-01-20 00:11:15] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 00:11:15] [INFO] [experiment] New best validation loss: 0.3656 (patience counter reset to 0)
+[2026-01-20 00:11:44] [INFO] [experiment] Epoch 16/30 (29.19s): train_loss=0.4166, train_top1=0.2641, train_top3=0.9962, val_loss=0.3656 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:12:13] [INFO] [experiment] Epoch 17/30 (29.10s): train_loss=0.4163, train_top1=0.2630, train_top3=0.9962, val_loss=0.3656 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:12:44] [INFO] [experiment] Epoch 18/30 (30.89s): train_loss=0.4160, train_top1=0.2625, train_top3=0.9967, val_loss=0.3656 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:13:12] [INFO] [experiment] Epoch 19/30 (28.38s): train_loss=0.4159, train_top1=0.2592, train_top3=0.9951, val_loss=0.3656 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:29:06] [INFO] [experiment] Epoch 20/30 (954.26s): train_loss=0.4157, train_top1=0.2592, train_top3=0.9962, val_loss=0.3621, val_kl=0.1604, val_top1=0.4156, val_top3=0.9610
+[2026-01-20 00:29:30] [INFO] [experiment] Computing prediction distribution for epoch 20...
+[2026-01-20 00:29:44] [INFO] [experiment] Epoch 20 prediction distribution: ['0.1582', '0.1068', '0.1368', '0.1339', '0.0891', '0.0949', '0.1865', '0.0938']
+[2026-01-20 00:29:44] [INFO] [experiment] Updated prediction distributions to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/prediction_distributions.json
+[2026-01-20 00:29:44] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 00:29:44] [INFO] [experiment] New best validation loss: 0.3621 (patience counter reset to 0)
+[2026-01-20 00:29:44] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_epoch_20.pt
+[2026-01-20 00:30:13] [INFO] [experiment] Epoch 21/30 (29.19s): train_loss=0.4155, train_top1=0.2598, train_top3=0.9962, val_loss=0.3621 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:30:41] [INFO] [experiment] Epoch 22/30 (28.10s): train_loss=0.4151, train_top1=0.2619, train_top3=0.9967, val_loss=0.3621 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:31:08] [INFO] [experiment] Epoch 23/30 (26.52s): train_loss=0.4148, train_top1=0.2625, train_top3=0.9978, val_loss=0.3621 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:31:37] [INFO] [experiment] Epoch 24/30 (29.36s): train_loss=0.4152, train_top1=0.2663, train_top3=0.9962, val_loss=0.3621 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:32:22] [INFO] [experiment] Epoch 25/30 (44.75s): train_loss=0.4148, train_top1=0.2619, train_top3=0.9967, val_loss=0.3623, val_kl=0.1605, val_top1=0.4156, val_top3=0.9610
+[2026-01-20 00:32:44] [INFO] [experiment] Computing prediction distribution for epoch 25...
+[2026-01-20 00:32:59] [INFO] [experiment] Epoch 25 prediction distribution: ['0.1573', '0.1045', '0.1359', '0.1356', '0.0889', '0.0959', '0.1873', '0.0945']
+[2026-01-20 00:32:59] [INFO] [experiment] Updated prediction distributions to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/prediction_distributions.json
+[2026-01-20 00:32:59] [INFO] [experiment] No improvement (val_loss: 0.3623 >= best: 0.3621 - 0.0005). Patience counter: 1/5
+[2026-01-20 00:33:27] [INFO] [experiment] Epoch 26/30 (28.06s): train_loss=0.4146, train_top1=0.2614, train_top3=0.9967, val_loss=0.3623 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:33:54] [INFO] [experiment] Epoch 27/30 (27.66s): train_loss=0.4145, train_top1=0.2625, train_top3=0.9962, val_loss=0.3623 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:34:22] [INFO] [experiment] Epoch 28/30 (27.86s): train_loss=0.4148, train_top1=0.2641, train_top3=0.9957, val_loss=0.3623 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:34:50] [INFO] [experiment] Epoch 29/30 (27.73s): train_loss=0.4148, train_top1=0.2619, train_top3=0.9946, val_loss=0.3623 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 00:35:33] [INFO] [experiment] Epoch 30/30 (43.19s): train_loss=0.4147, train_top1=0.2625, train_top3=0.9984, val_loss=0.3570, val_kl=0.1580, val_top1=0.4156, val_top3=0.9610
+[2026-01-20 00:35:55] [INFO] [experiment] Computing prediction distribution for epoch 30...
+[2026-01-20 00:36:10] [INFO] [experiment] Epoch 30 prediction distribution: ['0.1543', '0.1043', '0.1379', '0.1358', '0.0884', '0.0957', '0.1883', '0.0952']
+[2026-01-20 00:36:10] [INFO] [experiment] Updated prediction distributions to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/prediction_distributions.json
+[2026-01-20 00:36:10] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 00:36:10] [INFO] [experiment] New best validation loss: 0.3570 (patience counter reset to 0)
+[2026-01-20 00:36:10] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_epoch_30.pt
+[2026-01-20 00:36:10] [INFO] [experiment] Evaluating on test set and saving predictions...
+[2026-01-20 00:36:32] [INFO] [experiment] Test metrics: loss=0.7708, kl=0.3504, top1=0.3484, top3=0.9791
+[2026-01-20 00:36:56] [INFO] [src.evaluation.save_predictions] Saved 1484 predictions to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/test_predictions.csv
+[2026-01-20 00:36:56] [INFO] [src.evaluation.save_predictions] Saved evaluation results to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/test_evaluation_results.json
+[2026-01-20 00:36:56] [INFO] [experiment] Saved test predictions to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/test_predictions.csv
+[2026-01-20 00:37:12] [INFO] [src.evaluation.save_predictions] Saved 308 predictions to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/val_predictions.csv
+[2026-01-20 00:37:12] [INFO] [experiment] Saved validation predictions to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/val_predictions.csv
+[2026-01-20 00:37:12] [INFO] [experiment] Generating training plots...
+[2026-01-20 00:37:12] [INFO] [src.evaluation.plotting] Saved training curves to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/plots/training_training_curves.png
+[2026-01-20 00:37:12] [INFO] [src.evaluation.plotting] Saved loss comparison to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/plots/training_loss_comparison.png
+[2026-01-20 00:37:12] [INFO] [src.evaluation.plotting] Saved accuracy curves to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/plots/training_accuracy_curves.png
+[2026-01-20 00:37:12] [INFO] [src.evaluation.plotting] Saved all training summary plots to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/plots
+[2026-01-20 00:37:13] [INFO] [src.evaluation.plotting] Saved neighbor distribution to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/plots/neighbor_distribution.png
+[2026-01-20 00:37:13] [INFO] [src.evaluation.plotting] Saved target probability distribution to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/plots/target_probability_distribution.png
+[2026-01-20 00:37:13] [INFO] [experiment] Training complete
+[2026-01-20 00:37:13] [INFO] [experiment] Best validation loss: 0.3570
+[2026-01-20 00:37:13] [INFO] [experiment] Results saved to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run
+[2026-01-20 00:37:13] [INFO] [experiment] Plots saved to /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_6_balanced/run/plots

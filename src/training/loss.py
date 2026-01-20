@@ -28,6 +28,9 @@ def distance_based_kl_loss(
     class_weights: Optional[torch.Tensor] = None,
     entropy_weight: float = 0.1,
     min_entropy: float = 1.0,
+    entropy_penalty_type: str = "linear",
+    maxsup_weight: float = 0.0,
+    maxsup_threshold: float = 0.0,
 ) -> torch.Tensor:
     """Compute KL divergence loss between predicted and target probability distributions.
     
@@ -63,6 +66,13 @@ def distance_based_kl_loss(
             predictions. Higher values encourage more uniform distributions. Defaults to 0.1.
         min_entropy: Minimum entropy threshold. Predictions with entropy below this will be
             penalized. Defaults to 1.0 (encourages at least some distribution spread).
+        entropy_penalty_type: Type of entropy penalty. "linear" uses clamp(min_entropy - entropy, 0),
+            "quadratic" uses (min_entropy - entropy)^2 for entropy < min_entropy (more aggressive).
+            Defaults to "linear".
+        maxsup_weight: Weight for MaxSup (maximum logit suppression) penalty. Suppresses the maximum
+            logit to prevent overconfident predictions. Defaults to 0.0 (disabled).
+        maxsup_threshold: Threshold for MaxSup - only suppress if max logit exceeds this value.
+            Defaults to 0.0 (always apply if maxsup_weight > 0).
     
     Returns:
         Loss tensor:
@@ -134,7 +144,30 @@ def distance_based_kl_loss(
     # Entropy H(p) = -sum(p_i * log(p_i))
     # We penalize when entropy < min_entropy
     entropy = -(predicted_probs * log_predicted).sum(dim=-1)  # [batch_size]
-    entropy_penalty = torch.clamp(min_entropy - entropy, min=0.0)  # Only penalize if below threshold
+    
+    # Apply entropy penalty based on type
+    if entropy_penalty_type == "quadratic":
+        # Quadratic penalty: (min_entropy - entropy)^2 for entropy < min_entropy
+        # This is more aggressive and penalizes low entropy more strongly
+        entropy_deficit = torch.clamp(min_entropy - entropy, min=0.0)
+        entropy_penalty = entropy_deficit ** 2
+    else:  # "linear"
+        # Linear penalty: clamp(min_entropy - entropy, 0)
+        entropy_penalty = torch.clamp(min_entropy - entropy, min=0.0)
+    
+    # MaxSup: Suppress maximum logit to prevent overconfident predictions
+    # Reference: "MaxSup: Overcoming Representation Collapse in Label Smoothing" (2025)
+    # This penalizes when the maximum logit is too high, preventing one-hot predictions
+    maxsup_penalty = torch.zeros_like(entropy)  # [batch_size]
+    if maxsup_weight > 0.0:
+        max_logits = predicted_logits.max(dim=-1)[0]  # [batch_size] - maximum logit per sample
+        # Only suppress if max logit exceeds threshold
+        if maxsup_threshold > 0.0:
+            mask = max_logits > maxsup_threshold
+            maxsup_penalty = torch.where(mask, max_logits, torch.zeros_like(max_logits))
+        else:
+            # Always suppress (threshold = 0.0 means always apply)
+            maxsup_penalty = max_logits
     
     # Clamp target probabilities for numerical stability
     # This prevents log(0) when computing KL divergence
@@ -176,6 +209,11 @@ def distance_based_kl_loss(
             entropy_penalty_weighted = entropy_penalty * entropy_weight
             loss = loss + entropy_penalty_weighted
         
+        # Add MaxSup penalty (suppress maximum logit)
+        if maxsup_weight > 0.0:
+            maxsup_penalty_weighted = maxsup_penalty * maxsup_weight
+            loss = loss + maxsup_penalty_weighted
+        
         # If input was unbatched, remove batch dimension
         if was_unbatched:
             loss = loss.squeeze(0)
@@ -194,6 +232,11 @@ def distance_based_kl_loss(
         if entropy_weight > 0.0:
             entropy_penalty_weighted = entropy_penalty * entropy_weight
             loss_per_sample = loss_per_sample + entropy_penalty_weighted
+        
+        # Add MaxSup penalty (suppress maximum logit)
+        if maxsup_weight > 0.0:
+            maxsup_penalty_weighted = maxsup_penalty * maxsup_weight
+            loss_per_sample = loss_per_sample + maxsup_penalty_weighted
         
         # Apply reduction
         if reduction == "batchmean":
@@ -238,6 +281,9 @@ class DistanceBasedKLLoss(nn.Module):
         class_weights: Optional[torch.Tensor] = None,
         entropy_weight: float = 0.1,
         min_entropy: float = 1.0,
+        entropy_penalty_type: str = "linear",
+        maxsup_weight: float = 0.0,
+        maxsup_threshold: float = 0.0,
     ):
         """Initialize loss function.
         
@@ -250,6 +296,12 @@ class DistanceBasedKLLoss(nn.Module):
                 Defaults to 0.1.
             min_entropy: Minimum entropy threshold. Predictions below this are penalized.
                 Defaults to 1.0.
+            entropy_penalty_type: Type of entropy penalty ("linear" or "quadratic").
+                Defaults to "linear".
+            maxsup_weight: Weight for MaxSup (maximum logit suppression) penalty.
+                Defaults to 0.0 (disabled).
+            maxsup_threshold: Threshold for MaxSup - only suppress if max logit exceeds this.
+                Defaults to 0.0 (always apply if maxsup_weight > 0).
         """
         super().__init__()
         self.reduction = reduction
@@ -258,6 +310,9 @@ class DistanceBasedKLLoss(nn.Module):
         self.class_weights = class_weights
         self.entropy_weight = entropy_weight
         self.min_entropy = min_entropy
+        self.entropy_penalty_type = entropy_penalty_type
+        self.maxsup_weight = maxsup_weight
+        self.maxsup_threshold = maxsup_threshold
     
     def forward(
         self, predicted_logits: torch.Tensor, target_probabilities: torch.Tensor
@@ -280,6 +335,9 @@ class DistanceBasedKLLoss(nn.Module):
             self.class_weights,
             self.entropy_weight,
             self.min_entropy,
+            self.entropy_penalty_type,
+            self.maxsup_weight,
+            self.maxsup_threshold,
         )
 
 

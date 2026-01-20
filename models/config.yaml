@@ -11,20 +11,24 @@ model:
   dropout: 0.5
   num_classes: 8
   edge_dim: 4  # [dx, dy, euclidean_dist, network_dist]
-  temperature: 10.0  # Temperature scaling for logits to prevent overconfidence (flattens probability distribution)
+  temperature: 4.0  # Temperature scaling for logits to prevent overconfidence (higher = flatter distribution, try 3.0-5.0)
+  use_logit_norm: true  # LogitNorm: normalize logits to constant norm before softmax (prevents logit explosion)
+  logit_norm: 1.0  # Target L2 norm for logits (default: 1.0, from LogitNorm paper)
 
 training:
   batch_size: 16  # Reduced for graph model (can be larger with efficient batching)
   learning_rate: 0.0001
   weight_decay: 0.001
-  num_epochs: 100
-  early_stopping_patience: 10
-  early_stopping_min_delta: 0.001
+  num_epochs: 20  # Reduced from 100 - with early stopping patience=5, experiments finish around 20-30 epochs anyway
+  early_stopping_patience: 5  # Reduced from 10 to 5 (25 training epochs instead of 50, since validation runs every 5 epochs)
+  early_stopping_min_delta: 0.0005  # Reduced from 0.001 to allow smaller improvements to reset patience
   use_mixed_precision: true  # FP16 for memory savings (M2 optimization)
   gradient_accumulation_steps: 1  # Can increase to 2-4 if needed for larger effective batch size
   num_workers: 2  # DataLoader workers (2 optimal for M2 MacBook Air)
   pin_memory: false  # Not needed for MPS (Metal Performance Shaders)
   device: "auto"  # "auto" will select MPS if available, else CPU
+  max_grad_norm: 1.0  # Gradient clipping to prevent logit explosion (clip gradients to this norm)
+  final_layer_weight_decay: 0.01  # Extra L2 regularization on final classifier layer (helps prevent overconfidence)
   augmentation:
     enabled: true            # Toggle training-time augmentation on/off
     feature_noise_std: 0.01  # Std dev for feature noise (≈1%)
@@ -44,8 +48,11 @@ loss:
   use_network_distance: true  # Use OSMnx network distance, not Euclidean
   missing_service_penalty: 2400  # Distance (meters) to use when service category is missing
   label_smoothing: 0.0  # Label smoothing disabled - targets are already smooth probability distributions, not one-hot
-  entropy_weight: 2.0  # Weight for entropy regularization (penalizes one-hot predictions, encourages distribution spread)
-  min_entropy: 1.0  # Minimum entropy threshold - predictions below this are penalized (max entropy for 8 classes ≈ 2.08)
+  entropy_weight: 5.0  # Weight for entropy regularization (penalizes one-hot predictions, encourages distribution spread)
+  min_entropy: 1.5  # Minimum entropy threshold - predictions below this are penalized (max entropy for 8 classes ≈ 2.08)
+  entropy_penalty_type: "linear"  # "linear" or "quadratic" - linear is the standard approach from literature
+  maxsup_weight: 0.1  # MaxSup: weight for maximum logit suppression penalty (suppresses overconfident predictions)
+  maxsup_threshold: 0.0  # MaxSup: only suppress if max logit exceeds this threshold (0.0 = always apply)
 
 data:
   train_split: 0.7

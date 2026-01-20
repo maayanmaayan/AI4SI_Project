@@ -1,0 +1,23 @@
+{
+  "name": "combo_6_balanced",
+  "description": "\u2b50 BALANCED (BEST BET): entropy_weight 1.0, no MaxSup, temperature 2.5, logit_norm 1.8 - Moderate changes, safe approach",
+  "start_time": "2026-01-19T23:59:58.284212",
+  "base_config": "/Users/maayanchen/Code/University/AI4SI_Project/models/config.yaml",
+  "modifications": {
+    "loss": {
+      "entropy_weight": 1.0,
+      "min_entropy": 0.8,
+      "maxsup_weight": 0.0
+    },
+    "model": {
+      "temperature": 2.5,
+      "logit_norm": 1.8
+    }
+  },
+  "end_time": "2026-01-20T00:37:22.371658",
+  "elapsed_time_seconds": 2244.0796191692352,
+  "return_code": 0,
+  "success": true,
+  "best_val_loss": 0.357,
+  "test_kl_divergence": 0.3504
+}

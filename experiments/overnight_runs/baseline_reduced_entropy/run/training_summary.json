@@ -1,0 +1,14 @@
+{
+  "best_val_loss": 0.3873963410204107,
+  "total_epochs": 30,
+  "test_metrics": {
+    "loss": 0.8704624341504593,
+    "kl_divergence": 0.3976679515806491,
+    "top1_accuracy": 0.34838274932614555,
+    "top3_accuracy": 0.97911051212938,
+    "num_samples": 1484
+  },
+  "experiment_dir": "/Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/baseline_reduced_entropy/run",
+  "checkpoint_path": "models/checkpoints/graph_transformer_best.pt",
+  "plots_dir": "/Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/baseline_reduced_entropy/run/plots"
+}

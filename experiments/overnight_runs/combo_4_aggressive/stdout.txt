@@ -1,0 +1,12 @@
+
+============================================================
+Training Complete!
+============================================================
+Best validation loss: 0.4496
+Total epochs: 30
+Test loss: 0.7299
+Test KL divergence: 0.3260
+Test top-1 accuracy: 0.3484
+Results saved to: /Users/maayanchen/Code/University/AI4SI_Project/experiments/overnight_runs/combo_4_aggressive/run
+Checkpoint saved to: models/checkpoints/graph_transformer_best.pt
+============================================================
