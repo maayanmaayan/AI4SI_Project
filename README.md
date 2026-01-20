@@ -21,24 +21,6 @@ This is an AI/ML project built with Cursor that focuses on:
 - **Loss Function**: Distance-based similarity loss using KL divergence between predicted and distance-based target probability vectors
 - **Validation**: Model evaluation on compliant neighborhoods only (train/validation/test splits from compliant neighborhoods)
 
-## What's Included
-
-- **`.cursor/commands/`** - Commands for planning, execution, validation, and workflow automation
-- **`.cursor/reference/`** - Best practices documentation for various technologies
-- **`CURSOR.md`** - Project-specific documentation with tech stack, structure, conventions, and development guidelines
-- **Project structure** - Organized for ML/AI development workflow
-
-## Getting Started
-
-1. **Review the PRD** — Read `PRD.md` for comprehensive project requirements and architecture
-2. **Set up the environment** — Install dependencies for ML development (PyTorch, PyTorch Geometric, geospatial stack, etc.)
-3. **Data collection** — Extract OSM and Census data for Paris neighborhoods. Neighborhood boundaries and compliance labels are defined in `paris_neighborhoods.geojson` (includes verified 15-minute neighborhoods and non-compliant neighborhoods)
-4. **Feature engineering** — Build pipeline to generate grid cells and compute 20+ urban/demographic features for center point + all grid cells within 15-minute walk radius (configurable via `features.walk_15min_radius_meters` and `features.grid_cell_size_meters` in config.yaml)
-5. **Model training** — Train the Spatial Graph Transformer model exclusively on 15-minute city compliant neighborhoods using distance-based similarity loss
-6. **Evaluation** — Evaluate model on compliant neighborhoods only (train/validation/test splits from compliant neighborhoods)
-
-See `PRD.md` for detailed implementation phases and timeline (2-week MVP).
-
 ## Results (High-Level)
 
 Headline metrics are consolidated in `RESULTS_SUMMARY.md` (generated 2026-01-20).
@@ -49,7 +31,7 @@ Headline metrics are consolidated in `RESULTS_SUMMARY.md` (generated 2026-01-20)
 
 For narrative + plots, see:
 - `FINAL_REPORT.md`
-- `experiments/overnight_runs/EXPERIMENT_SUMMARY.md`
+- `experiments/`
 
 ## Web UI (Demo)
 
@@ -70,6 +52,24 @@ cd web-ui
 npm install
 npm run dev
 ```
+
+## What's Included
+
+- **`.cursor/commands/`** - Commands for planning, execution, validation, and workflow automation
+- **`.cursor/reference/`** - Best practices documentation for various technologies
+- **`CURSOR.md`** - Project-specific documentation with tech stack, structure, conventions, and development guidelines
+- **Project structure** - Organized for ML/AI development workflow
+
+## Getting Started
+
+1. **Review the PRD** — Read `PRD.md` for comprehensive project requirements and architecture
+2. **Set up the environment** — Install dependencies for ML development (PyTorch, PyTorch Geometric, geospatial stack, etc.)
+3. **Data collection** — Extract OSM and Census data for Paris neighborhoods. Neighborhood boundaries and compliance labels are defined in `paris_neighborhoods.geojson` (includes verified 15-minute neighborhoods and non-compliant neighborhoods)
+4. **Feature engineering** — Build pipeline to generate grid cells and compute 20+ urban/demographic features for center point + all grid cells within 15-minute walk radius (configurable via `features.walk_15min_radius_meters` and `features.grid_cell_size_meters` in config.yaml)
+5. **Model training** — Train the Spatial Graph Transformer model exclusively on 15-minute city compliant neighborhoods using distance-based similarity loss
+6. **Evaluation** — Evaluate model on compliant neighborhoods only (train/validation/test splits from compliant neighborhoods)
+
+See `PRD.md` for detailed implementation phases and timeline (2-week MVP).
 
 ## Development Workflow
 
