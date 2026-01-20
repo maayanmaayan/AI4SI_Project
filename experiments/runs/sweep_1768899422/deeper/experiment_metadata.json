@@ -1,0 +1,19 @@
+{
+  "name": "deeper",
+  "description": "More layers (deeper)",
+  "start_time": "2026-01-20T10:09:28.188771",
+  "base_config_path": "default (get_config)",
+  "sweep_dir": "experiments/runs/sweep_1768899422",
+  "model_config": {
+    "learning_rate": 0.0001,
+    "num_layers": 4,
+    "loss_temperature": 200
+  },
+  "regularization": {
+    "entropy_weight": 0.5,
+    "min_entropy": 0.5,
+    "maxsup_weight": 0.0,
+    "model_temperature": 2.0,
+    "logit_norm": 2.0
+  }
+}

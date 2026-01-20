@@ -1,0 +1,14 @@
+{
+  "best_val_loss": 16.019330652748668,
+  "total_epochs": 39,
+  "test_metrics": {
+    "loss": 1046.6536281419837,
+    "kl_divergence": 14.661326532778533,
+    "top1_accuracy": 0.043478260869565216,
+    "top3_accuracy": 0.5869565217391305,
+    "num_samples": 46
+  },
+  "experiment_dir": "experiments/runs/run_1768745543",
+  "checkpoint_path": "models/checkpoints/graph_transformer_best.pt",
+  "plots_dir": "experiments/runs/run_1768745543/plots"
+}

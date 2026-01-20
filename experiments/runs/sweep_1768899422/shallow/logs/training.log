@@ -1,0 +1,123 @@
+[2026-01-20 11:53:30] [INFO] [experiment] Starting training
+[2026-01-20 11:53:30] [INFO] [experiment] Using device: mps
+[2026-01-20 11:53:30] [INFO] [experiment] Loading features from data/processed/features/compliant
+[2026-01-20 11:53:30] [INFO] [src.training.dataset] Found 7 target_points.parquet files in data/processed/features/compliant
+[2026-01-20 11:53:32] [INFO] [src.training.dataset] Combined 3636 total rows from 7 files, 7 unique neighborhoods
+[2026-01-20 11:53:32] [INFO] [src.training.dataset] Created splits: Train=1844 rows (4 neighborhoods), Val=308 rows (1 neighborhoods), Test=1484 rows (2 neighborhoods)
+[2026-01-20 11:53:32] [INFO] [experiment] Calculating class weights from training dataset...
+[2026-01-20 11:53:32] [INFO] [experiment] Class counts: [487, 60, 478, 208, 27, 64, 479, 41]
+[2026-01-20 11:53:32] [INFO] [experiment] Class weights (before damping): [3.786447525024414, 30.733333587646484, 3.857740640640259, 8.865385055541992, 68.29629516601562, 28.8125, 3.849686861038208, 44.975608825683594]
+[2026-01-20 11:53:32] [INFO] [experiment] Class weights (after sqrt damping and capping at 3.0): [1.945879578590393, 3.0, 1.9641132354736328, 2.9774796962738037, 3.0, 3.0, 1.962061882019043, 3.0]
+[2026-01-20 11:53:32] [INFO] [experiment] Data augmentation enabled: feature_noise (p=0.8, std=0.01), neighbor_subsampling (p=0.5, ratio=0.8), edge_noise (p=0.3, std=0.02)
+[2026-01-20 11:53:32] [INFO] [experiment] Computing true class distribution from training dataset...
+[2026-01-20 11:53:34] [INFO] [experiment] True distribution: ['0.1571', '0.0913', '0.1712', '0.1383', '0.0718', '0.0792', '0.1926', '0.0985']
+[2026-01-20 11:53:34] [INFO] [experiment] Created datasets: Train=1844, Val=308, Test=1484
+[2026-01-20 11:53:34] [INFO] [src.training.model] Created SpatialGraphTransformer: 26,696 parameters
+[2026-01-20 11:53:34] [INFO] [experiment] Loss function: label_smoothing=0.0, class_weights capped at 3.0, entropy_weight=0.5, min_entropy=0.5, entropy_penalty_type=linear, maxsup_weight=0.0, maxsup_threshold=0.0
+[2026-01-20 11:53:34] [INFO] [experiment] Optimizer: using separate weight decay - base=0.001, final_layer=0.011
+[2026-01-20 11:53:34] [INFO] [experiment] Initialized prediction distribution file: experiments/runs/sweep_1768899422/shallow/prediction_distributions.json
+[2026-01-20 11:53:34] [INFO] [experiment] Starting training loop
+[2026-01-20 11:54:21] [INFO] [experiment] Epoch 1/20 (46.41s): train_loss=0.6291, train_top1=0.0873, train_top3=0.8677, val_loss=0.5433, val_kl=0.2431, val_top1=0.0260, val_top3=0.5779
+[2026-01-20 11:54:43] [INFO] [experiment] Computing prediction distribution for epoch 1...
+[2026-01-20 11:54:58] [INFO] [experiment] Epoch 1 prediction distribution: ['0.0893', '0.0582', '0.1134', '0.1690', '0.1753', '0.1522', '0.1403', '0.1023']
+[2026-01-20 11:54:58] [INFO] [experiment] Updated prediction distributions to experiments/runs/sweep_1768899422/shallow/prediction_distributions.json
+[2026-01-20 11:54:58] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 11:54:58] [INFO] [experiment] New best validation loss: 0.5433 (patience counter reset to 0)
+[2026-01-20 11:55:29] [INFO] [experiment] Epoch 2/20 (31.22s): train_loss=0.5702, train_top1=0.1844, train_top3=0.9680, val_loss=0.5433 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 11:56:02] [INFO] [experiment] Epoch 3/20 (32.73s): train_loss=0.5222, train_top1=0.2500, train_top3=0.9675, val_loss=0.5433 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 11:56:32] [INFO] [experiment] Epoch 4/20 (29.69s): train_loss=0.4862, train_top1=0.2598, train_top3=0.9767, val_loss=0.5433 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 11:57:17] [INFO] [experiment] Epoch 5/20 (45.51s): train_loss=0.4570, train_top1=0.2598, train_top3=0.9854, val_loss=0.4563, val_kl=0.2002, val_top1=0.4156, val_top3=1.0000
+[2026-01-20 11:57:42] [INFO] [experiment] Computing prediction distribution for epoch 5...
+[2026-01-20 11:57:58] [INFO] [experiment] Epoch 5 prediction distribution: ['0.1273', '0.0560', '0.1387', '0.1566', '0.1306', '0.1213', '0.1846', '0.0850']
+[2026-01-20 11:57:58] [INFO] [experiment] Updated prediction distributions to experiments/runs/sweep_1768899422/shallow/prediction_distributions.json
+[2026-01-20 11:57:58] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 11:57:58] [INFO] [experiment] New best validation loss: 0.4563 (patience counter reset to 0)
+[2026-01-20 11:58:29] [INFO] [experiment] Epoch 6/20 (30.69s): train_loss=0.4368, train_top1=0.2598, train_top3=0.9854, val_loss=0.4563 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 11:59:00] [INFO] [experiment] Epoch 7/20 (31.01s): train_loss=0.4241, train_top1=0.2598, train_top3=0.9854, val_loss=0.4563 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 11:59:29] [INFO] [experiment] Epoch 8/20 (29.37s): train_loss=0.4186, train_top1=0.2598, train_top3=0.9854, val_loss=0.4563 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 11:59:59] [INFO] [experiment] Epoch 9/20 (29.44s): train_loss=0.4123, train_top1=0.2598, train_top3=0.9962, val_loss=0.4563 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:00:45] [INFO] [experiment] Epoch 10/20 (46.19s): train_loss=0.4114, train_top1=0.2598, train_top3=0.9935, val_loss=0.4157, val_kl=0.1812, val_top1=0.4156, val_top3=1.0000
+[2026-01-20 12:01:08] [INFO] [experiment] Computing prediction distribution for epoch 10...
+[2026-01-20 12:01:23] [INFO] [experiment] Epoch 10 prediction distribution: ['0.1502', '0.0640', '0.1576', '0.1534', '0.1000', '0.0978', '0.1913', '0.0857']
+[2026-01-20 12:01:23] [INFO] [experiment] Updated prediction distributions to experiments/runs/sweep_1768899422/shallow/prediction_distributions.json
+[2026-01-20 12:01:23] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 12:01:23] [INFO] [experiment] New best validation loss: 0.4157 (patience counter reset to 0)
+[2026-01-20 12:01:23] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_epoch_10.pt
+[2026-01-20 12:01:52] [INFO] [experiment] Epoch 11/20 (29.12s): train_loss=0.4100, train_top1=0.2598, train_top3=0.9940, val_loss=0.4157 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:02:21] [INFO] [experiment] Epoch 12/20 (28.82s): train_loss=0.4082, train_top1=0.2598, train_top3=0.9957, val_loss=0.4157 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:02:49] [INFO] [experiment] Epoch 13/20 (28.12s): train_loss=0.4088, train_top1=0.2598, train_top3=0.9935, val_loss=0.4157 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:03:24] [INFO] [experiment] Epoch 14/20 (34.77s): train_loss=0.4076, train_top1=0.2598, train_top3=0.9957, val_loss=0.4157 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:04:12] [INFO] [experiment] Epoch 15/20 (48.06s): train_loss=0.4067, train_top1=0.2598, train_top3=0.9967, val_loss=0.3918, val_kl=0.1708, val_top1=0.4156, val_top3=1.0000
+[2026-01-20 12:04:37] [INFO] [experiment] Computing prediction distribution for epoch 15...
+[2026-01-20 12:04:53] [INFO] [experiment] Epoch 15 prediction distribution: ['0.1541', '0.0735', '0.1647', '0.1551', '0.0867', '0.0863', '0.1904', '0.0891']
+[2026-01-20 12:04:53] [INFO] [experiment] Updated prediction distributions to experiments/runs/sweep_1768899422/shallow/prediction_distributions.json
+[2026-01-20 12:04:53] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 12:04:53] [INFO] [experiment] New best validation loss: 0.3918 (patience counter reset to 0)
+[2026-01-20 12:05:24] [INFO] [experiment] Epoch 16/20 (31.37s): train_loss=0.4063, train_top1=0.2598, train_top3=0.9973, val_loss=0.3918 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:05:53] [INFO] [experiment] Epoch 17/20 (29.09s): train_loss=0.4066, train_top1=0.2598, train_top3=0.9973, val_loss=0.3918 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:06:23] [INFO] [experiment] Epoch 18/20 (29.66s): train_loss=0.4061, train_top1=0.2598, train_top3=0.9973, val_loss=0.3918 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:06:53] [INFO] [experiment] Epoch 19/20 (30.75s): train_loss=0.4058, train_top1=0.2598, train_top3=0.9973, val_loss=0.3918 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:07:38] [INFO] [experiment] Epoch 20/20 (44.86s): train_loss=0.4055, train_top1=0.2598, train_top3=0.9973, val_loss=0.3757, val_kl=0.1637, val_top1=0.4156, val_top3=0.9610
+[2026-01-20 12:08:03] [INFO] [experiment] Computing prediction distribution for epoch 20...
+[2026-01-20 12:08:18] [INFO] [experiment] Epoch 20 prediction distribution: ['0.1557', '0.0794', '0.1668', '0.1485', '0.0810', '0.0817', '0.1934', '0.0935']
+[2026-01-20 12:08:18] [INFO] [experiment] Updated prediction distributions to experiments/runs/sweep_1768899422/shallow/prediction_distributions.json
+[2026-01-20 12:08:18] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 12:08:18] [INFO] [experiment] New best validation loss: 0.3757 (patience counter reset to 0)
+[2026-01-20 12:08:18] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_epoch_20.pt
+[2026-01-20 12:08:18] [INFO] [experiment] Evaluating on test set and saving predictions...
+[2026-01-20 12:08:41] [INFO] [experiment] Test metrics: loss=0.7855, kl=0.3530, top1=0.3484, top3=0.9791
+[2026-01-20 12:09:08] [INFO] [src.evaluation.save_predictions] Saved 1484 predictions to experiments/runs/sweep_1768899422/shallow/test_predictions.csv
+[2026-01-20 12:09:08] [INFO] [src.evaluation.save_predictions] Saved evaluation results to experiments/runs/sweep_1768899422/shallow/test_evaluation_results.json
+[2026-01-20 12:09:08] [INFO] [experiment] Saved test predictions to experiments/runs/sweep_1768899422/shallow/test_predictions.csv
+[2026-01-20 12:09:24] [INFO] [src.evaluation.save_predictions] Saved 308 predictions to experiments/runs/sweep_1768899422/shallow/val_predictions.csv
+[2026-01-20 12:09:24] [INFO] [experiment] Saved validation predictions to experiments/runs/sweep_1768899422/shallow/val_predictions.csv
+[2026-01-20 12:09:24] [INFO] [experiment] Generating training plots...
+[2026-01-20 12:09:25] [INFO] [src.evaluation.plotting] Saved training curves to experiments/runs/sweep_1768899422/shallow/plots/training_training_curves.png
+[2026-01-20 12:09:25] [INFO] [src.evaluation.plotting] Saved loss comparison to experiments/runs/sweep_1768899422/shallow/plots/training_loss_comparison.png
+[2026-01-20 12:09:25] [INFO] [src.evaluation.plotting] Saved accuracy curves to experiments/runs/sweep_1768899422/shallow/plots/training_accuracy_curves.png
+[2026-01-20 12:09:26] [INFO] [src.evaluation.plotting] Saved top-3 accuracy plot to experiments/runs/sweep_1768899422/shallow/plots/training_top3_accuracy.png
+[2026-01-20 12:09:26] [INFO] [src.evaluation.plotting] Saved all training summary plots to experiments/runs/sweep_1768899422/shallow/plots
+[2026-01-20 12:09:26] [INFO] [src.evaluation.plotting] Saved neighbor distribution to experiments/runs/sweep_1768899422/shallow/plots/neighbor_distribution.png
+[2026-01-20 12:09:27] [INFO] [src.evaluation.plotting] Saved target probability distribution to experiments/runs/sweep_1768899422/shallow/plots/target_probability_distribution.png
+[2026-01-20 12:09:27] [INFO] [src.evaluation.plotting] Saved per-class accuracy to experiments/runs/sweep_1768899422/shallow/plots/test_per_class_accuracy.png
+[2026-01-20 12:09:27] [INFO] [src.evaluation.plotting] Saved reliability diagram to experiments/runs/sweep_1768899422/shallow/plots/test_calibration_reliability.png
+[2026-01-20 12:09:27] [INFO] [src.evaluation.plotting] Saved prediction entropy plot to experiments/runs/sweep_1768899422/shallow/plots/test_prediction_entropy.png
+[2026-01-20 12:09:27] [INFO] [src.evaluation.plotting] Saved neighborhood accuracy plot to experiments/runs/sweep_1768899422/shallow/plots/test_neighborhood_accuracy.png
+[2026-01-20 12:09:27] [INFO] [src.evaluation.plotting] Saved per-class accuracy to experiments/runs/sweep_1768899422/shallow/plots/val_per_class_accuracy.png
+[2026-01-20 12:09:27] [INFO] [src.evaluation.plotting] Saved reliability diagram to experiments/runs/sweep_1768899422/shallow/plots/val_calibration_reliability.png
+[2026-01-20 12:09:28] [INFO] [src.evaluation.plotting] Saved prediction entropy plot to experiments/runs/sweep_1768899422/shallow/plots/val_prediction_entropy.png
+[2026-01-20 12:09:28] [INFO] [src.evaluation.plotting] Saved neighborhood accuracy plot to experiments/runs/sweep_1768899422/shallow/plots/val_neighborhood_accuracy.png
+[2026-01-20 12:09:28] [INFO] [experiment] Training complete
+[2026-01-20 12:09:28] [INFO] [experiment] Best validation loss: 0.3757
+[2026-01-20 12:09:28] [INFO] [experiment] Results saved to experiments/runs/sweep_1768899422/shallow
+[2026-01-20 12:09:28] [INFO] [experiment] Plots saved to experiments/runs/sweep_1768899422/shallow/plots
+[2026-01-20 12:09:28] [INFO] [__main__] ✓ Model 4 completed: val_loss=0.3757
+[2026-01-20 12:09:28] [INFO] [__main__] 
+[2026-01-20 12:09:28] [INFO] [__main__] ================================================================================
+[2026-01-20 12:09:28] [INFO] [__main__] Training Model 5/5: deeper
+[2026-01-20 12:09:28] [INFO] [__main__] Description: More layers (deeper)
+[2026-01-20 12:09:28] [INFO] [__main__] Learning Rate: 0.0001
+[2026-01-20 12:09:28] [INFO] [__main__] Layers: 4
+[2026-01-20 12:09:28] [INFO] [__main__] Loss Temperature: 200m (distance-to-probability)
+[2026-01-20 12:09:28] [INFO] [__main__] Regularization: entropy_weight=0.5, model.temperature=2.0, logit_norm=2.0
+[2026-01-20 12:09:28] [INFO] [__main__] ================================================================================
+[2026-01-20 12:09:28] [INFO] [experiment] Starting training
+[2026-01-20 12:09:28] [INFO] [experiment] Using device: mps
+[2026-01-20 12:09:28] [INFO] [experiment] Loading features from data/processed/features/compliant
+[2026-01-20 12:09:28] [INFO] [src.training.dataset] Found 7 target_points.parquet files in data/processed/features/compliant
+[2026-01-20 12:09:30] [INFO] [src.training.dataset] Combined 3636 total rows from 7 files, 7 unique neighborhoods
+[2026-01-20 12:09:30] [INFO] [src.training.dataset] Created splits: Train=1844 rows (4 neighborhoods), Val=308 rows (1 neighborhoods), Test=1484 rows (2 neighborhoods)
+[2026-01-20 12:09:30] [INFO] [experiment] Calculating class weights from training dataset...
+[2026-01-20 12:09:30] [INFO] [experiment] Class counts: [487, 60, 478, 208, 27, 64, 479, 41]
+[2026-01-20 12:09:30] [INFO] [experiment] Class weights (before damping): [3.786447525024414, 30.733333587646484, 3.857740640640259, 8.865385055541992, 68.29629516601562, 28.8125, 3.849686861038208, 44.975608825683594]
+[2026-01-20 12:09:30] [INFO] [experiment] Class weights (after sqrt damping and capping at 3.0): [1.945879578590393, 3.0, 1.9641132354736328, 2.9774796962738037, 3.0, 3.0, 1.962061882019043, 3.0]
+[2026-01-20 12:09:30] [INFO] [experiment] Data augmentation enabled: feature_noise (p=0.8, std=0.01), neighbor_subsampling (p=0.5, ratio=0.8), edge_noise (p=0.3, std=0.02)
+[2026-01-20 12:09:30] [INFO] [experiment] Computing true class distribution from training dataset...
+[2026-01-20 12:09:32] [INFO] [experiment] True distribution: ['0.1571', '0.0913', '0.1712', '0.1383', '0.0718', '0.0792', '0.1926', '0.0985']
+[2026-01-20 12:09:32] [INFO] [experiment] Created datasets: Train=1844, Val=308, Test=1484
+[2026-01-20 12:09:32] [INFO] [src.training.model] Created SpatialGraphTransformer: 89,864 parameters
+[2026-01-20 12:09:32] [INFO] [experiment] Loss function: label_smoothing=0.0, class_weights capped at 3.0, entropy_weight=0.5, min_entropy=0.5, entropy_penalty_type=linear, maxsup_weight=0.0, maxsup_threshold=0.0
+[2026-01-20 12:09:32] [INFO] [experiment] Optimizer: using separate weight decay - base=0.001, final_layer=0.011
+[2026-01-20 12:09:32] [INFO] [experiment] Initialized prediction distribution file: experiments/runs/sweep_1768899422/deeper/prediction_distributions.json
+[2026-01-20 12:09:32] [INFO] [experiment] Starting training loop
+[2026-01-20 12:10:23] [INFO] [experiment] Epoch 1/20 (50.50s): train_loss=0.7315, train_top1=0.0206, train_top3=0.6030, val_loss=0.4556, val_kl=0.2044, val_top1=0.0357, val_top3=0.9188

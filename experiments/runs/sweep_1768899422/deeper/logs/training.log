@@ -1,0 +1,20 @@
+[2026-01-20 12:09:28] [INFO] [experiment] Starting training
+[2026-01-20 12:09:28] [INFO] [experiment] Using device: mps
+[2026-01-20 12:09:28] [INFO] [experiment] Loading features from data/processed/features/compliant
+[2026-01-20 12:09:28] [INFO] [src.training.dataset] Found 7 target_points.parquet files in data/processed/features/compliant
+[2026-01-20 12:09:30] [INFO] [src.training.dataset] Combined 3636 total rows from 7 files, 7 unique neighborhoods
+[2026-01-20 12:09:30] [INFO] [src.training.dataset] Created splits: Train=1844 rows (4 neighborhoods), Val=308 rows (1 neighborhoods), Test=1484 rows (2 neighborhoods)
+[2026-01-20 12:09:30] [INFO] [experiment] Calculating class weights from training dataset...
+[2026-01-20 12:09:30] [INFO] [experiment] Class counts: [487, 60, 478, 208, 27, 64, 479, 41]
+[2026-01-20 12:09:30] [INFO] [experiment] Class weights (before damping): [3.786447525024414, 30.733333587646484, 3.857740640640259, 8.865385055541992, 68.29629516601562, 28.8125, 3.849686861038208, 44.975608825683594]
+[2026-01-20 12:09:30] [INFO] [experiment] Class weights (after sqrt damping and capping at 3.0): [1.945879578590393, 3.0, 1.9641132354736328, 2.9774796962738037, 3.0, 3.0, 1.962061882019043, 3.0]
+[2026-01-20 12:09:30] [INFO] [experiment] Data augmentation enabled: feature_noise (p=0.8, std=0.01), neighbor_subsampling (p=0.5, ratio=0.8), edge_noise (p=0.3, std=0.02)
+[2026-01-20 12:09:30] [INFO] [experiment] Computing true class distribution from training dataset...
+[2026-01-20 12:09:32] [INFO] [experiment] True distribution: ['0.1571', '0.0913', '0.1712', '0.1383', '0.0718', '0.0792', '0.1926', '0.0985']
+[2026-01-20 12:09:32] [INFO] [experiment] Created datasets: Train=1844, Val=308, Test=1484
+[2026-01-20 12:09:32] [INFO] [src.training.model] Created SpatialGraphTransformer: 89,864 parameters
+[2026-01-20 12:09:32] [INFO] [experiment] Loss function: label_smoothing=0.0, class_weights capped at 3.0, entropy_weight=0.5, min_entropy=0.5, entropy_penalty_type=linear, maxsup_weight=0.0, maxsup_threshold=0.0
+[2026-01-20 12:09:32] [INFO] [experiment] Optimizer: using separate weight decay - base=0.001, final_layer=0.011
+[2026-01-20 12:09:32] [INFO] [experiment] Initialized prediction distribution file: experiments/runs/sweep_1768899422/deeper/prediction_distributions.json
+[2026-01-20 12:09:32] [INFO] [experiment] Starting training loop
+[2026-01-20 12:10:23] [INFO] [experiment] Epoch 1/20 (50.50s): train_loss=0.7315, train_top1=0.0206, train_top3=0.6030, val_loss=0.4556, val_kl=0.2044, val_top1=0.0357, val_top3=0.9188

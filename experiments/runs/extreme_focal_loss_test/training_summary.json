@@ -1,0 +1,14 @@
+{
+  "best_val_loss": 0.17796429024114238,
+  "total_epochs": 20,
+  "test_metrics": {
+    "loss": 0.4250824077913382,
+    "kl_divergence": 0.3961970660725051,
+    "top1_accuracy": 0.34838274932614555,
+    "top3_accuracy": 0.9521563342318059,
+    "num_samples": 1484
+  },
+  "experiment_dir": "experiments/runs/extreme_focal_loss_test",
+  "checkpoint_path": "models/checkpoints/graph_transformer_best.pt",
+  "plots_dir": "experiments/runs/extreme_focal_loss_test/plots"
+}

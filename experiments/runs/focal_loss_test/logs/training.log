@@ -1,0 +1,93 @@
+[2026-01-20 12:33:05] [INFO] [experiment] Starting training
+[2026-01-20 12:33:05] [INFO] [experiment] Using device: mps
+[2026-01-20 12:33:05] [INFO] [experiment] Loading features from data/processed/features/compliant
+[2026-01-20 12:33:05] [INFO] [src.training.dataset] Found 7 target_points.parquet files in data/processed/features/compliant
+[2026-01-20 12:33:06] [INFO] [src.training.dataset] Combined 3636 total rows from 7 files, 7 unique neighborhoods
+[2026-01-20 12:33:06] [INFO] [src.training.dataset] Created splits: Train=1844 rows (4 neighborhoods), Val=308 rows (1 neighborhoods), Test=1484 rows (2 neighborhoods)
+[2026-01-20 12:33:06] [INFO] [experiment] Calculating class weights from training dataset...
+[2026-01-20 12:33:06] [INFO] [experiment] Class counts: [487, 60, 478, 208, 27, 64, 479, 41]
+[2026-01-20 12:33:06] [INFO] [experiment] Class weights (before damping): [3.786447525024414, 30.733333587646484, 3.857740640640259, 8.865385055541992, 68.29629516601562, 28.8125, 3.849686861038208, 44.975608825683594]
+[2026-01-20 12:33:06] [INFO] [experiment] Class weights (after sqrt damping and capping at 3.0): [1.945879578590393, 3.0, 1.9641132354736328, 2.9774796962738037, 3.0, 3.0, 1.962061882019043, 3.0]
+[2026-01-20 12:33:06] [INFO] [experiment] Data augmentation enabled: feature_noise (p=0.8, std=0.01), neighbor_subsampling (p=0.5, ratio=0.8), edge_noise (p=0.3, std=0.02)
+[2026-01-20 12:33:06] [INFO] [experiment] Computing true class distribution from training dataset...
+[2026-01-20 12:33:08] [INFO] [experiment] True distribution: ['0.1571', '0.0913', '0.1712', '0.1383', '0.0718', '0.0792', '0.1926', '0.0985']
+[2026-01-20 12:33:08] [INFO] [experiment] Created datasets: Train=1844, Val=308, Test=1484
+[2026-01-20 12:33:08] [INFO] [src.training.model] Created SpatialGraphTransformer: 47,752 parameters
+[2026-01-20 12:33:08] [INFO] [experiment] Loss function: label_smoothing=0.0, class_weights capped at 3.0, entropy_weight=0.1, min_entropy=0.1, entropy_penalty_type=linear, maxsup_weight=0.0, maxsup_threshold=0.0, focal_gamma=2.0
+[2026-01-20 12:33:08] [INFO] [experiment] Optimizer: using separate weight decay - base=0.001, final_layer=0.011
+[2026-01-20 12:33:08] [INFO] [experiment] Initialized prediction distribution file: experiments/runs/focal_loss_test/prediction_distributions.json
+[2026-01-20 12:33:08] [INFO] [experiment] Starting training loop
+[2026-01-20 12:34:03] [INFO] [experiment] Epoch 1/20 (54.60s): train_loss=0.4330, train_top1=0.0146, train_top3=0.8308, val_loss=0.3212, val_kl=0.1889, val_top1=0.0260, val_top3=0.8994
+[2026-01-20 12:34:29] [INFO] [experiment] Computing prediction distribution for epoch 1...
+[2026-01-20 12:34:45] [INFO] [experiment] Epoch 1 prediction distribution: ['0.1217', '0.1314', '0.1355', '0.1206', '0.1392', '0.1060', '0.1150', '0.1307']
+[2026-01-20 12:34:45] [INFO] [experiment] Updated prediction distributions to experiments/runs/focal_loss_test/prediction_distributions.json
+[2026-01-20 12:34:45] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 12:34:45] [INFO] [experiment] New best validation loss: 0.3212 (patience counter reset to 0)
+[2026-01-20 12:35:23] [INFO] [experiment] Epoch 2/20 (38.04s): train_loss=0.4203, train_top1=0.2017, train_top3=0.8427, val_loss=0.3212 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:35:59] [INFO] [experiment] Epoch 3/20 (35.83s): train_loss=0.4059, train_top1=0.2706, train_top3=0.8921, val_loss=0.3212 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:36:34] [INFO] [experiment] Epoch 4/20 (35.68s): train_loss=0.3929, train_top1=0.2587, train_top3=0.8980, val_loss=0.3212 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:37:30] [INFO] [experiment] Epoch 5/20 (56.11s): train_loss=0.3803, train_top1=0.2576, train_top3=0.9745, val_loss=0.2869, val_kl=0.1723, val_top1=0.2305, val_top3=0.9610
+[2026-01-20 12:37:56] [INFO] [experiment] Computing prediction distribution for epoch 5...
+[2026-01-20 12:38:12] [INFO] [experiment] Epoch 5 prediction distribution: ['0.1363', '0.1235', '0.1380', '0.1259', '0.1207', '0.1058', '0.1352', '0.1146']
+[2026-01-20 12:38:12] [INFO] [experiment] Updated prediction distributions to experiments/runs/focal_loss_test/prediction_distributions.json
+[2026-01-20 12:38:12] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 12:38:12] [INFO] [experiment] New best validation loss: 0.2869 (patience counter reset to 0)
+[2026-01-20 12:38:49] [INFO] [experiment] Epoch 6/20 (37.55s): train_loss=0.3712, train_top1=0.2554, train_top3=0.9875, val_loss=0.2869 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:39:23] [INFO] [experiment] Epoch 7/20 (33.59s): train_loss=0.3649, train_top1=0.2636, train_top3=0.9859, val_loss=0.2869 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:39:58] [INFO] [experiment] Epoch 8/20 (34.95s): train_loss=0.3615, train_top1=0.2554, train_top3=0.9881, val_loss=0.2869 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:40:31] [INFO] [experiment] Epoch 9/20 (33.35s): train_loss=0.3582, train_top1=0.2549, train_top3=0.9892, val_loss=0.2869 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:41:22] [INFO] [experiment] Epoch 10/20 (50.36s): train_loss=0.3572, train_top1=0.2722, train_top3=0.9881, val_loss=0.2831, val_kl=0.1705, val_top1=0.4156, val_top3=0.9610
+[2026-01-20 12:41:48] [INFO] [experiment] Computing prediction distribution for epoch 10...
+[2026-01-20 12:42:04] [INFO] [experiment] Epoch 10 prediction distribution: ['0.1382', '0.1213', '0.1321', '0.1273', '0.1142', '0.1124', '0.1423', '0.1121']
+[2026-01-20 12:42:04] [INFO] [experiment] Updated prediction distributions to experiments/runs/focal_loss_test/prediction_distributions.json
+[2026-01-20 12:42:04] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 12:42:04] [INFO] [experiment] New best validation loss: 0.2831 (patience counter reset to 0)
+[2026-01-20 12:42:04] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_epoch_10.pt
+[2026-01-20 12:42:39] [INFO] [experiment] Epoch 11/20 (35.03s): train_loss=0.3564, train_top1=0.2554, train_top3=0.9859, val_loss=0.2831 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:43:12] [INFO] [experiment] Epoch 12/20 (32.86s): train_loss=0.3557, train_top1=0.2652, train_top3=0.9886, val_loss=0.2831 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:43:44] [INFO] [experiment] Epoch 13/20 (32.35s): train_loss=0.3551, train_top1=0.2614, train_top3=0.9967, val_loss=0.2831 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:44:15] [INFO] [experiment] Epoch 14/20 (30.78s): train_loss=0.3550, train_top1=0.2636, train_top3=0.9967, val_loss=0.2831 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:45:06] [INFO] [experiment] Epoch 15/20 (51.18s): train_loss=0.3546, train_top1=0.2625, train_top3=0.9967, val_loss=0.2814, val_kl=0.1697, val_top1=0.4156, val_top3=0.9610
+[2026-01-20 12:45:31] [INFO] [experiment] Computing prediction distribution for epoch 15...
+[2026-01-20 12:45:47] [INFO] [experiment] Epoch 15 prediction distribution: ['0.1373', '0.1202', '0.1302', '0.1287', '0.1123', '0.1144', '0.1441', '0.1129']
+[2026-01-20 12:45:47] [INFO] [experiment] Updated prediction distributions to experiments/runs/focal_loss_test/prediction_distributions.json
+[2026-01-20 12:45:47] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 12:45:47] [INFO] [experiment] New best validation loss: 0.2814 (patience counter reset to 0)
+[2026-01-20 12:46:19] [INFO] [experiment] Epoch 16/20 (32.42s): train_loss=0.3548, train_top1=0.2641, train_top3=0.9962, val_loss=0.2814 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:46:50] [INFO] [experiment] Epoch 17/20 (30.71s): train_loss=0.3547, train_top1=0.2630, train_top3=0.9962, val_loss=0.2814 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:47:28] [INFO] [experiment] Epoch 18/20 (37.76s): train_loss=0.3546, train_top1=0.2625, train_top3=0.9967, val_loss=0.2814 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:48:00] [INFO] [experiment] Epoch 19/20 (31.78s): train_loss=0.3546, train_top1=0.2592, train_top3=0.9951, val_loss=0.2814 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-20 12:48:48] [INFO] [experiment] Epoch 20/20 (48.22s): train_loss=0.3546, train_top1=0.2592, train_top3=0.9962, val_loss=0.2802, val_kl=0.1691, val_top1=0.4156, val_top3=0.9610
+[2026-01-20 12:49:13] [INFO] [experiment] Computing prediction distribution for epoch 20...
+[2026-01-20 12:49:29] [INFO] [experiment] Epoch 20 prediction distribution: ['0.1367', '0.1192', '0.1297', '0.1290', '0.1118', '0.1151', '0.1449', '0.1137']
+[2026-01-20 12:49:29] [INFO] [experiment] Updated prediction distributions to experiments/runs/focal_loss_test/prediction_distributions.json
+[2026-01-20 12:49:29] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-20 12:49:29] [INFO] [experiment] New best validation loss: 0.2802 (patience counter reset to 0)
+[2026-01-20 12:49:29] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_epoch_20.pt
+[2026-01-20 12:49:29] [INFO] [experiment] Evaluating on test set and saving predictions...
+[2026-01-20 12:49:55] [INFO] [experiment] Test metrics: loss=0.6430, kl=0.3956, top1=0.3484, top3=0.9791
+[2026-01-20 12:50:23] [INFO] [src.evaluation.save_predictions] Saved 1484 predictions to experiments/runs/focal_loss_test/test_predictions.csv
+[2026-01-20 12:50:23] [INFO] [src.evaluation.save_predictions] Saved evaluation results to experiments/runs/focal_loss_test/test_evaluation_results.json
+[2026-01-20 12:50:23] [INFO] [experiment] Saved test predictions to experiments/runs/focal_loss_test/test_predictions.csv
+[2026-01-20 12:50:39] [INFO] [src.evaluation.save_predictions] Saved 308 predictions to experiments/runs/focal_loss_test/val_predictions.csv
+[2026-01-20 12:50:39] [INFO] [experiment] Saved validation predictions to experiments/runs/focal_loss_test/val_predictions.csv
+[2026-01-20 12:50:39] [INFO] [experiment] Generating training plots...
+[2026-01-20 12:50:40] [INFO] [src.evaluation.plotting] Saved training curves to experiments/runs/focal_loss_test/plots/training_training_curves.png
+[2026-01-20 12:50:40] [INFO] [src.evaluation.plotting] Saved loss comparison to experiments/runs/focal_loss_test/plots/training_loss_comparison.png
+[2026-01-20 12:50:40] [INFO] [src.evaluation.plotting] Saved accuracy curves to experiments/runs/focal_loss_test/plots/training_accuracy_curves.png
+[2026-01-20 12:50:41] [INFO] [src.evaluation.plotting] Saved top-3 accuracy plot to experiments/runs/focal_loss_test/plots/training_top3_accuracy.png
+[2026-01-20 12:50:41] [INFO] [src.evaluation.plotting] Saved all training summary plots to experiments/runs/focal_loss_test/plots
+[2026-01-20 12:50:41] [INFO] [src.evaluation.plotting] Saved neighbor distribution to experiments/runs/focal_loss_test/plots/neighbor_distribution.png
+[2026-01-20 12:50:42] [INFO] [src.evaluation.plotting] Saved target probability distribution to experiments/runs/focal_loss_test/plots/target_probability_distribution.png
+[2026-01-20 12:50:42] [INFO] [src.evaluation.plotting] Saved per-class accuracy to experiments/runs/focal_loss_test/plots/test_per_class_accuracy.png
+[2026-01-20 12:50:42] [INFO] [src.evaluation.plotting] Saved reliability diagram to experiments/runs/focal_loss_test/plots/test_calibration_reliability.png
+[2026-01-20 12:50:42] [INFO] [src.evaluation.plotting] Saved prediction entropy plot to experiments/runs/focal_loss_test/plots/test_prediction_entropy.png
+[2026-01-20 12:50:42] [INFO] [src.evaluation.plotting] Saved neighborhood accuracy plot to experiments/runs/focal_loss_test/plots/test_neighborhood_accuracy.png
+[2026-01-20 12:50:42] [INFO] [src.evaluation.plotting] Saved per-class accuracy to experiments/runs/focal_loss_test/plots/val_per_class_accuracy.png
+[2026-01-20 12:50:43] [INFO] [src.evaluation.plotting] Saved reliability diagram to experiments/runs/focal_loss_test/plots/val_calibration_reliability.png
+[2026-01-20 12:50:43] [INFO] [src.evaluation.plotting] Saved prediction entropy plot to experiments/runs/focal_loss_test/plots/val_prediction_entropy.png
+[2026-01-20 12:50:43] [INFO] [src.evaluation.plotting] Saved neighborhood accuracy plot to experiments/runs/focal_loss_test/plots/val_neighborhood_accuracy.png
+[2026-01-20 12:50:43] [INFO] [experiment] Training complete
+[2026-01-20 12:50:43] [INFO] [experiment] Best validation loss: 0.2802
+[2026-01-20 12:50:43] [INFO] [experiment] Results saved to experiments/runs/focal_loss_test
+[2026-01-20 12:50:43] [INFO] [experiment] Plots saved to experiments/runs/focal_loss_test/plots

@@ -1,0 +1,30 @@
+{
+  "name": "baseline",
+  "description": "Baseline (current config with optimal regularization)",
+  "start_time": "2026-01-20T08:57:02.814200",
+  "base_config_path": "default (get_config)",
+  "sweep_dir": "experiments/runs/sweep_1768899422",
+  "model_config": {
+    "learning_rate": 0.0001,
+    "num_layers": 2,
+    "loss_temperature": 200
+  },
+  "regularization": {
+    "entropy_weight": 0.5,
+    "min_entropy": 0.5,
+    "maxsup_weight": 0.0,
+    "model_temperature": 2.0,
+    "logit_norm": 2.0
+  },
+  "end_time": "2026-01-20T09:12:55.293344",
+  "elapsed_seconds": 952.4791879653931,
+  "success": true,
+  "best_val_loss": 0.38559301720037087,
+  "test_metrics": {
+    "loss": 0.7471913762812344,
+    "kl_divergence": 0.33655854963228066,
+    "top1_accuracy": 0.34838274932614555,
+    "top3_accuracy": 0.97911051212938,
+    "num_samples": 1484
+  }
+}

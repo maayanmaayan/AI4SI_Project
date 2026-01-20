@@ -1,0 +1,44 @@
+[2026-01-19 16:50:08] [INFO] [experiment] Starting training
+[2026-01-19 16:50:08] [INFO] [experiment] Using device: mps
+[2026-01-19 16:50:08] [INFO] [experiment] Loading features from data/processed/features/compliant
+[2026-01-19 16:50:08] [INFO] [src.training.dataset] Found 7 target_points.parquet files in data/processed/features/compliant
+[2026-01-19 16:50:09] [INFO] [src.training.dataset] Combined 3636 total rows from 7 files, 7 unique neighborhoods
+[2026-01-19 16:50:09] [INFO] [src.training.dataset] Created splits: Train=1844 rows (4 neighborhoods), Val=308 rows (1 neighborhoods), Test=1484 rows (2 neighborhoods)
+[2026-01-19 16:50:09] [INFO] [experiment] Calculating class weights from training dataset...
+[2026-01-19 16:50:09] [INFO] [experiment] Class counts: [487, 60, 478, 208, 27, 64, 479, 41]
+[2026-01-19 16:50:09] [INFO] [experiment] Class weights (before damping): [3.786447525024414, 30.733333587646484, 3.857740640640259, 8.865385055541992, 68.29629516601562, 28.8125, 3.849686861038208, 44.975608825683594]
+[2026-01-19 16:50:09] [INFO] [experiment] Class weights (after sqrt damping and capping at 3.0): [1.945879578590393, 3.0, 1.9641132354736328, 2.9774796962738037, 3.0, 3.0, 1.962061882019043, 3.0]
+[2026-01-19 16:50:09] [INFO] [experiment] Data augmentation enabled: feature_noise (p=0.8, std=0.01), neighbor_subsampling (p=0.5, ratio=0.8), edge_noise (p=0.3, std=0.02)
+[2026-01-19 16:50:09] [INFO] [experiment] Computing true class distribution from training dataset...
+[2026-01-19 16:50:12] [INFO] [experiment] True distribution: ['0.1571', '0.0913', '0.1712', '0.1383', '0.0718', '0.0792', '0.1926', '0.0985']
+[2026-01-19 16:50:12] [INFO] [experiment] Created datasets: Train=1844, Val=308, Test=1484
+[2026-01-19 16:50:12] [INFO] [src.training.model] Created SpatialGraphTransformer: 47,752 parameters
+[2026-01-19 16:50:12] [INFO] [experiment] Loss function: label_smoothing=0.0, class_weights capped at 3.0, entropy_weight=0.5, min_entropy=1.0
+[2026-01-19 16:50:12] [INFO] [experiment] Initialized prediction distribution file: experiments/runs/run_1768834208/prediction_distributions.json
+[2026-01-19 16:50:12] [INFO] [experiment] Starting training loop
+[2026-01-19 16:51:05] [INFO] [experiment] Epoch 1/100 (53.04s): train_loss=610.3992, train_top1=0.0136, train_top3=0.7457, val_loss=452.6841, val_kl=15.0646, val_top1=0.0260, val_top3=0.8994
+[2026-01-19 16:51:31] [INFO] [experiment] Computing prediction distribution for epoch 1...
+[2026-01-19 16:51:46] [INFO] [experiment] Epoch 1 prediction distribution: ['0.0000', '0.0000', '0.0000', '0.0000', '1.0000', '0.0000', '0.0000', '0.0000']
+[2026-01-19 16:51:46] [INFO] [experiment] Updated prediction distributions to experiments/runs/run_1768834208/prediction_distributions.json
+[2026-01-19 16:51:46] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_best.pt
+[2026-01-19 16:51:46] [INFO] [experiment] New best validation loss: 452.6841
+[2026-01-19 16:52:20] [INFO] [experiment] Epoch 2/100 (33.26s): train_loss=405.9953, train_top1=0.0895, train_top3=0.8368, val_loss=452.6841 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-19 16:52:55] [INFO] [experiment] Epoch 3/100 (35.05s): train_loss=290.5645, train_top1=0.1020, train_top3=0.8460, val_loss=452.6841 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-19 16:53:29] [INFO] [experiment] Epoch 4/100 (34.58s): train_loss=215.9916, train_top1=0.1095, train_top3=0.8482, val_loss=452.6841 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-19 16:54:17] [INFO] [experiment] Epoch 5/100 (47.89s): train_loss=155.9986, train_top1=0.1193, train_top3=0.7473, val_loss=685.0339, val_kl=15.0954, val_top1=0.0455, val_top3=0.8831
+[2026-01-19 16:54:42] [INFO] [experiment] Computing prediction distribution for epoch 5...
+[2026-01-19 16:54:57] [INFO] [experiment] Epoch 5 prediction distribution: ['1.0000', '0.0000', '0.0000', '0.0000', '0.0000', '0.0000', '0.0000', '0.0000']
+[2026-01-19 16:54:57] [INFO] [experiment] Updated prediction distributions to experiments/runs/run_1768834208/prediction_distributions.json
+[2026-01-19 16:55:32] [INFO] [experiment] Epoch 6/100 (34.85s): train_loss=118.5343, train_top1=0.1448, train_top3=0.8037, val_loss=685.0339 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-19 16:56:04] [INFO] [experiment] Epoch 7/100 (31.71s): train_loss=94.6733, train_top1=0.1497, train_top3=0.8064, val_loss=685.0339 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-19 16:56:37] [INFO] [experiment] Epoch 8/100 (32.75s): train_loss=73.1089, train_top1=0.1432, train_top3=0.7988, val_loss=685.0339 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-19 16:57:09] [INFO] [experiment] Epoch 9/100 (32.62s): train_loss=45.6010, train_top1=0.1405, train_top3=0.7999, val_loss=685.0339 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-19 16:57:54] [INFO] [experiment] Epoch 10/100 (45.15s): train_loss=31.7203, train_top1=0.1307, train_top3=0.8129, val_loss=517.4512, val_kl=12.4434, val_top1=0.4156, val_top3=0.9318
+[2026-01-19 16:58:18] [INFO] [experiment] Computing prediction distribution for epoch 10...
+[2026-01-19 16:58:33] [INFO] [experiment] Epoch 10 prediction distribution: ['0.0000', '0.0000', '0.0000', '0.0000', '0.0000', '0.0000', '1.0000', '0.0000']
+[2026-01-19 16:58:33] [INFO] [experiment] Updated prediction distributions to experiments/runs/run_1768834208/prediction_distributions.json
+[2026-01-19 16:58:33] [INFO] [src.training.train] Saved checkpoint to models/checkpoints/graph_transformer_epoch_10.pt
+[2026-01-19 16:59:05] [INFO] [experiment] Epoch 11/100 (31.66s): train_loss=17.3622, train_top1=0.1318, train_top3=0.8243, val_loss=517.4512 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-19 16:59:40] [INFO] [experiment] Epoch 12/100 (35.27s): train_loss=11.4097, train_top1=0.1497, train_top3=0.8427, val_loss=517.4512 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-19 17:00:11] [INFO] [experiment] Epoch 13/100 (30.96s): train_loss=12.0835, train_top1=0.1546, train_top3=0.8520, val_loss=517.4512 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
+[2026-01-19 17:00:44] [INFO] [experiment] Epoch 14/100 (32.58s): train_loss=12.2405, train_top1=0.1573, train_top3=0.8557, val_loss=517.4512 (last), val_kl=N/A, val_top1=N/A, val_top3=N/A
