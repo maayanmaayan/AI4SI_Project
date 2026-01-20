@@ -6,7 +6,7 @@ This project implements a Spatial Graph Transformer-based AI model to support da
 
 - **Final report**: `FINAL_REPORT.md`
 - **Results summary (tables)**: `RESULTS_SUMMARY.md`
-- **Overnight experiments narrative**: `experiments/overnight_runs/EXPERIMENT_SUMMARY.md`
+- **experiments narrative**: `experiments/`
 - **Model configuration**: `models/config.yaml`
 - **Web UI demo**: `web-ui/` (mock predictions; see “Web UI” section below)
 

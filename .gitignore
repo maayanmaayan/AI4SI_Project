@@ -19,8 +19,8 @@ models/checkpoints/*
 !models/checkpoints/.gitkeep
 
 # Experiment outputs
-experiments/runs/*
-!experiments/runs/.gitkeep
+# experiments/runs/*
+# !experiments/runs/.gitkeep
 
 # Jupyter notebook checkpoints
 .ipynb_checkpoints/
