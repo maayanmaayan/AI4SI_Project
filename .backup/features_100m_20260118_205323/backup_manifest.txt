@@ -1,7 +1,0 @@
-Backup Manifest
-==================================================
-Timestamp: 2026-01-18T20:53:23.443598
-Source: data/processed/features
-Backup: .backup/features_100m_20260118_205323
-File Count: 9
-Total Size: 9.75 MB

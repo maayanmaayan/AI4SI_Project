@@ -41,5 +41,12 @@ experiments/runs/*
 .DS_Store
 Thumbs.db
 
+# Local run logs / captured stdout
+*.out
+
 # OSMnx cache (Overpass API responses)
 cache/
+
+# Local backups (not part of submission / reproducible artifacts)
+.backup/
+backup/
