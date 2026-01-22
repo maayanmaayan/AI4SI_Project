@@ -10,9 +10,14 @@ __pycache__
 # Data files (large, should use DVC or similar for versioning)
 data/raw/osm/*
 data/raw/census/*
-data/processed/*
+# Keep most processed data ignored, but allow model-ready features to be tracked
+# (e.g. target_points.parquet under data/processed/features/...)
+data/processed/**
+!data/processed/
 !data/processed/.gitkeep
 !data/processed/**/.gitkeep
+!data/processed/features/
+!data/processed/features/**
 
 # Model checkpoints (large files)
 models/checkpoints/*
